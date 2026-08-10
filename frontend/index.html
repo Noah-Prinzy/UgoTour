@@ -21,11 +21,11 @@
 
   <main>
     <!--
-      Phase 8.2 keeps the supplied video's motion/layout inspiration while fixing
-      the hero layering issue seen in the user's live-site recording. The opening
-      experience now fills the viewport and destination photography crossfades
-      only in the background, behind a stable title, controls and card rail.
+      Phase 8.3 keeps the full-screen background transition and adds a scroll-linked
+      Hero <-> Search handoff plus a three-card circular destination queue. The
+      first card is always next in line to become the fullscreen destination.
     -->
+    <div id="home-hero-transition" class="home-hero-transition">
     <section id="journey-slider" class="journey-slider" aria-labelledby="journey-title">
       <!-- Two background layers let images crossfade behind the UI. This avoids
            the old temporary image clone covering the title/cards during a change. -->
@@ -60,7 +60,7 @@
         </div>
 
         <div class="journey-rail-area">
-          <p class="journey-rail-label">Choose your next story</p>
+          <p class="journey-rail-label">Up next · three stories</p>
           <div id="journey-cards" class="journey-cards" role="listbox" aria-label="Uganda destinations"></div>
 
           <div class="journey-bottom-row">
@@ -79,7 +79,9 @@
         <span class="journey-scroll-arrow" aria-hidden="true">↓</span>
       </a>
     </section>
+    </div>
 
+    <div id="home-content" class="home-content-surface">
     <section id="home-search" class="home-search-band" aria-labelledby="home-search-heading">
       <div class="home-search-copy">
         <p class="section-kicker">Find your route</p>
@@ -121,6 +123,7 @@
       </div>
       <div id="experience-grid" class="experience-grid"></div>
     </section>
+    </div>
   </main>
 
   <footer id="site-footer"></footer>

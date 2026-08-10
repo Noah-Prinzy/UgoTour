@@ -1,6 +1,6 @@
 {
   "name": "ugotour",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "private": true,
   "description": "JavaScript-first Uganda tourism PWA with vanilla frontend, Node.js REST API and PostgreSQL",
   "scripts": {

@@ -938,6 +938,40 @@ motion preferences disable the cue animation and background transition timing.
 No new database migration is required for Phase 8.2. If migrations 004 and 005
 were already applied, the database is ready.
 
+### 12.6 Phase 8.3 — scroll morph, soft snap and three-card circular queue
+
+Phase 8.3 refines the Home interaction requested after reviewing the Phase 8.2 full-screen hero. It does not add a database migration or change the destination, authentication or booking API contracts.
+
+#### Scroll-linked Hero -> Search handoff
+
+The opening hero now sits inside a taller transition scene while the actual `journey-slider` remains sticky at the top of the viewport. Vanilla JavaScript calculates scroll progress and progressively fades/lifts the hero UI, softens the photograph and lets one opaque Home content surface rise over the lower half. That surface contains Search, travel themes and the content below it, so the fullscreen destination appears to dissolve into the page instead of ending at a hard `100vh` boundary.
+
+There are two intentional resting positions around the opening boundary:
+
+```text
+A. Fullscreen destination hero
+        ⇅ scroll-linked dissolve / rise
+B. Search + Home content aligned to the viewport
+```
+
+When scrolling stops inside this transition zone, a custom eased scroll finishes the movement. Direction-aware thresholds make downward movement favor Search and upward movement favor the fullscreen hero. Below the opening boundary, the rest of the site scrolls normally. Reduced-motion preferences bypass the animated snap.
+
+#### Exactly three upcoming destination cards
+
+The old all-destination horizontal rail is replaced by a circular **three-card upcoming queue**. The fullscreen destination is never duplicated in the rail. If Kidepo is fullscreen, the queue can be `Sipi Falls | Kampala | Rwenzori Mountains`; when Sipi becomes fullscreen, the queue becomes `Kampala | Rwenzori Mountains | Murchison Falls`. This continues indefinitely across all nine PostgreSQL destinations.
+
+The first card is marked **Next**. All three cards remain complete and visible on desktop and mobile; there is no half-card clipping or hidden tail behind the hero image.
+
+#### Synchronized queue animation
+
+The queue uses a FLIP-style vanilla JavaScript transition. The destination becoming fullscreen gets a temporary departing clone, remaining cards move smoothly into their new slots, and a newly upcoming destination enters slot three from the outer side. This runs alongside the background crossfade and destination-copy transition for autoplay, next/previous controls and card selection.
+
+#### PWA cache refresh
+
+The service-worker cache key is now `ugotour-phase8-3-v1` so installed/cached copies do not keep serving Phase 8.2 Home JavaScript or CSS.
+
+No new PostgreSQL migration is required for Phase 8.3. Databases with migrations 004 and 005 already applied are ready.
+
 ## 13. Running the current application
 
 ### 13.1 Download and verify the final high-resolution destination images
@@ -1000,13 +1034,13 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-A healthy Phase 8.2 response from `/health` reports:
+A healthy Phase 8.3 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": "8.2",
+  "phase": "8.3",
   "database": "connected"
 }
 ```
@@ -1069,7 +1103,7 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 visual
+The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 visual
 and motion system. Phase 9 should focus on **production readiness and
 deployment**, including:
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-2-v1";
+const CACHE_NAME = "ugotour-phase8-3-v1";
 
 const APP_SHELL = [
   "./",
@@ -60,7 +60,7 @@ self.addEventListener("fetch", (event) => {
   // served from an old service-worker cache.
   if (url.pathname.startsWith("/api/") || url.port === "3000") return;
 
-  // Phase 8.2 keeps destination images network-first. This matters because the
+  // Phase 8.3 keeps destination images network-first. This matters because the
   // developer replaces compatibility placeholders with the downloaded 2400px
   // files after copying the ZIP; the service worker must not trap an old image.
   if (url.origin === self.location.origin && url.pathname.includes("/images/destinations/")) {
