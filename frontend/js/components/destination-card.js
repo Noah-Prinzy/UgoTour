@@ -5,18 +5,22 @@ import { resolveAssetPath } from "../utils/assets.js";
 // of repeating one static image everywhere. The second photo crossfades in on
 // hover/focus while both files remain local inside frontend/images/.
 export function createDestinationCard(destination, { detailsPagePath = null, assetBasePath = "." } = {}) {
-  const article = document.createElement("article");
-  article.className = "destination-card";
-  article.dataset.destinationId = destination.id;
-
   const detailsUrl = detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null;
+  const card = document.createElement(detailsUrl ? "a" : "article");
+  card.className = "destination-card";
+  card.dataset.destinationId = destination.id;
+
+  if (detailsUrl) {
+    card.href = detailsUrl;
+  }
+
   const gallery = Array.isArray(destination.galleryImages) ? destination.galleryImages : [];
   const primaryPhoto = gallery[0]?.url || destination.imageUrl;
   const secondaryPhoto = gallery[1]?.url || primaryPhoto;
   const imageUrl = resolveAssetPath(primaryPhoto, assetBasePath);
   const secondaryImageUrl = resolveAssetPath(secondaryPhoto, assetBasePath);
 
-  article.innerHTML = `
+  card.innerHTML = `
     <div class="destination-card-media">
       <img class="destination-card-image destination-card-image-primary" src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(destination.name)}" loading="lazy" />
       <img class="destination-card-image destination-card-image-secondary" src="${escapeAttribute(secondaryImageUrl)}" alt="" loading="lazy" aria-hidden="true" />
@@ -30,12 +34,12 @@ export function createDestinationCard(destination, { detailsPagePath = null, ass
       <p>${escapeHtml(destination.description)}</p>
       <div class="destination-card-footer">
         <span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span>
-        ${detailsUrl ? `<a class="destination-details-button" href="${detailsUrl}" aria-label="View ${escapeAttribute(destination.name)}">→</a>` : ""}
+        ${detailsUrl ? `<span class="destination-details-button" aria-hidden="true">→</span>` : ""}
       </div>
     </div>
   `;
 
-  return article;
+  return card;
 }
 
 function escapeHtml(value) {

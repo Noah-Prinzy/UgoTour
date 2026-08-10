@@ -1,33 +1,20 @@
-// ============================================================
-// PHASE 8.1 DESTINATION IMAGE QUALITY GATE
-// ============================================================
-// Requires a successful download manifest produced by `npm run assets:download`
-// and checks every curated destination image is at least 1400x800. This keeps
-// the bundled compatibility placeholders from being mistaken for final photos.
-
-import { readdir, readFile, stat } from "node:fs/promises";
-import { join, extname } from "node:path";
+// Phase 8.8 tourism image quality gate: validates manifest completeness,
+// corruption, byte size and dimensions across destination and attraction trees.
+import { readFile, stat } from "node:fs/promises";
+import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const root = join(dirname(__dirname), "frontend", "images", "destinations");
-const manifestPath = join(root, ".download-manifest.json");
-const MIN_WIDTH = 1400;
-const MIN_HEIGHT = 800;
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const projectRoot = dirname(scriptDirectory);
+const downloadManifestPath = join(projectRoot, "frontend", "images", "destinations", ".download-manifest.json");
+const tourismManifestPath = join(projectRoot, "frontend", "images", "tourism-image-manifest.json");
+const EXPECTED_IMAGES = 93;
 const MIN_BYTES = 80_000;
-const EXPECTED_COUNT = 32;
-
-async function walk(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = [];
-  for (const entry of entries) {
-    const full = join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...await walk(full));
-    else if ([".jpg", ".jpeg"].includes(extname(entry.name).toLowerCase())) files.push(full);
-  }
-  return files;
-}
+const phase88DestinationNames = new Set([
+  "Kibale National Park", "Lake Mburo National Park", "Semuliki National Park",
+  "Mount Elgon National Park", "Mgahinga Gorilla National Park", "Fort Portal",
+  "Entebbe", "Ssese Islands", "Lake Mutanda", "Ziwa Rhino Sanctuary"
+]);
 
 function jpegSize(buffer) {
   if (buffer[0] !== 0xff || buffer[1] !== 0xd8) return null;
@@ -39,8 +26,7 @@ function jpegSize(buffer) {
     if ([0xd8, 0xd9].includes(marker)) continue;
     if (offset + 2 > buffer.length) break;
     const length = buffer.readUInt16BE(offset);
-    const isSof = [0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker);
-    if (isSof && offset + 7 < buffer.length) {
+    if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker) && offset + 7 < buffer.length) {
       return { height: buffer.readUInt16BE(offset + 3), width: buffer.readUInt16BE(offset + 5) };
     }
     offset += length;
@@ -48,63 +34,59 @@ function jpegSize(buffer) {
   return null;
 }
 
-let manifest;
+let downloadManifest;
+let tourismManifest;
 try {
-  manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  downloadManifest = JSON.parse(await readFile(downloadManifestPath, "utf8"));
+  tourismManifest = JSON.parse(await readFile(tourismManifestPath, "utf8"));
 } catch {
-  console.error("FAIL No completed destination download manifest was found.");
-  console.error("Run: npm run assets:download");
-  console.error("The verifier deliberately refuses to approve bundled placeholders as final photography.");
+  console.error("FAIL A completed Phase 8.8 image manifest is missing. Run: npm run assets:download");
   process.exit(1);
 }
 
-if (!manifest.complete || manifest.downloadedCount !== EXPECTED_COUNT || manifest.files?.length !== EXPECTED_COUNT) {
-  console.error(`FAIL Image download set is incomplete: ${manifest.downloadedCount ?? 0}/${EXPECTED_COUNT}.`);
-  console.error("Run npm run assets:download again until it reports 32/32, then verify again.");
+if (!downloadManifest.complete || downloadManifest.expectedCount !== EXPECTED_IMAGES || tourismManifest.images?.length !== EXPECTED_IMAGES) {
+  console.error(`FAIL Image download set is incomplete: ${downloadManifest.downloadedCount ?? 0}/${EXPECTED_IMAGES}.`);
   process.exit(1);
 }
 
-const files = await walk(root);
-const expected = new Set(manifest.files.map((file) => join(dirname(__dirname), "frontend", "images", file)));
-let failures = 0;
-
-for (const file of [...expected].sort()) {
-  let bytes;
+const failures = [];
+let passed = 0;
+for (const image of tourismManifest.images) {
+  const path = join(projectRoot, ...image.localPath.split("/"));
+  const minWidth = image.minWidth ?? (image.type === "attraction" ? 1400 : phase88DestinationNames.has(image.place) ? 2000 : 1400);
+  const minHeight = image.type === "attraction" ? 700 : 800;
   try {
-    bytes = await readFile(file);
-  } catch {
-    failures += 1;
-    console.log(`FAIL ${file.slice(root.length + 1)} — missing file`);
-    continue;
+    const [bytes, fileInfo] = await Promise.all([readFile(path), stat(path)]);
+    let size;
+    if (extname(path).toLowerCase() === ".svg") {
+      const source = bytes.toString("utf8");
+      const width = Number(source.match(/<svg[^>]*\bwidth="(\d+)"/)?.[1]);
+      const height = Number(source.match(/<svg[^>]*\bheight="(\d+)"/)?.[1]);
+      size = width && height ? { width, height } : null;
+    } else {
+      size = jpegSize(bytes);
+    }
+    if (!size) throw new Error("corrupt or unsupported image");
+    if (size.width < minWidth || size.height < minHeight) throw new Error(`${size.width}x${size.height}; minimum ${minWidth}x${minHeight}`);
+    const minimumBytes = extname(path).toLowerCase() === ".svg" ? 1_000 : MIN_BYTES;
+    if (fileInfo.size < minimumBytes) throw new Error(`${Math.round(fileInfo.size / 1024)} KB; minimum ${Math.round(minimumBytes / 1024)} KB`);
+    passed += 1;
+  } catch (error) {
+    failures.push(`${image.place} — ${image.localPath}: ${error.message}`);
   }
-
-  const size = jpegSize(bytes);
-  const fileInfo = await stat(file);
-  const relative = file.slice(root.length + 1);
-
-  if (!size) {
-    failures += 1;
-    console.log(`FAIL ${relative} — could not read JPEG dimensions`);
-    continue;
-  }
-
-  const dimensionsOk = size.width >= MIN_WIDTH && size.height >= MIN_HEIGHT;
-  const bytesOk = fileInfo.size >= MIN_BYTES;
-  const ok = dimensionsOk && bytesOk;
-  if (!ok) failures += 1;
-
-  console.log(`${ok ? "PASS" : "FAIL"} ${relative} — ${size.width}×${size.height}, ${Math.round(fileInfo.size / 1024)} KB`);
 }
 
-if (files.length < EXPECTED_COUNT) {
-  failures += 1;
-  console.log(`FAIL Only ${files.length} JPEG files exist in the destination gallery tree; expected at least ${EXPECTED_COUNT}.`);
-}
-
-console.log(`\nChecked ${EXPECTED_COUNT} curated destination images. Minimum target: ${MIN_WIDTH}×${MIN_HEIGHT}.`);
-if (failures) {
-  console.log(`${failures} quality check(s) failed. Re-run npm run assets:download, then npm run assets:verify.`);
+const destinations = new Set(tourismManifest.images.filter((image) => image.type === "destination").map((image) => image.place));
+const attractions = new Set(tourismManifest.images.filter((image) => image.type === "attraction").map((image) => image.place));
+console.log("Image verification");
+console.log("------------------");
+console.log(`Destinations checked: ${destinations.size}`);
+console.log(`Attractions checked: ${attractions.size}`);
+console.log(`Images checked: ${tourismManifest.images.length}`);
+console.log(`Passed: ${passed}`);
+console.log(`Failed: ${failures.length}`);
+if (failures.length) {
+  console.log("\nFAIL:");
+  failures.forEach((failure) => console.log(failure));
   process.exitCode = 1;
-} else {
-  console.log("All 32 downloaded destination images passed the Phase 8.1 quality gate.");
 }

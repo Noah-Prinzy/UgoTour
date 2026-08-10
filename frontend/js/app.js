@@ -100,14 +100,16 @@ function createJourneyQueueCard(index, order) {
   button.innerHTML = `
     <img src="${escapeAttribute(image)}" alt="" />
     <span class="journey-card-shade" aria-hidden="true"></span>
-    <span class="journey-card-order">${isActive ? "Now" : String(index + 1).padStart(2, "0")}</span>
     <span class="journey-card-copy">
       <small>${escapeHtml(destination.category)}</small>
       <strong>${escapeHtml(destination.name)}</strong>
     </span>
   `;
 
-  button.addEventListener("click", () => changeDestination(index, button, 1));
+  button.addEventListener("click", () => {
+    const direction = order < ACTIVE_SELECTOR_ORDER ? -1 : 1;
+    changeDestination(index, button, direction);
+  });
   return button;
 }
 
@@ -156,8 +158,14 @@ async function animateJourneyQueue(nextHeroIndex, direction = 1) {
     const rect = card.getBoundingClientRect();
     const ghost = card.cloneNode(true);
     ghost.classList.add("journey-card-ghost");
+    // The clone must not participate in the five live queue positions. Keeping
+    // its queue-order attribute made it match the orbit CSS while it faded out,
+    // which could pull the outgoing top card toward the centre of the screen.
+    delete ghost.dataset.queueOrder;
     ghost.style.left = `${rect.left - railRect.left}px`;
     ghost.style.top = `${rect.top - railRect.top}px`;
+    ghost.style.right = "auto";
+    ghost.style.bottom = "auto";
     ghost.style.width = `${rect.width}px`;
     ghost.style.height = `${rect.height}px`;
     ghost.style.margin = "0";
@@ -199,11 +207,13 @@ async function animateJourneyQueue(nextHeroIndex, direction = 1) {
   });
 
   ghosts.forEach((ghost) => {
-    const exitX = direction >= 0 ? -44 : 44;
+    // Hold the outgoing card exactly where it was and simply dissolve it.
+    // Moving this absolute clone caused the visible jump reported in the
+    // carousel recording, especially when the first orbit item left the queue.
     const animation = ghost.animate([
-      { transform: "translate3d(0, 0, 0) scale(1)", opacity: 1 },
-      { transform: `translate3d(${exitX}px, -18px, 0) scale(.93)`, opacity: 0 }
-    ], { duration: 430, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" });
+      { opacity: 1 },
+      { opacity: 0 }
+    ], { duration: 280, easing: "ease-out", fill: "forwards" });
     animations.push(animation.finished.catch(() => {}));
   });
 
@@ -629,8 +639,6 @@ async function initialize() {
   }
 }
 
-document.getElementById("journey-prev")?.addEventListener("click", () => changeDestination(activeIndex - 1, null, -1));
-document.getElementById("journey-next")?.addEventListener("click", () => changeDestination(activeIndex + 1, null, 1));
 searchButton?.addEventListener("click", submitSearch);
 searchInput?.addEventListener("keydown", (event) => { if (event.key === "Enter") submitSearch(); });
 

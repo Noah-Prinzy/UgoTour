@@ -1202,9 +1202,15 @@ destination data, booking operations and profile-photo storage remain intact.
 
 - **Home:** retained the database-driven fullscreen background crossfade,
   destination copy, local gallery images, search handoff and three-card
-  **More to Discover** section. The desktop destination control is now a compact
-  vertical selector with circular images; it becomes a horizontal image selector
-  on mobile.
+  **More to Discover** section. The corrected desktop selector presents five
+  large destination photographs in a staggered arc on the far-right, with the
+  active destination enlarged at the center and labels floating independently.
+  Selecting a circle or pagination dot recenters the destination and updates the
+  background, copy and CTA. Number badges, the `Now` label, arrow buttons,
+  counter and menu-like row backgrounds were removed. Tablet and mobile use a
+  horizontally scrollable circular selector. Orbit placement now uses stable
+  queue-order attributes instead of DOM child positions, and the outgoing card
+  fades away in place so carousel rotation cannot pull it toward the center.
 - **Login and Sign Up:** replaced separate hero/form sections with one image-led
   split composition using existing local Rwenzori and Sipi Falls photographs.
   Only the working email, password, name and confirmation fields are present.
@@ -1250,7 +1256,7 @@ destination data, booking operations and profile-photo storage remain intact.
 - `docs/PROJECT_PROGRESS.md`
 
 No files were removed. No PostgreSQL migration is required. The service-worker
-cache was incremented to `ugotour-phase8-7-v3` so installed clients receive the
+cache was incremented to `ugotour-phase8-7-v5` so installed clients receive the
 new HTML, CSS, JavaScript and session guard. Same-origin documents, styles and
 scripts now use a network-first service-worker strategy with cached fallback,
 preventing mixed old/new visual assets after future UI releases.
@@ -1327,3 +1333,77 @@ docs/PROJECT_PROGRESS.md
 ```
 
 This keeps UgoTour documentation in one continuously maintained source.
+
+---
+
+## Phase 8.8 — Uganda Tourism Library Expansion
+
+Phase 8.8 expands the PostgreSQL-backed library without rebuilding the app or turning every place into a top-level destination. Bookings continue to reference major destinations only. The future map is documented and prepared at the data layer; no map UI or mapping dependency was added.
+
+### Library inventory
+
+| Inventory | Count | Places |
+| --- | ---: | --- |
+| Existing before | 9 destinations | Murchison Falls; Bwindi Impenetrable National Park; Jinja; Queen Elizabeth National Park; Kidepo Valley National Park; Lake Bunyonyi; Sipi Falls; Kampala; Rwenzori Mountains |
+| New national parks | 5 | Kibale; Lake Mburo; Semuliki; Mount Elgon; Mgahinga Gorilla |
+| New hubs/destinations | 5 | Fort Portal; Entebbe; Ssese Islands; Lake Mutanda; Ziwa Rhino Sanctuary |
+| New attractions | 41 | Hierarchical records listed below |
+| Total | 19 destinations + 41 attractions | 60 map-ready tourism locations |
+
+### Attraction hierarchy
+
+- Kampala (10): Kasubi Royal Tombs; Uganda National Museum; Kabaka's Palace; Bulange and Royal Mile; Namugongo Martyrs Shrine; Ndere Cultural Centre; Uganda National Mosque; National Theatre and Craft Village; Kabaka's Lake; Munyonyo Martyrs Shrine.
+- Jinja / Busoga corridor (9): Source of the Nile; Itanda Falls; Busowoko Falls; Mabira Forest; Kagulu Hill; Nalubaale Dam; Source of the Nile Bridge; Bishop Hannington Memorial Site; Ssezibwa Falls. District metadata makes clear that corridor sites are not all inside central Jinja.
+- Kibale National Park (1): Bigodi Wetland Sanctuary.
+- Fort Portal / western hub (3): Fort Portal Crater Lakes; Fort Portal Regional Museum; Katoosa Martyrs Site. Katoosa is explicitly described as a developing Phase I faith-tourism site.
+- Semuliki National Park (1): Sempaya Hot Springs.
+- Queen Elizabeth National Park (3): Kazinga Channel; Ishasha Sector; Lake Katwe.
+- Murchison region (1): Budongo Forest.
+- Entebbe / Lake Victoria (5): Ngamba Island Chimpanzee Sanctuary; Uganda Wildlife Conservation Education Centre; Entebbe Botanical Gardens; Mabamba Bay Wetland; Lutembe Bay.
+- Independent regional locations (8): Nyero Rock Paintings; Fort Patiko / Baker's Fort; Tororo Rock; Aruu Falls; Kabale Regional Museum; Soroti Regional Museum; Moroto Regional Museum; Ajai Wildlife Reserve. Their nullable parent is intentional because none fits an existing destination honestly. Ajai is described as an active restoration landscape following the 2026 rhino reintroduction, not as a mature general attraction.
+
+The Uganda museum network was checked against the current official museum site. The National Museum record carries its temporary-renovation status; the four regional museum records reflect the official Kabale, Soroti, Moroto and Fort Portal network.
+
+### Database and API architecture
+
+Migration `database/migrations/006_phase8_8_tourism_library.sql` is the next migration after `005`. It:
+
+- adds `district`, `latitude NUMERIC(9,6)` and `longitude NUMERIC(9,6)` to destinations;
+- creates `attractions` with a nullable parent destination, `ON DELETE CASCADE`, concise tourism metadata, local gallery metadata and required coordinates;
+- adds case-insensitive unique name indexes and attraction lookup indexes;
+- updates the original nine rows in place so their IDs remain unchanged;
+- inserts ten guarded destination records and 41 guarded attraction records;
+- is rerunnable without duplicating tourism records and never deletes users or bookings.
+
+REST additions follow the existing router → controller → service → `pg` structure and parameterized SQL:
+
+- `GET /api/attractions`
+- `GET /api/attractions/:id`
+- `GET /api/destinations/:id/attractions`
+
+Destination API objects now also expose district, latitude and longitude. The details page requests its destination and nested attractions, renders compact local-image cards, and opens an accessible native dialog. Attraction booking was deliberately not added.
+
+### Image architecture and quality
+
+- Existing destination galleries remain under `frontend/images/destinations/`.
+- New destination galleries use one folder per destination and two curated local images per new destination.
+- Each attraction uses `frontend/images/attractions/<slug>/<slug>-01.jpg`.
+- `scripts/tourism-image-manifest.js` defines the Phase 8.8 local-asset plan.
+- `frontend/images/tourism-image-manifest.json` is generated with creator, provider, source page, original dimensions and licence metadata.
+- `npm run assets:download` preserves valid files, resolves Wikimedia Commons metadata, stores production images locally and reports failures.
+- `npm run assets:verify` checks manifest completeness, JPEG integrity, byte size and dimensions. New destination images require 2000px width; normal attraction cards require 1400px. Scarce exact imagery for Katoosa, Lutembe and Ajai has an explicit 1000px exception rather than substituting an unrelated photograph.
+- Unsplash remains the provider for the original 32-image gallery; Wikimedia Commons is the Phase 8.8 provider. Pinterest is not used for production photography.
+
+### Future Uganda tourism map (documented only)
+
+All 19 destinations and all 41 attractions now have latitude/longitude values and useful categories. A future endpoint or combined query can feed destination and attraction rows to JavaScript pins for national parks, wildlife, adventure, culture, heritage, faith, lakes, cities and museums. Phase 8.8 does not install Leaflet, Mapbox, Google Maps or OpenStreetMap UI code.
+
+### Phase 8.8 verification
+
+- Migration applied twice successfully: both runs ended at 19 destinations and 41 attractions, with zero duplicate names and zero missing coordinate pairs.
+- Preservation comparison: users stayed at 1 before/after; bookings stayed at 0 before/after; original destination IDs 1–9 remain.
+- API: health, destination list/detail, attraction list/detail and destination-attractions passed against the live local PostgreSQL database.
+- Authentication and bookings: isolated signup, login, profile fetch, destination booking creation, booking listing, cancellation and logout passed; the test account was removed afterward and database counts returned to the pre-test values.
+- JavaScript: backend check and syntax checks for all 20 frontend modules passed.
+- PWA: the attraction service was added to the app shell and the cache was advanced to `ugotour-phase8-8-v1`; API data remains network-driven.
+- Image verification must report 93/93 passing files before production delivery; the exact last run is recorded in the final Phase 8.8 handoff.

@@ -2,6 +2,7 @@ import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
+import { getAttractionsByDestinationId } from "../services/attraction-service.js";
 import { createBooking } from "../services/booking-service.js";
 import { isFutureOrToday, isValidTravellerCount } from "../utils/validation.js";
 import { resolveAssetPath } from "../utils/assets.js";
@@ -21,7 +22,26 @@ const bookingEmail = document.getElementById("booking-email");
 const bookingSubmit = document.getElementById("booking-submit");
 const bookingMessage = document.getElementById("booking-message");
 const bookingLoginNote = document.getElementById("booking-login-note");
+const experience = document.getElementById("details-experience");
+const gallery = document.getElementById("details-gallery");
+const galleryDots = document.getElementById("details-gallery-dots");
+const galleryCounter = document.getElementById("details-gallery-counter");
+const progressFill = document.getElementById("details-progress-fill");
+const backgroundLayers = [
+  document.getElementById("details-bg-a"),
+  document.getElementById("details-bg-b")
+].filter(Boolean);
+
+const AUTOPLAY_MS = 6200;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 let destination = null;
+let photos = [];
+let activePhotoIndex = 0;
+let activeBackgroundIndex = 0;
+let galleryLocked = false;
+let autoplayPaused = false;
+let autoplayTimer = null;
 
 async function initializePage() {
   prepareBookingDateInput();
@@ -36,6 +56,13 @@ async function initializePage() {
     }
 
     renderDestination(destination);
+    // Attraction data is an enhancement. Keep the destination and booking
+    // experience usable while an older local API process is still running.
+    try {
+      renderAttractions(await getAttractionsByDestinationId(destinationId));
+    } catch (error) {
+      console.warn("Attractions are not available from this API process yet.", error);
+    }
     prepareBookingIdentity();
   } catch (error) {
     console.error(error);
@@ -43,6 +70,52 @@ async function initializePage() {
     setText("details-description", error.message);
   }
 }
+
+function renderAttractions(attractions) {
+  const section = document.getElementById("details-attractions-section");
+  const list = document.getElementById("details-attractions");
+  if (!section || !list || !attractions.length) return;
+
+  section.hidden = false;
+  list.innerHTML = "";
+  attractions.forEach((attraction) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "attraction-card";
+    button.innerHTML = `
+      <img src="${escapeAttribute(resolveAssetPath(attraction.imageUrl, ".."))}" alt="${escapeAttribute(attraction.name)}" loading="lazy" />
+      <span class="attraction-card-copy">
+        <small>${escapeHtml(attraction.category)}</small>
+        <strong>${escapeHtml(attraction.name)}</strong>
+        <span>${escapeHtml(attraction.description)}</span>
+      </span>
+    `;
+    button.addEventListener("click", () => openAttraction(attraction));
+    list.appendChild(button);
+  });
+}
+
+function openAttraction(attraction) {
+  const dialog = document.getElementById("attraction-dialog");
+  const image = document.getElementById("attraction-dialog-image");
+  if (!dialog || !image) return;
+  image.src = resolveAssetPath(attraction.imageUrl, "..");
+  image.alt = attraction.name;
+  setText("attraction-dialog-category", attraction.category);
+  setText("attraction-dialog-name", attraction.name);
+  setText("attraction-dialog-location", [attraction.district, attraction.region].filter(Boolean).join(" · "));
+  setText("attraction-dialog-description", attraction.description);
+  setText("attraction-dialog-highlight", attraction.highlight || "A place worth exploring");
+  dialog.showModal();
+}
+
+document.getElementById("attraction-dialog-close")?.addEventListener("click", () => {
+  document.getElementById("attraction-dialog")?.close();
+});
+
+document.getElementById("attraction-dialog")?.addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) event.currentTarget.close();
+});
 
 function renderDestination(item) {
   document.title = `${item.name} | UgoTour`;
@@ -55,22 +128,22 @@ function renderDestination(item) {
   setText("details-best-for", item.bestFor || "Curious travellers");
   setText("details-travel-tip", item.travelTip || "Plan ahead and leave room for spontaneous discoveries.");
 
-  renderDestinationGallery(item);
+  initializeDestinationGallery(item);
 
   const activities = document.getElementById("details-activities");
   if (activities) {
     activities.innerHTML = "";
-    (item.activities || []).forEach((activity) => {
+    (item.activities || []).forEach((activity, index) => {
       const li = document.createElement("li");
-      li.textContent = activity;
+      li.innerHTML = `<span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(activity)}</strong>`;
       activities.appendChild(li);
     });
   }
 }
 
 function getDestinationPhotos(item) {
-  const gallery = Array.isArray(item.galleryImages) ? item.galleryImages : [];
-  if (gallery.length) return gallery;
+  const galleryImages = Array.isArray(item.galleryImages) ? item.galleryImages : [];
+  if (galleryImages.length) return galleryImages;
 
   return [{
     url: item.imageUrl,
@@ -79,73 +152,220 @@ function getDestinationPhotos(item) {
   }].filter((photo) => photo.url);
 }
 
-function renderDestinationGallery(item) {
-  const gallery = document.getElementById("details-gallery");
-  const photos = getDestinationPhotos(item);
+function initializeDestinationGallery(item) {
+  photos = getDestinationPhotos(item);
+  activePhotoIndex = 0;
 
   if (!photos.length) return;
 
-  setDetailsPhoto(photos[0], item, false);
+  const firstSource = resolveAssetPath(photos[0].url, "..");
+  backgroundLayers.forEach((layer, index) => {
+    layer.src = firstSource;
+    layer.classList.toggle("is-active", index === 0);
+  });
+  activeBackgroundIndex = 0;
+  updatePhotoMeta();
+  renderGalleryQueue();
+  renderGalleryDots();
+  restartAutoplay();
+}
 
+function queueIndicesFor(photoIndex) {
+  const activeOrder = Math.floor(photos.length / 2);
+  return Array.from(
+    { length: photos.length },
+    (_, order) => (photoIndex + order - activeOrder + photos.length) % photos.length
+  );
+}
+
+function createGalleryCard(photoIndex, order) {
+  const activeOrder = Math.floor(photos.length / 2);
+  const isActive = order === activeOrder;
+  const photo = photos[photoIndex];
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `details-photo-card${isActive ? " is-active" : ""}`;
+  button.dataset.photoIndex = String(photoIndex);
+  button.dataset.queueOrder = String(order);
+  button.setAttribute("role", "option");
+  button.setAttribute("aria-selected", isActive ? "true" : "false");
+  button.setAttribute("aria-label", `${isActive ? "Current" : "Show"} ${destination.name} photo ${photoIndex + 1}`);
+  button.innerHTML = `
+    <img src="${escapeAttribute(resolveAssetPath(photo.url, ".."))}" alt="" />
+    <span aria-hidden="true">${String(photoIndex + 1).padStart(2, "0")}</span>
+  `;
+
+  button.addEventListener("click", () => {
+    const direction = order < activeOrder ? -1 : 1;
+    changePhoto(photoIndex, direction);
+  });
+  return button;
+}
+
+function renderGalleryQueue() {
   if (!gallery) return;
   gallery.innerHTML = "";
-
-  photos.forEach((photo, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `details-gallery-thumb${index === 0 ? " is-active" : ""}`;
-    button.setAttribute("aria-label", `Show ${item.name} photo ${index + 1}`);
-    button.innerHTML = `<img src="${resolveAssetPath(photo.url, "..")}" alt="" loading="lazy" />`;
-
-    button.addEventListener("click", () => {
-      gallery.querySelectorAll(".details-gallery-thumb").forEach((thumb) => thumb.classList.remove("is-active"));
-      button.classList.add("is-active");
-      setDetailsPhoto(photo, item, true);
-    });
-
-    gallery.appendChild(button);
+  queueIndicesFor(activePhotoIndex).forEach((photoIndex, order) => {
+    gallery.appendChild(createGalleryCard(photoIndex, order));
   });
 }
 
-function setDetailsPhoto(photo, item, animate = true) {
-  const image = document.getElementById("details-image");
-  const credit = document.getElementById("details-photo-credit");
-  const nextSrc = resolveAssetPath(photo.url, "..");
+function renderGalleryDots() {
+  if (!galleryDots) return;
+  galleryDots.innerHTML = "";
+  photos.forEach((_, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = `details-gallery-dot${index === activePhotoIndex ? " is-active" : ""}`;
+    dot.setAttribute("aria-label", `Show photo ${index + 1}`);
+    dot.setAttribute("aria-current", index === activePhotoIndex ? "true" : "false");
+    dot.addEventListener("click", () => changePhoto(index, index > activePhotoIndex ? 1 : -1));
+    galleryDots.appendChild(dot);
+  });
+}
 
-  if (image) {
-    const swap = () => {
-      image.src = nextSrc;
-      image.alt = item.name;
-    };
+async function animateGalleryQueue(nextPhotoIndex, direction) {
+  if (!gallery) return;
+  const nextIndices = queueIndicesFor(nextPhotoIndex);
+  const oldCards = [...gallery.querySelectorAll(".details-photo-card")];
 
-    if (animate && image.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const out = image.animate(
-        [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(1.035)" }],
-        { duration: 180, easing: "ease-in", fill: "forwards" }
-      );
-
-      out.finished.then(() => {
-        swap();
-        image.animate(
-          [{ opacity: 0, transform: "scale(.985)" }, { opacity: 1, transform: "scale(1)" }],
-          { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }
-        );
-      });
-    } else {
-      swap();
-    }
+  if (reduceMotion || !oldCards.length || !Element.prototype.animate) {
+    renderGalleryQueue();
+    return;
   }
 
+  const galleryRect = gallery.getBoundingClientRect();
+  const oldState = new Map(oldCards.map((card) => [
+    Number(card.dataset.photoIndex),
+    card.getBoundingClientRect()
+  ]));
+  const ghosts = oldCards
+    .filter((card) => !nextIndices.includes(Number(card.dataset.photoIndex)))
+    .map((card) => {
+      const rect = card.getBoundingClientRect();
+      const ghost = card.cloneNode(true);
+      ghost.classList.add("details-photo-card-ghost");
+      delete ghost.dataset.queueOrder;
+      Object.assign(ghost.style, {
+        left: `${rect.left - galleryRect.left}px`,
+        top: `${rect.top - galleryRect.top}px`,
+        right: "auto",
+        bottom: "auto",
+        width: `${rect.width}px`,
+        height: `${rect.height}px`
+      });
+      ghost.setAttribute("aria-hidden", "true");
+      ghost.tabIndex = -1;
+      gallery.appendChild(ghost);
+      return ghost;
+    });
+
+  oldCards.forEach((card) => card.remove());
+  nextIndices.forEach((photoIndex, order) => gallery.appendChild(createGalleryCard(photoIndex, order)));
+
+  const animations = [];
+  gallery.querySelectorAll(".details-photo-card:not(.details-photo-card-ghost)").forEach((card) => {
+    const previousRect = oldState.get(Number(card.dataset.photoIndex));
+    if (previousRect) {
+      const nextRect = card.getBoundingClientRect();
+      animations.push(card.animate([
+        { transform: `translate3d(${previousRect.left - nextRect.left}px, ${previousRect.top - nextRect.top}px, 0)`, opacity: .82 },
+        { transform: "translate3d(0, 0, 0)", opacity: 1 }
+      ], { duration: 650, easing: "cubic-bezier(.18,.82,.2,1)" }).finished.catch(() => {}));
+    } else {
+      animations.push(card.animate([
+        { transform: `translate3d(${direction >= 0 ? 52 : -52}px, 12px, 0) scale(.92)`, opacity: 0 },
+        { transform: "translate3d(0, 0, 0) scale(1)", opacity: 1 }
+      ], { duration: 650, easing: "cubic-bezier(.18,.82,.2,1)" }).finished.catch(() => {}));
+    }
+  });
+
+  ghosts.forEach((ghost) => {
+    animations.push(ghost.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 280,
+      easing: "ease-out",
+      fill: "forwards"
+    }).finished.catch(() => {}));
+  });
+
+  await Promise.all(animations);
+  ghosts.forEach((ghost) => ghost.remove());
+}
+
+async function crossfadeBackground(photo) {
+  if (!backgroundLayers.length) return;
+  const currentLayer = backgroundLayers[activeBackgroundIndex];
+  const nextIndex = backgroundLayers.length > 1 ? (activeBackgroundIndex + 1) % backgroundLayers.length : 0;
+  const nextLayer = backgroundLayers[nextIndex];
+  const nextSource = resolveAssetPath(photo.url, "..");
+
+  if (nextLayer.src !== new URL(nextSource, window.location.href).href) nextLayer.src = nextSource;
+  try { await nextLayer.decode?.(); } catch { /* The browser can still show the source. */ }
+
+  nextLayer.classList.add("is-active");
+  currentLayer?.classList.remove("is-active");
+  activeBackgroundIndex = nextIndex;
+  if (!reduceMotion) await new Promise((resolve) => window.setTimeout(resolve, 900));
+}
+
+async function changePhoto(nextIndex, direction = 1) {
+  if (galleryLocked || photos.length < 2) return;
+  const normalized = (nextIndex + photos.length) % photos.length;
+  if (normalized === activePhotoIndex) {
+    restartAutoplay();
+    return;
+  }
+
+  galleryLocked = true;
+  activePhotoIndex = normalized;
+  renderGalleryDots();
+  updatePhotoMeta();
+  restartAutoplay();
+
+  try {
+    await Promise.all([
+      crossfadeBackground(photos[normalized]),
+      animateGalleryQueue(normalized, direction)
+    ]);
+  } finally {
+    galleryLocked = false;
+  }
+}
+
+function updatePhotoMeta() {
+  const photo = photos[activePhotoIndex];
+  if (!photo) return;
+  if (galleryCounter) galleryCounter.textContent = `${String(activePhotoIndex + 1).padStart(2, "0")} / ${String(photos.length).padStart(2, "0")}`;
+
+  const credit = document.getElementById("details-photo-credit");
   if (credit) {
-    credit.textContent = photo.credit ? `Photo: ${photo.credit} · Unsplash` : "Photo via Unsplash";
+    credit.textContent = photo.credit ? `Photo · ${photo.credit}` : `${destination.name} collection`;
     credit.href = photo.sourceUrl || "https://unsplash.com";
   }
+}
+
+function restartAutoplay() {
+  clearTimeout(autoplayTimer);
+  if (progressFill) {
+    progressFill.style.animation = "none";
+    void progressFill.offsetWidth;
+    progressFill.style.animation = autoplayPaused || reduceMotion || photos.length < 2
+      ? "none"
+      : `details-progress ${AUTOPLAY_MS}ms linear forwards`;
+  }
+  if (autoplayPaused || reduceMotion || photos.length < 2) return;
+  autoplayTimer = window.setTimeout(() => changePhoto(activePhotoIndex + 1, 1), AUTOPLAY_MS);
+}
+
+function setAutoplayPaused(paused) {
+  autoplayPaused = paused;
+  restartAutoplay();
 }
 
 function prepareBookingDateInput() {
   if (!bookingDate) return;
   const today = new Date();
-  bookingDate.min = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  bookingDate.min = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
 function prepareBookingIdentity() {
@@ -181,19 +401,34 @@ bookingForm?.addEventListener("submit", async (event) => {
   }
 });
 
-// A lightweight visual favourite toggle. It is intentionally a device-only
-// preference; account data and bookings still live on the backend.
-document.getElementById("details-favorite")?.addEventListener("click", (event) => {
-  const key = `ugotour_favourite_${destinationId}`;
-  const saved = localStorage.getItem(key) === "1";
-  localStorage.setItem(key, saved ? "0" : "1");
-  event.currentTarget.textContent = saved ? "♡" : "♥";
+const favoriteButton = document.getElementById("details-favorite");
+const favoriteKey = `ugotour_favourite_${destinationId}`;
+updateFavoriteButton(localStorage.getItem(favoriteKey) === "1");
+favoriteButton?.addEventListener("click", () => {
+  const shouldSave = localStorage.getItem(favoriteKey) !== "1";
+  localStorage.setItem(favoriteKey, shouldSave ? "1" : "0");
+  updateFavoriteButton(shouldSave);
 });
+
+function updateFavoriteButton(saved) {
+  if (!favoriteButton) return;
+  favoriteButton.textContent = saved ? "♥" : "♡";
+  favoriteButton.setAttribute("aria-pressed", saved ? "true" : "false");
+  favoriteButton.setAttribute("aria-label", saved ? "Remove saved destination" : "Save destination");
+}
+
+experience?.addEventListener("pointerenter", () => setAutoplayPaused(true));
+experience?.addEventListener("pointerleave", () => setAutoplayPaused(false));
+experience?.addEventListener("focusin", () => setAutoplayPaused(true));
+experience?.addEventListener("focusout", (event) => {
+  if (!experience.contains(event.relatedTarget)) setAutoplayPaused(false);
+});
+document.addEventListener("visibilitychange", () => setAutoplayPaused(document.hidden));
 
 function setBusy(busy) {
   if (!bookingSubmit) return;
   bookingSubmit.disabled = busy || !currentUser;
-  bookingSubmit.textContent = busy ? "Saving…" : "Save booking";
+  bookingSubmit.textContent = busy ? "Saving…" : "Save this journey";
 }
 
 function showBookingMessage(message, type) {
@@ -205,6 +440,16 @@ function showBookingMessage(message, type) {
 function setText(id, value) {
   const element = document.getElementById(id);
   if (element) element.textContent = value ?? "";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  })[character]);
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }
 
 await initializePage();

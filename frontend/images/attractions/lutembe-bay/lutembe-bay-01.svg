@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title description">
+  <title id="title">Lutembe Bay editorial card</title><desc id="description">A labeled editorial wetland graphic stating that exact licensed location photography is pending.</desc>
+  <defs><linearGradient id="g" y2="1"><stop stop-color="#173d45"/><stop offset="1" stop-color="#5f8d78"/></linearGradient></defs>
+  <rect width="1600" height="1000" fill="url(#g)"/><circle cx="1230" cy="220" r="150" fill="#f3d797" opacity=".8"/>
+  <path d="M0 590c280-110 490 100 780 0s500-20 820-80v490H0z" fill="#173229" opacity=".72"/>
+  <path d="M0 680c320-100 540 90 850-10s520-50 750-20" fill="none" stroke="#b8d4c5" stroke-width="22" opacity=".55"/>
+  <text x="110" y="760" fill="#f5f2df" font-family="Georgia,serif" font-size="108">Lutembe Bay</text>
+  <text x="114" y="840" fill="#d4e8dc" font-family="Arial,sans-serif" font-size="34" letter-spacing="7">RAMSAR WETLAND • WAKISO</text>
+  <text x="114" y="910" fill="#f5f2df" font-family="Arial,sans-serif" font-size="28">Exact reusable location photography pending</text>
+</svg>

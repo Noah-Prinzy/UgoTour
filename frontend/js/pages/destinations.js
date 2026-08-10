@@ -26,7 +26,6 @@ const destinationSummary = document.getElementById("destination-summary");
 const emptyState = document.getElementById("destination-empty-state");
 const resetButton = document.getElementById("reset-filters");
 const catalogTotal = document.getElementById("catalog-total");
-const featuredList = document.getElementById("featured-destination-list");
 const journeyPanel = document.getElementById("journey-panel");
 const journeyList = document.getElementById("journey-panel-list");
 const pageQuery = new URLSearchParams(window.location.search).get("q")?.trim() ?? "";
@@ -101,25 +100,9 @@ function renderDestinations() {
     destinationList.appendChild(card);
   });
 
-  renderFeaturedDestinations(filteredDestinations.slice(0, 3));
-
   destinationSummary.textContent = `${filteredDestinations.length} of ${destinations.length} destinations shown`;
   emptyState.hidden = filteredDestinations.length !== 0;
   destinationList.hidden = filteredDestinations.length === 0;
-}
-
-function renderFeaturedDestinations(featured) {
-  if (!featuredList) return;
-  featuredList.innerHTML = "";
-  featured.forEach((destination, index) => {
-    const card = createDestinationCard(destination, {
-      detailsPagePath: "./destination-details.html",
-      assetBasePath: ".."
-    });
-    card.classList.add("featured-destination-card");
-    card.style.setProperty("--card-order", String(index));
-    featuredList.appendChild(card);
-  });
 }
 
 async function loadJourneyPanel() {

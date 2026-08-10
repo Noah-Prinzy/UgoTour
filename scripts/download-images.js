@@ -8,17 +8,32 @@
 //   npm run assets:download
 //   npm run assets:verify
 
-import { copyFile, mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { phase88Images } from "./tourism-image-manifest.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = dirname(__dirname);
 const imagesDirectory = join(projectRoot, "frontend", "images");
 const galleryDirectory = join(imagesDirectory, "destinations");
 const manifestPath = join(galleryDirectory, ".download-manifest.json");
+const tourismManifestPath = join(imagesDirectory, "tourism-image-manifest.json");
 
-const images = [
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function fetchWithRetry(url, options, attempts = 4) {
+  let response;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    response = await fetch(url, options);
+    if (response.status !== 429) return response;
+    const retryAfter = Number(response.headers.get("retry-after"));
+    await delay(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 4000 * attempt);
+  }
+  return response;
+}
+
+const legacyImages = [
   {
     "fileName": "destinations/murchison-falls/murchison-01.jpg",
     "destination": "Murchison Falls",
@@ -277,23 +292,121 @@ const images = [
   }
 ];
 
+const images = [...legacyImages, ...phase88Images];
+
+async function resolveCommonsImage(image) {
+  const params = new URLSearchParams({
+    action: "query", format: "json", origin: "*", generator: "search",
+    gsrsearch: `${image.commonsQuery} filetype:bitmap`, gsrnamespace: "6", gsrlimit: "30",
+    prop: "imageinfo", iiprop: "url|size|mime|extmetadata", iiurlwidth: "2400"
+  });
+  await delay(900);
+  const response = await fetchWithRetry(`https://commons.wikimedia.org/w/api.php?${params}`, {
+    headers: { "User-Agent": "UgoTour/0.8.8 educational tourism image research" }
+  });
+  if (!response.ok) throw new Error(`Commons API HTTP ${response.status}`);
+  const payload = await response.json();
+  const rejectedTitle = /\b(map|logo|icon|flag|seal|diagram|poster|locator|sign|route)\b/i;
+  const candidates = Object.values(payload.query?.pages ?? {})
+    .map((page) => ({ page, info: page.imageinfo?.[0] }))
+    .filter(({ page, info }) => info?.mime === "image/jpeg" && info.width >= image.minWidth && !rejectedTitle.test(page.title))
+    .sort((a, b) => (b.info.width * b.info.height) - (a.info.width * a.info.height));
+  const selected = candidates[image.imageIndex];
+  if (!selected) throw new Error(`no suitable ${image.minWidth}px Commons JPEG found for ${image.commonsQuery}`);
+  const metadata = selected.info.extmetadata ?? {};
+  return {
+    ...image,
+    downloadUrl: selected.info.thumburl ?? selected.info.url,
+    pageUrl: selected.info.descriptionurl,
+    credit: metadata.Artist?.value?.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() || "Wikimedia Commons contributor",
+    source: "Wikimedia Commons",
+    width: selected.info.width,
+    height: selected.info.height,
+    license: metadata.LicenseShortName?.value ?? metadata.UsageTerms?.value ?? "See source page"
+  };
+}
+
 await mkdir(galleryDirectory, { recursive: true });
 
 let downloaded = 0;
 let failed = 0;
 const completedFiles = [];
+const completedRecords = [];
+let previousRecords = new Map();
+try {
+  const previousManifest = JSON.parse(await readFile(tourismManifestPath, "utf8"));
+  previousRecords = new Map(previousManifest.images.map((record) => [record.localPath, record]));
+} catch {
+  // First complete download has no generated manifest to reuse.
+}
 
 for (const image of images) {
   const target = join(imagesDirectory, image.fileName);
 
   try {
+    const knownPath = image.localPath ?? `frontend/images/${image.fileName}`;
+    const previousRecord = previousRecords.get(knownPath);
+    try {
+      const existing = await stat(target);
+      if (existing.size >= (image.editorialPlaceholder ? 1_000 : 80_000) && previousRecord) {
+        completedFiles.push(image.fileName);
+        completedRecords.push(previousRecord);
+        console.log(`Keeping verified download: ${image.fileName}`);
+        continue;
+      }
+    } catch {
+      // Missing files continue into the downloader.
+    }
+    const resolvedImage = image.editorialPlaceholder ? {
+      ...image,
+      credit: "UgoTour editorial",
+      source: "UgoTour editorial",
+      pageUrl: image.sourceUrl,
+      width: 1600,
+      height: 1000,
+      license: "Project-owned editorial artwork; not a location photograph"
+    } : image.commonsQuery ? await resolveCommonsImage(image) : {
+      ...image,
+      place: image.destination,
+      type: "destination",
+      localPath: `frontend/images/${image.fileName}`,
+      photographer: image.credit,
+      provider: image.source,
+      sourceUrl: image.pageUrl,
+      width: null,
+      height: null,
+      license: "Unsplash License"
+    };
+    try {
+      const existing = await stat(target);
+      if (existing.size >= (image.editorialPlaceholder ? 1_000 : 80_000)) {
+        completedFiles.push(image.fileName);
+        completedRecords.push({
+          place: resolvedImage.place ?? resolvedImage.destination,
+          type: resolvedImage.type,
+          localPath: resolvedImage.localPath ?? `frontend/images/${resolvedImage.fileName}`,
+          photographer: resolvedImage.credit ?? resolvedImage.photographer,
+          provider: resolvedImage.source ?? resolvedImage.provider,
+          sourceUrl: resolvedImage.pageUrl ?? resolvedImage.sourceUrl,
+          width: resolvedImage.width,
+          height: resolvedImage.height,
+          license: resolvedImage.license,
+          minWidth: resolvedImage.minWidth ?? 1400
+        });
+        console.log(`Keeping existing high-resolution file: ${image.fileName}`);
+        continue;
+      }
+    } catch {
+      // Missing files continue into the downloader.
+    }
     await mkdir(dirname(target), { recursive: true });
     console.log(`Downloading ${image.destination}: ${image.fileName}...`);
 
-    const response = await fetch(image.downloadUrl, {
+    await delay(1600);
+    const response = await fetchWithRetry(resolvedImage.downloadUrl, {
       redirect: "follow",
       headers: {
-        "User-Agent": "UgoTour/0.8.1 educational project"
+        "User-Agent": "UgoTour/0.8.8 educational project"
       }
     });
 
@@ -312,6 +425,18 @@ for (const image of images) {
     await writeFile(target, bytes);
     downloaded += 1;
     completedFiles.push(image.fileName);
+    completedRecords.push({
+      place: resolvedImage.place ?? resolvedImage.destination,
+      type: resolvedImage.type,
+      localPath: resolvedImage.localPath ?? `frontend/images/${resolvedImage.fileName}`,
+      photographer: resolvedImage.credit ?? resolvedImage.photographer,
+      provider: resolvedImage.source ?? resolvedImage.provider,
+      sourceUrl: resolvedImage.pageUrl ?? resolvedImage.sourceUrl,
+      width: resolvedImage.width,
+      height: resolvedImage.height,
+      license: resolvedImage.license,
+      minWidth: resolvedImage.minWidth ?? 1400
+    });
     console.log(`  Saved -> frontend/images/${image.fileName}`);
   } catch (error) {
     failed += 1;
@@ -334,7 +459,7 @@ try {
 }
 
 const manifest = {
-  phase: "8.1",
+  phase: "8.8",
   generatedAt: new Date().toISOString(),
   expectedCount: images.length,
   downloadedCount: completedFiles.length,
@@ -343,8 +468,13 @@ const manifest = {
 };
 
 await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+await writeFile(tourismManifestPath, `${JSON.stringify({
+  phase: "8.8",
+  generatedAt: manifest.generatedAt,
+  images: completedRecords
+}, null, 2)}\n`);
 
-console.log(`\nFinished: ${downloaded}/${images.length} high-resolution destination images downloaded.`);
+console.log(`\nFinished: ${completedFiles.length}/${images.length} high-resolution tourism images available (${downloaded} downloaded this run).`);
 if (failed) {
   console.log(`${failed} download(s) failed.`);
   console.log("Run npm run assets:download again until all images download successfully.");

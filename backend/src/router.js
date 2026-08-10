@@ -1,5 +1,6 @@
 import { URL } from "node:url";
 import { loginUser, logoutUser, signup } from "./controllers/auth-controller.js";
+import { getAttraction, listAttractions, listDestinationAttractions } from "./controllers/attraction-controller.js";
 import { deleteBooking, listBookings, postBooking } from "./controllers/booking-controller.js";
 import { getDestination, listDestinations } from "./controllers/destination-controller.js";
 import { getHealth } from "./controllers/health-controller.js";
@@ -11,6 +12,9 @@ const routes = [
   { method:"GET", pattern:/^\/health$/, handler:getHealth },
   { method:"GET", pattern:/^\/api\/destinations$/, handler:listDestinations },
   { method:"GET", pattern:/^\/api\/destinations\/(?<id>\d+)$/, handler:getDestination },
+  { method:"GET", pattern:/^\/api\/destinations\/(?<id>\d+)\/attractions$/, handler:listDestinationAttractions },
+  { method:"GET", pattern:/^\/api\/attractions$/, handler:listAttractions },
+  { method:"GET", pattern:/^\/api\/attractions\/(?<id>\d+)$/, handler:getAttraction },
   { method:"POST", pattern:/^\/api\/auth\/signup$/, handler:signup },
   { method:"POST", pattern:/^\/api\/auth\/login$/, handler:loginUser },
   { method:"POST", pattern:/^\/api\/auth\/logout$/, handler:logoutUser },

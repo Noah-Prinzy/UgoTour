@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-7-v3";
+const CACHE_NAME = "ugotour-phase8-8-v1";
 
 const APP_SHELL = [
   "./",
@@ -19,6 +19,7 @@ const APP_SHELL = [
   "./js/services/session-guard.js",
   "./js/services/booking-service.js",
   "./js/services/destination-service.js",
+  "./js/services/attraction-service.js",
   "./js/utils/validation.js",
   "./js/utils/assets.js",
   "./js/pages/destinations.js",

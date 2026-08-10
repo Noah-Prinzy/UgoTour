@@ -22,6 +22,7 @@ function mapDestination(row) {
     name: row.name,
     category: row.category,
     region: row.region,
+    district: row.district,
     description: row.description,
     highlight: row.highlight,
     activities: row.activities ?? [],
@@ -32,6 +33,8 @@ function mapDestination(row) {
     photoCredit: row.photo_credit ?? galleryImages[0]?.credit ?? null,
     photoSourceUrl: row.photo_source_url ?? galleryImages[0]?.sourceUrl ?? null,
     galleryImages,
+    latitude: row.latitude === null ? null : Number(row.latitude),
+    longitude: row.longitude === null ? null : Number(row.longitude),
     createdAt: row.created_at
   };
 }
@@ -41,6 +44,7 @@ const destinationColumns = `
   name,
   category,
   region,
+  district,
   description,
   highlight,
   activities,
@@ -51,6 +55,8 @@ const destinationColumns = `
   photo_credit,
   photo_source_url,
   gallery_images,
+  latitude,
+  longitude,
   created_at
 `;
 

@@ -8,10 +8,10 @@
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
-  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/main.css?v=8.8.2" />
+  <link rel="stylesheet" href="../css/components.css?v=8.8.2" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.8.2" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.8.2" />
   <meta name="description" content="Explore a UgoTour destination and create a booking." />
   <title>Destination Details | UgoTour</title>
 </head>
@@ -19,50 +19,101 @@
   <header id="site-header"></header>
   <main>
     <section id="destination-details-shell" class="details-shell">
-      <div class="details-visual">
-        <img id="details-image" class="details-visual-image" src="" alt="" />
-        <a class="details-back-button" href="./destinations.html" aria-label="Back to destinations">←</a>
-        <button id="details-favorite" class="details-favorite-button" type="button" aria-label="Save destination">♡</button>
-        <div id="details-gallery" class="details-gallery" aria-label="Destination photo gallery"></div>
-        <div class="details-visual-copy">
-          <span id="details-category" class="tag"></span>
-          <h1 id="details-name" class="details-title">Loading destination…</h1>
-          <p id="details-region" class="details-visual-region"></p>
-        </div>
-        <a id="details-photo-credit" class="photo-credit" href="#" target="_blank" rel="noreferrer">Photo via Unsplash</a>
-      </div>
+      <div id="details-experience" class="details-experience">
+        <img id="details-bg-a" class="details-experience-bg is-active" src="" alt="" aria-hidden="true" />
+        <img id="details-bg-b" class="details-experience-bg" src="" alt="" aria-hidden="true" />
+        <div class="details-experience-shade" aria-hidden="true"></div>
+        <div class="details-experience-progress" aria-hidden="true"><span id="details-progress-fill"></span></div>
 
-      <div class="details-content-grid">
-        <div class="details-main">
-          <p id="details-description" class="details-description"></p>
-          <div class="details-highlight"><span>Experience highlight</span><strong id="details-highlight"></strong></div>
-          <div class="details-info-grid">
-            <article class="details-info-card"><span>Suggested stay</span><strong id="details-days"></strong></article>
-            <article class="details-info-card"><span>Best for</span><strong id="details-best-for"></strong></article>
+        <a class="details-back-button" href="./destinations.html" aria-label="Back to destinations">&larr;</a>
+        <button id="details-favorite" class="details-favorite-button" type="button" aria-label="Save destination" aria-pressed="false">&#9825;</button>
+
+        <div class="details-experience-stage">
+          <div class="details-destination-column">
+            <div id="details-copy" class="details-experience-copy">
+              <p class="details-overline"><span id="details-category"></span><span aria-hidden="true">/</span><span id="details-region"></span></p>
+              <h1 id="details-name" class="details-title">Loading destination&hellip;</h1>
+              <p id="details-description" class="details-description"></p>
+            </div>
+
+            <div class="details-info-console">
+              <header class="details-highlight-line">
+                <span>Experience highlight</span>
+                <strong id="details-highlight">Explore the destination</strong>
+              </header>
+
+              <div class="details-story-facts" aria-label="Trip overview">
+                <div><span>Suggested stay</span><strong id="details-days"></strong></div>
+                <div><span>Best for</span><strong id="details-best-for"></strong></div>
+              </div>
+
+              <section class="details-activities" aria-labelledby="activities-heading">
+                <div class="details-compact-heading">
+                  <span class="details-section-number" aria-hidden="true">01</span>
+                  <h2 id="activities-heading">Things worth doing</h2>
+                </div>
+                <ul id="details-activities" class="activity-list"></ul>
+              </section>
+
+              <section id="details-attractions-section" class="details-attractions-section" aria-labelledby="attractions-heading" hidden>
+                <div class="details-compact-heading">
+                  <span class="details-section-number" aria-hidden="true">02</span>
+                  <h2 id="attractions-heading">Places to explore</h2>
+                </div>
+                <div id="details-attractions" class="attraction-card-grid"></div>
+              </section>
+
+              <section class="travel-tip">
+                <span class="details-section-number" aria-hidden="true">03</span>
+                <div><span>UgoTour field note</span><p id="details-travel-tip"></p></div>
+              </section>
+            </div>
           </div>
-          <section class="details-subsection" aria-labelledby="activities-heading">
-            <p class="section-kicker">Things to experience</p><h2 id="activities-heading">Activities</h2>
-            <ul id="details-activities" class="activity-list"></ul>
-          </section>
-          <section class="travel-tip"><span>UgoTour planning note</span><p id="details-travel-tip"></p></section>
+
+          <div class="details-photo-orbit">
+            <p class="details-orbit-label">Through the lens</p>
+            <div id="details-gallery" class="details-gallery" role="listbox" aria-label="Destination photo gallery"></div>
+            <div id="details-gallery-dots" class="details-gallery-dots" aria-label="Select a destination photo"></div>
+            <div class="details-gallery-meta">
+              <span id="details-gallery-counter">01 / 01</span>
+              <span>Destination collection</span>
+            </div>
+          </div>
+
+          <aside class="booking-panel" aria-labelledby="booking-heading">
+            <div class="booking-panel-heading">
+              <span class="booking-panel-number">04</span>
+              <div><p class="section-kicker">Plan your visit</p><h2 id="booking-heading">Make the journey real.</h2></div>
+            </div>
+            <p class="booking-panel-copy">Choose your date and travel party. We will keep the trip with your UgoTour account.</p>
+            <p id="booking-login-note" class="form-message form-message-error" hidden>You need to <a href="./login.html"><strong>login</strong></a> before booking.</p>
+            <form id="booking-form" class="booking-form" novalidate>
+              <label><span>Full name</span><input id="booking-name" name="name" type="text" autocomplete="name" /></label>
+              <label><span>Email</span><input id="booking-email" name="email" type="email" autocomplete="email" /></label>
+              <label><span>Travel date</span><input id="booking-date" name="travelDate" type="date" /></label>
+              <label><span>Travellers</span><input id="booking-travellers" name="travellers" type="number" min="1" max="20" value="1" /></label>
+              <button id="booking-submit" class="primary-button" type="submit">Save this journey</button>
+              <p id="booking-message" class="form-message" aria-live="polite"></p>
+            </form>
+          </aside>
         </div>
 
-        <aside class="booking-panel" aria-labelledby="booking-heading">
-          <p class="section-kicker">Plan your visit</p><h2 id="booking-heading">Book this escape</h2>
-          <p class="booking-panel-copy">Choose a travel date and group size. Your booking is attached to your logged-in UgoTour account.</p>
-          <p id="booking-login-note" class="form-message form-message-error" hidden>You need to <a href="./login.html"><strong>login</strong></a> before booking.</p>
-          <form id="booking-form" class="booking-form" novalidate>
-            <label><span>Full name</span><input id="booking-name" name="name" type="text" autocomplete="name" /></label>
-            <label><span>Email</span><input id="booking-email" name="email" type="email" autocomplete="email" /></label>
-            <label><span>Travel date</span><input id="booking-date" name="travelDate" type="date" /></label>
-            <label><span>Travellers</span><input id="booking-travellers" name="travellers" type="number" min="1" max="20" value="1" /></label>
-            <button id="booking-submit" class="primary-button" type="submit">Save booking</button>
-            <p id="booking-message" class="form-message" aria-live="polite"></p>
-          </form>
-        </aside>
+        <a id="details-photo-credit" class="photo-credit" href="#" target="_blank" rel="noreferrer">Destination photo</a>
       </div>
     </section>
   </main>
+
+  <dialog id="attraction-dialog" class="attraction-dialog" aria-labelledby="attraction-dialog-name">
+    <button id="attraction-dialog-close" class="attraction-dialog-close" type="button" aria-label="Close attraction details">&times;</button>
+    <img id="attraction-dialog-image" src="" alt="" />
+    <div class="attraction-dialog-copy">
+      <p id="attraction-dialog-category" class="section-kicker"></p>
+      <h2 id="attraction-dialog-name"></h2>
+      <p id="attraction-dialog-location" class="attraction-dialog-location"></p>
+      <p id="attraction-dialog-description"></p>
+      <strong id="attraction-dialog-highlight"></strong>
+    </div>
+  </dialog>
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/destination-details.js"></script>
 </body>
