@@ -586,7 +586,7 @@ async function initialize() {
 
     if (grid) {
       grid.innerHTML = "";
-      destinations.slice(0, 6).forEach((destination) => {
+      destinations.slice(0, 3).forEach((destination) => {
         grid.appendChild(createDestinationCard(destination, {
           detailsPagePath: "./pages/destination-details.html",
           assetBasePath: "."

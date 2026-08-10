@@ -1086,13 +1086,13 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-A healthy Phase 8.4 response from `/health` reports:
+A healthy Phase 8.5 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": "8.4",
+  "phase": "8.5",
   "database": "connected"
 }
 ```
@@ -1118,6 +1118,31 @@ When the frontend is served from **localhost** or a deployed **HTTPS** address,
 supported browsers can offer installation. UgoTour includes
 `manifest.webmanifest`, `service-worker.js`, app icons, theme colors and an
 install button that appears when the browser exposes the install prompt.
+
+
+## 13.6 Phase 8.5 — cross-page visual consistency
+
+Phase 8.5 keeps the Home fullscreen hero and one-gesture handoff intact, while
+bringing the rest of UgoTour into the same image-led visual system.
+
+- Home **More to Discover** now renders only three destination cards; the
+  existing **View all destinations** action opens the complete catalog.
+- Destinations now opens with a full-width photographic hero and lifts the
+  searchable/filterable catalog into a cream content surface below it.
+- Bookings receives an immersive Lake Bunyonyi hero and keeps the PostgreSQL
+  itinerary cards and cancellation flow unchanged underneath.
+- Profile receives a Bwindi hero plus a live identity pill that mirrors the
+  logged-in user's name, email and uploaded profile picture.
+- Login and Sign Up now use photographic top heroes with a focused form surface
+  that overlaps the bottom edge, replacing the older split-screen treatment.
+- Destination Details keeps its dynamic database-selected gallery but the lead
+  photograph is now full-bleed across the top of the viewport, with the existing
+  overview and booking panel lifted over its lower edge.
+- Desktop floating navigation, mobile bottom navigation, typography, spacing,
+  shadows, cream surfaces and forest tones are now consistent across pages.
+
+No PostgreSQL migration is required for Phase 8.5. It is a frontend visual
+consistency pass plus a small profile display synchronization update.
 
 ---
 
@@ -1155,7 +1180,7 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 / 8.4 visual
+The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 / 8.4 / 8.5 visual
 and motion system. Phase 9 should focus on **production readiness and
 deployment**, including:
 

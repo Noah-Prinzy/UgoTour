@@ -2,17 +2,17 @@
 
 UgoTour is a JavaScript-first Uganda tourism **Progressive Web App (PWA)** for desktop and mobile browsers.
 
-## Phase 8.4 highlights
+## Phase 8.5 highlights
 
-- One deliberate mouse-wheel, trackpad, touch-swipe or keyboard gesture triggers the complete fullscreen Hero -> Search transition
-- No more pixel-by-pixel scroll-linked fading
-- Hero image/UI fades and lifts while the Search/content surface rises and softly settles into place
-- Reverse upward gesture plays the full transition back to the fullscreen hero
-- Short post-transition momentum guard keeps trackpads from scrolling past the snapped Search section
-- Exactly three complete upcoming destination cards remain synchronized with the fullscreen destination queue
-- Existing background crossfades, destination galleries, profile pictures, bookings, authentication and PWA support retained
-- PWA cache advanced to Phase 8.4
-- One cumulative guide: `docs/PROJECT_PROGRESS.md`
+- Home fullscreen hero, one-gesture Hero ↔ Search handoff and three-card destination queue remain intact
+- Home **More to Discover** now shows only three featured destination cards; **View all destinations** opens the full catalog
+- Destinations, Bookings, Profile, Login and Sign Up now open with wide photographic heroes that match the Home visual language
+- Destination Details now uses its dynamic destination image/gallery as a full-bleed top hero
+- Profile hero mirrors the logged-in user's profile picture, name and email while preserving the existing upload/edit flow
+- Existing PostgreSQL data, authentication, bookings, destination galleries and REST API behavior are preserved
+- Shared responsive typography, cream surfaces, forest tones, floating navigation and mobile bottom navigation now feel consistent across the app
+- PWA cache advanced to Phase 8.5
+- One cumulative guide remains at `docs/PROJECT_PROGRESS.md`
 
 ## Images
 
@@ -25,7 +25,7 @@ npm run assets:verify
 
 ## Database
 
-Phase 8.4 adds no migration. If migrations 004 and 005 are already applied, no database command is required for this sub-phase.
+Phase 8.5 adds **no new migration**. If migrations 004 and 005 are already applied, no database command is required for this UI sub-phase.
 
 ## Run
 
@@ -36,4 +36,4 @@ npm run db:test
 npm start
 ```
 
-Then open `frontend/index.html` using VS Code Live Server. If the PWA was already open, reload once so the new Phase 8.4 service-worker cache takes over.
+Then open `frontend/index.html` using VS Code Live Server. If the PWA was already open, use a hard refresh once (`Ctrl + Shift + R`) so the new Phase 8.5 service-worker cache takes over.

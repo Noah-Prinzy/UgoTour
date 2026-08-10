@@ -15,56 +15,70 @@
   <meta name="description" content="Manage your UgoTour profile and profile picture." />
   <title>Profile | UgoTour</title>
 </head>
-<body>
+<body class="visual-page profile-page">
   <header id="site-header"></header>
-  <main class="section-shell page-shell profile-page-shell">
-    <section class="profile-hero">
-      <div><p class="section-kicker">Account</p><h1 class="page-title">Your travel identity.</h1></div>
-      <p>Keep your account details and profile photo ready for every UgoTour session.</p>
-    </section>
-
-    <section id="profile-logged-out" class="profile-logged-out" hidden>
-      <h2>You are not logged in.</h2><p>Login or create an account to manage your profile.</p>
-      <div class="profile-empty-actions"><a class="primary-button" href="./login.html">Login</a> <a class="secondary-button" href="./signup.html">Create account</a></div>
-    </section>
-
-    <section id="profile-logged-in" class="profile-layout" hidden>
-      <aside class="profile-summary-card">
-        <div class="profile-photo-shell">
-          <div id="profile-avatar" class="profile-avatar">UG</div>
-          <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Choose profile picture">✦</button>
-          <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+  <main>
+    <section class="page-visual-hero page-visual-hero--profile" aria-labelledby="profile-hero-title">
+      <img class="page-visual-hero-media" src="../images/destinations/bwindi/bwindi-01.jpg" alt="Bwindi forest landscape" />
+      <div class="page-visual-hero-shade" aria-hidden="true"></div>
+      <div class="page-visual-hero-inner profile-visual-hero-inner">
+        <div class="page-visual-hero-copy">
+          <p class="page-visual-kicker">Your UgoTour identity</p>
+          <h1 id="profile-hero-title">Travel feels better when it is yours.</h1>
+          <p>Keep your identity, profile photo and account settings ready for every journey you plan.</p>
         </div>
-        <div class="profile-photo-controls">
-          <button id="profile-photo-save" type="button" disabled>Save photo</button>
-          <button id="profile-photo-remove" type="button">Remove</button>
+        <div class="profile-hero-identity" aria-live="polite">
+          <div id="profile-hero-avatar" class="profile-hero-avatar">UG</div>
+          <div><strong id="profile-hero-name">Your profile</strong><span id="profile-hero-email">Login to personalise UgoTour</span></div>
         </div>
-        <p id="profile-photo-message" class="form-message" aria-live="polite"></p>
-        <h2 id="profile-display-name">UgoTour User</h2><p id="profile-display-email">user@example.com</p>
-        <div class="profile-meta-row"><span>Member since</span><strong id="profile-member-since">—</strong></div>
-        <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
-      </aside>
-
-      <div class="profile-settings-column">
-        <section class="profile-settings-card">
-          <p class="section-kicker">Personal details</p><h2>Edit profile</h2><p>Change the name and email stored with your PostgreSQL user record.</p>
-          <form id="profile-form" class="starter-form profile-form">
-            <label>Full name<input id="profile-name" type="text" autocomplete="name" required /></label>
-            <label>Email<input id="profile-email" type="email" autocomplete="email" required /></label>
-            <button class="primary-button" type="submit">Save profile</button><p id="profile-message" class="form-message" aria-live="polite"></p>
-          </form>
-        </section>
-        <section class="profile-settings-card">
-          <p class="section-kicker">Security</p><h2>Change password</h2><p>Your current password is verified on the backend before the secure hash is replaced.</p>
-          <form id="password-form" class="starter-form profile-form">
-            <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
-            <label>New password<input id="new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-            <label>Confirm new password<input id="confirm-new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-            <button class="secondary-button" type="submit">Change password</button><p id="password-message" class="form-message" aria-live="polite"></p>
-          </form>
-        </section>
       </div>
+      <a class="page-hero-scroll-cue" href="#profile-account-content"><span>Manage profile</span><span>↓</span></a>
     </section>
+
+    <div id="profile-account-content" class="section-shell page-after-hero profile-account-content">
+      <section id="profile-logged-out" class="profile-logged-out" hidden>
+        <p class="section-kicker">Account</p><h2>You are not logged in.</h2><p>Login or create an account to manage your profile, photo and travel identity.</p>
+        <div class="profile-empty-actions"><a class="primary-button" href="./login.html">Login</a> <a class="secondary-button" href="./signup.html">Create account</a></div>
+      </section>
+
+      <section id="profile-logged-in" class="profile-layout" hidden>
+        <aside class="profile-summary-card">
+          <div class="profile-photo-shell">
+            <div id="profile-avatar" class="profile-avatar">UG</div>
+            <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Choose profile picture">✦</button>
+            <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+          </div>
+          <div class="profile-photo-controls">
+            <button id="profile-photo-save" type="button" disabled>Save photo</button>
+            <button id="profile-photo-remove" type="button">Remove</button>
+          </div>
+          <p id="profile-photo-message" class="form-message" aria-live="polite"></p>
+          <h2 id="profile-display-name">UgoTour User</h2><p id="profile-display-email">user@example.com</p>
+          <div class="profile-meta-row"><span>Member since</span><strong id="profile-member-since">—</strong></div>
+          <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
+        </aside>
+
+        <div class="profile-settings-column">
+          <section class="profile-settings-card">
+            <p class="section-kicker">Personal details</p><h2>Edit profile</h2><p>Change the name and email stored with your PostgreSQL user record.</p>
+            <form id="profile-form" class="starter-form profile-form">
+              <label>Full name<input id="profile-name" type="text" autocomplete="name" required /></label>
+              <label>Email<input id="profile-email" type="email" autocomplete="email" required /></label>
+              <button class="primary-button" type="submit">Save profile</button><p id="profile-message" class="form-message" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="profile-settings-card">
+            <p class="section-kicker">Security</p><h2>Change password</h2><p>Your current password is verified on the backend before the secure hash is replaced.</p>
+            <form id="password-form" class="starter-form profile-form">
+              <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
+              <label>New password<input id="new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+              <label>Confirm new password<input id="confirm-new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+              <button class="secondary-button" type="submit">Change password</button><p id="password-message" class="form-message" aria-live="polite"></p>
+            </form>
+          </section>
+        </div>
+      </section>
+    </div>
   </main>
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/profile.js"></script>

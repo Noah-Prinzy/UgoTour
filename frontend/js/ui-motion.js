@@ -1,5 +1,5 @@
 // ============================================================
-// PHASE 8.1 SHARED UI MOTION SYSTEM
+// PHASE 8.5 SHARED UI MOTION SYSTEM
 // ============================================================
 // The supplied travel-website video uses staged entrance motion, lifted cards,
 // restrained parallax-like movement and smooth continuity between states.
@@ -9,10 +9,16 @@
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const revealSelectors = [
+  ".page-visual-hero-copy > *",
+  ".hero-metric",
+  ".hero-feature-pills > *",
+  ".profile-hero-identity",
   ".catalog-hero > *",
   ".catalog-controls",
   ".catalog-heading-row",
   ".destination-card",
+  ".details-visual-copy > *",
+  ".details-gallery-thumb",
   ".details-content-grid > *",
   ".details-info-card",
   ".booking-card",

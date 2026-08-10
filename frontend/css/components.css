@@ -1853,3 +1853,277 @@ html.home-handoff-running body {
     will-change: auto;
   }
 }
+
+/* ========================================================================== */
+/* PHASE 8.5 — CROSS-PAGE VISUAL CONSISTENCY                                  */
+/* ========================================================================== */
+
+/* Non-Home pages now share the same immersive, image-led opening language as
+   the Home hero while keeping every page's existing JavaScript functionality. */
+.visual-page #site-header {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+}
+
+.visual-page .site-nav {
+  background: rgba(251, 250, 246, .86);
+  border-color: rgba(255, 255, 255, .62);
+  box-shadow: 0 14px 48px rgba(8, 14, 7, .18);
+}
+
+.page-visual-hero {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  height: 72svh;
+  min-height: 600px;
+  overflow: hidden;
+  display: flex;
+  align-items: end;
+  color: var(--white);
+  background: var(--forest-950);
+}
+
+.page-visual-hero--auth { height: 64vh; height: 64svh; min-height: 560px; }
+.page-visual-hero--profile { height: 68vh; height: 68svh; min-height: 590px; }
+
+.page-visual-hero-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.015);
+  animation: page-hero-breathe 14s ease-in-out infinite alternate;
+}
+
+.page-visual-hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(9,15,8,.88) 0%, rgba(9,15,8,.58) 43%, rgba(9,15,8,.13) 76%),
+    linear-gradient(0deg, rgba(9,15,8,.66) 0%, rgba(9,15,8,.06) 58%);
+}
+
+.page-visual-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: min(var(--page-width), calc(100% - 40px));
+  margin-inline: auto;
+  padding: 150px 0 72px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.page-visual-hero-copy { max-width: 810px; }
+.page-visual-kicker {
+  margin: 0 0 14px;
+  color: rgba(233, 238, 223, .76);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.page-visual-hero h1 {
+  max-width: 900px;
+  margin: 0;
+  font-size: clamp(3.8rem, 7.3vw, 7.9rem);
+  line-height: .88;
+  letter-spacing: -.073em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+.page-visual-hero-copy > p:last-child {
+  max-width: 650px;
+  margin: 24px 0 0;
+  color: rgba(255,255,255,.72);
+  font-size: clamp(.92rem, 1.2vw, 1.04rem);
+  line-height: 1.72;
+}
+
+.hero-metric {
+  flex: 0 0 150px;
+  min-height: 150px;
+  display: grid;
+  align-content: end;
+  gap: 5px;
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 28px;
+  background: rgba(12,19,10,.2);
+  backdrop-filter: blur(16px);
+}
+.hero-metric strong { font-size: 3.2rem; line-height: .9; letter-spacing: -.06em; }
+.hero-metric span { color: rgba(255,255,255,.68); font-size: .7rem; font-weight: 700; }
+
+.page-hero-scroll-cue {
+  position: absolute;
+  z-index: 3;
+  right: max(24px, calc((100vw - var(--page-width)) / 2));
+  bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255,255,255,.68);
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+.page-hero-scroll-cue span:last-child { animation: scroll-cue-bob 1.5s ease-in-out infinite; }
+
+.page-after-hero {
+  position: relative;
+  z-index: 5;
+  margin-top: -34px;
+  border-radius: 38px 38px 0 0;
+  background: var(--cream-100);
+  box-shadow: 0 -28px 70px rgba(13,20,11,.16);
+}
+
+.section-lead {
+  max-width: 690px;
+  margin: -8px 0 30px;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.catalog-controls-elevated {
+  padding: 18px;
+  border: 1px solid rgba(23,33,20,.08);
+  border-radius: 26px;
+  background: rgba(255,255,255,.72);
+  box-shadow: var(--shadow-card);
+}
+
+.bookings-content-shell { min-height: 520px; }
+
+/* Authentication becomes a photographic opening plus a calm focused form,
+   instead of a separate split-screen visual language. */
+.auth-content-wrap {
+  width: min(780px, calc(100% - 40px));
+  margin-inline: auto;
+  padding: 0 0 90px;
+  background: transparent;
+  box-shadow: none;
+}
+.auth-form-panel--standalone {
+  position: relative;
+  z-index: 5;
+  margin-top: -82px;
+  padding: 46px;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 34px;
+  background: rgba(251,250,246,.96);
+  box-shadow: 0 28px 80px rgba(15,24,13,.18);
+  backdrop-filter: blur(20px);
+}
+.hero-feature-pills {
+  max-width: 330px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.hero-feature-pills span {
+  padding: 10px 13px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(12,18,10,.24);
+  color: rgba(255,255,255,.82);
+  backdrop-filter: blur(12px);
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+/* Profile identity is visible immediately in the hero and mirrors the same
+   profile picture saved through the existing API. */
+.profile-visual-hero-inner { align-items: end; }
+.profile-hero-identity {
+  min-width: 285px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px 14px 14px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 999px;
+  background: rgba(11,18,10,.26);
+  backdrop-filter: blur(16px);
+}
+.profile-hero-avatar {
+  width: 60px;
+  height: 60px;
+  flex: 0 0 60px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,.72);
+  border-radius: 50%;
+  background: var(--forest-800);
+  color: var(--white);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.profile-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-hero-identity strong,
+.profile-hero-identity span { display: block; }
+.profile-hero-identity strong { font-size: .9rem; }
+.profile-hero-identity span { margin-top: 3px; color: rgba(255,255,255,.63); font-size: .68rem; }
+.profile-account-content { min-height: 500px; }
+.profile-logged-out { max-width: 720px; margin-inline: auto; padding: 48px; border-radius: 30px; background: white; box-shadow: var(--shadow-card); }
+.profile-logged-out h2 { margin: 8px 0 12px; font-size: clamp(2rem,4vw,3.2rem); letter-spacing:-.05em; }
+
+/* Destination Details already loads the correct destination photo dynamically.
+   Phase 8.5 simply lets that existing visual occupy the full top width. */
+.details-page .details-shell {
+  width: 100%;
+  margin: 0;
+}
+.details-page .details-visual {
+  height: 78vh;
+  height: 78svh;
+  min-height: 640px;
+  border-radius: 0;
+}
+.details-page .details-visual::after {
+  background:
+    linear-gradient(90deg, rgba(9,15,8,.54), transparent 62%),
+    linear-gradient(0deg, rgba(9,15,8,.83), rgba(9,15,8,.04) 64%);
+}
+.details-page .details-visual-copy {
+  width: min(var(--page-width), calc(100% - 40px));
+  left: 50%;
+  right: auto;
+  bottom: 70px;
+  transform: translateX(-50%);
+}
+.details-page .details-title {
+  max-width: 900px;
+  font-size: clamp(4rem, 8vw, 8rem);
+  line-height: .86;
+  letter-spacing: -.075em;
+}
+.details-page .details-back-button { top: 112px; left: max(20px, calc((100vw - var(--page-width)) / 2)); }
+.details-page .details-favorite-button { top: 112px; right: max(20px, calc((100vw - var(--page-width)) / 2)); }
+.details-page .details-gallery { left: max(20px, calc((100vw - var(--page-width)) / 2)); top: 190px; }
+.details-page .photo-credit { right: max(20px, calc((100vw - var(--page-width)) / 2)); bottom: 28px; }
+.details-page .details-content-grid {
+  width: min(var(--page-width), calc(100% - 40px));
+  margin: -38px auto 0;
+  position: relative;
+  z-index: 6;
+}
+
+/* Home content: the current hero/scroll choreography is deliberately untouched.
+   Only the More to Discover grid is constrained in JavaScript to three cards. */
+.page-home .section-heading .secondary-button { white-space: nowrap; }
+
+@keyframes page-hero-breathe {
+  from { transform: scale(1.015); }
+  to { transform: scale(1.06); }
+}

@@ -573,3 +573,74 @@
 @media (max-height: 720px) and (max-width: 820px) {
   .journey-scroll-cue { display: none; }
 }
+
+/* ========================================================================== */
+/* PHASE 8.5 RESPONSIVE PAGE HERO CONSISTENCY                                 */
+/* ========================================================================== */
+@media (max-width: 900px) {
+  .page-visual-hero-inner {
+    align-items: start;
+    flex-direction: column;
+    justify-content: end;
+    padding-bottom: 62px;
+  }
+  .page-visual-hero h1 { font-size: clamp(3.6rem, 10vw, 6.7rem); }
+  .hero-metric { min-height: 100px; min-width: 150px; align-self: flex-end; position: absolute; right: 0; top: 128px; }
+  .hero-feature-pills { justify-content: flex-start; max-width: 100%; }
+  .profile-hero-identity { align-self: flex-start; }
+}
+
+@media (max-width: 720px) {
+  .visual-page #site-header { padding-top: 10px; }
+  .page-visual-hero,
+  .page-visual-hero--auth,
+  .page-visual-hero--profile {
+    height: 74vh;
+    height: 74svh;
+    min-height: 590px;
+  }
+  .page-visual-hero-shade {
+    background: linear-gradient(0deg, rgba(8,14,7,.91) 0%, rgba(8,14,7,.54) 48%, rgba(8,14,7,.15) 82%);
+  }
+  .page-visual-hero-inner {
+    width: calc(100% - 36px);
+    padding: 112px 0 66px;
+    gap: 18px;
+  }
+  .page-visual-hero h1 { font-size: clamp(3.2rem, 14vw, 5.35rem); }
+  .page-visual-hero-copy > p:last-child { margin-top: 17px; font-size: .84rem; line-height: 1.58; }
+  .hero-metric {
+    top: 102px;
+    right: 0;
+    min-height: 88px;
+    min-width: 112px;
+    padding: 14px;
+    border-radius: 20px;
+  }
+  .hero-metric strong { font-size: 2.25rem; }
+  .page-hero-scroll-cue { right: 18px; bottom: 18px; }
+  .page-after-hero { margin-top: -28px; border-radius: 28px 28px 0 0; }
+  .catalog-section.page-after-hero,
+  .bookings-content-shell.page-after-hero,
+  .profile-account-content.page-after-hero { width: 100%; padding-inline: 18px; }
+  .auth-content-wrap { width: calc(100% - 24px); }
+  .auth-form-panel--standalone { margin-top: -52px; padding: 30px 22px 36px; border-radius: 28px; }
+  .hero-feature-pills span:nth-child(n+3) { display: none; }
+  .profile-hero-identity { min-width: 0; max-width: 100%; padding: 10px 14px 10px 10px; }
+  .profile-hero-avatar { width: 48px; height: 48px; flex-basis: 48px; }
+  .details-page .details-visual { height: 78vh; height: 78svh; min-height: 600px; border-radius: 0; }
+  .details-page .details-visual-copy { width: calc(100% - 36px); bottom: 56px; }
+  .details-page .details-title { font-size: clamp(3.4rem, 15vw, 5.8rem); }
+  .details-page .details-back-button,
+  .details-page .details-favorite-button { top: 90px; }
+  .details-page .details-gallery { top: auto; left: 18px; right: 18px; bottom: 156px; }
+  .details-page .details-content-grid { width: calc(100% - 20px); margin-top: -24px; }
+}
+
+@media (max-width: 440px) {
+  .page-visual-hero h1 { font-size: clamp(2.95rem, 14.5vw, 4.6rem); }
+  .hero-metric { display: none; }
+  .page-visual-hero-copy { padding-right: 0; }
+  .page-hero-scroll-cue span:first-child { display: none; }
+  .profile-hero-identity { width: 100%; }
+}
