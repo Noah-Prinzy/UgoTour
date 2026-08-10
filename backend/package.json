@@ -1,14 +1,15 @@
 {
   "name": "ugotour-backend",
-  "version": "0.8.8",
+  "version": "0.8.9",
   "private": true,
   "type": "module",
   "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL destinations, attractions, bookings and map-ready tourism data",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check": "node --check src/server.js && node --check src/router.js && node --check src/controllers/attraction-controller.js && node --check src/controllers/auth-controller.js && node --check src/controllers/booking-controller.js && node --check src/controllers/destination-controller.js && node --check src/controllers/health-controller.js && node --check src/controllers/profile-controller.js && node --check src/middleware/auth.js && node --check src/services/attraction-service.js && node --check src/services/auth-service.js && node --check src/services/booking-service.js && node --check src/services/destination-service.js && node --check src/services/user-service.js && node --check src/database/connection.js && node --check src/database/test-connection.js",
-    "db:test": "node src/database/test-connection.js"
+    "check": "node --check src/server.js && node --check src/router.js && node --check src/controllers/attraction-controller.js && node --check src/controllers/auth-controller.js && node --check src/controllers/booking-controller.js && node --check src/controllers/destination-controller.js && node --check src/controllers/health-controller.js && node --check src/controllers/map-controller.js && node --check src/controllers/profile-controller.js && node --check src/middleware/auth.js && node --check src/services/attraction-service.js && node --check src/services/auth-service.js && node --check src/services/booking-service.js && node --check src/services/destination-service.js && node --check src/services/map-service.js && node --check src/services/user-service.js && node --check src/database/connection.js && node --check src/database/test-connection.js && node --check src/database/verify-map-data.js",
+    "db:test": "node src/database/test-connection.js",
+    "map:verify": "node src/database/verify-map-data.js"
   },
   "dependencies": {
     "pg": "^8.16.3"

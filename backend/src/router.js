@@ -4,6 +4,7 @@ import { getAttraction, listAttractions, listDestinationAttractions } from "./co
 import { deleteBooking, listBookings, postBooking } from "./controllers/booking-controller.js";
 import { getDestination, listDestinations } from "./controllers/destination-controller.js";
 import { getHealth } from "./controllers/health-controller.js";
+import { listMapLocations } from "./controllers/map-controller.js";
 import { getProfile, patchPassword, patchProfile, patchProfilePhoto } from "./controllers/profile-controller.js";
 import { applyCors } from "./middleware/cors.js";
 import { sendJson } from "./utils/http.js";
@@ -15,6 +16,7 @@ const routes = [
   { method:"GET", pattern:/^\/api\/destinations\/(?<id>\d+)\/attractions$/, handler:listDestinationAttractions },
   { method:"GET", pattern:/^\/api\/attractions$/, handler:listAttractions },
   { method:"GET", pattern:/^\/api\/attractions\/(?<id>\d+)$/, handler:getAttraction },
+  { method:"GET", pattern:/^\/api\/map\/locations$/, handler:listMapLocations },
   { method:"POST", pattern:/^\/api\/auth\/signup$/, handler:signup },
   { method:"POST", pattern:/^\/api\/auth\/login$/, handler:loginUser },
   { method:"POST", pattern:/^\/api\/auth\/logout$/, handler:logoutUser },

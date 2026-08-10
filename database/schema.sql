@@ -1,7 +1,7 @@
 -- ================================================================
--- UgoTour PostgreSQL schema - through Phase 8.8
+-- UgoTour PostgreSQL schema - through Phase 8.9
 -- ================================================================
--- Fresh database setup. Existing databases should apply their missing numbered migrations through 006
+-- Fresh database setup. Existing databases should apply their missing numbered migrations through 007
 -- instead of recreating tables.
 
 CREATE TABLE IF NOT EXISTS users (

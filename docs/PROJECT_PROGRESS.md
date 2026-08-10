@@ -1306,9 +1306,7 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 / 8.4 / 8.5 visual
-and motion system. Phase 9 should focus on **production readiness and
-deployment**, including:
+After the Phase 8 visual work, Phase 8.8 tourism-library expansion and Phase 8.9 interactive map, Phase 9 should focus on **production readiness and deployment**, including:
 
 - environment-based backend database credentials;
 - production API base URL configuration;
@@ -1407,3 +1405,141 @@ All 19 destinations and all 41 attractions now have latitude/longitude values an
 - JavaScript: backend check and syntax checks for all 20 frontend modules passed.
 - PWA: the attraction service was added to the app shell and the cache was advanced to `ugotour-phase8-8-v1`; API data remains network-driven.
 - Image verification must report 93/93 passing files before production delivery; the exact last run is recorded in the final Phase 8.8 handoff.
+
+---
+
+## Phase 8.9 — Interactive Uganda Tourism Map
+
+Phase 8.9 turns the map-ready tourism data from Phase 8.8 into an interactive
+Uganda exploration experience without changing the booking model or adding a new
+database migration.
+
+### Map architecture
+
+The map uses the existing `destinations` and `attractions` latitude/longitude
+columns. A new backend map service combines both tables into one GeoJSON
+FeatureCollection:
+
+```text
+PostgreSQL
+├── destinations (19)
+└── attractions (41)
+        ↓
+map-service.js
+        ↓
+map-controller.js
+        ↓
+GET /api/map/locations
+        ↓ GeoJSON
+frontend map-service.js
+        ↓
+Leaflet map
+```
+
+GeoJSON is shaped on the backend so coordinates are returned in the standard
+`[longitude, latitude]` order while the frontend remains focused on map UI and
+interaction.
+
+### New backend files
+
+- `backend/src/services/map-service.js`
+- `backend/src/controllers/map-controller.js`
+- `backend/src/database/verify-map-data.js`
+
+New route:
+
+- `GET /api/map/locations`
+
+The response contains destination and attraction features plus summary counts.
+No authentication, user, session or booking tables are modified.
+
+### New frontend map experience
+
+- `frontend/pages/map.html`
+- `frontend/js/pages/map.js`
+- `frontend/js/services/map-service.js`
+- `frontend/css/map.css`
+- `frontend/data/uganda-boundary.geojson`
+
+The shared navigation now includes **Map** on desktop and mobile.
+
+Map interactions include:
+
+- all 60 tourism locations displayed as map-ready points;
+- major-destination and attraction marker distinction;
+- marker clustering for dense Kampala, Jinja and Entebbe areas;
+- search across name, category, district, region, description and parent destination;
+- filters for place type, category and region;
+- synchronized results list and map selection;
+- destination/attraction information panel;
+- `View destination` / parent-destination navigation;
+- deep links using `map.html?focus=destination:<id>` and
+  `map.html?focus=attraction:<id>`;
+- `View on map` links from Destination Details and attraction dialogs;
+- responsive mobile information sheet;
+- a `Fit Uganda` control;
+- an offline/unavailable-map fallback message.
+
+Destination Detail supports an optional `attraction=<id>` query parameter so a
+map attraction can open its parent destination and automatically reveal the
+correct attraction dialog.
+
+### Mapping libraries and tile policy
+
+Phase 8.9 uses Leaflet 1.9.4 and Leaflet.markercluster 1.1.0 from their public
+CDN distributions. The interactive base map uses the standard OpenStreetMap tile
+URL and visibly preserves OpenStreetMap attribution.
+
+UgoTour does **not** pre-download, bulk-cache or package OpenStreetMap map tiles.
+The service worker caches the local map page/code/boundary file but leaves map
+tiles network-driven, matching the OpenStreetMap tile usage policy. The tile URL
+can be overridden later through `window.UGOTOUR_TILE_URL` for production hosting.
+
+Uganda's lightweight visual outline is stored locally in
+`frontend/data/uganda-boundary.geojson`, based on the Natural Earth 1:110m
+country boundary distributed by the `datasets/geo-boundaries-world-110m`
+project. It is used for visual context and initial map fitting, not cadastral or
+survey work.
+
+### Coordinate QA
+
+`npm run map:verify` was added to the backend package. It checks:
+
+- destination count;
+- attraction count;
+- missing coordinate pairs;
+- coordinates that fall outside a broad Uganda sanity envelope.
+
+This is intentionally a sanity check rather than a replacement for source-level
+geographic verification. Phase 8.8 already populated all 19 destination and 41
+attraction coordinate pairs.
+
+### PWA updates
+
+The service-worker cache is advanced to `ugotour-phase8-9-v1` and now includes:
+
+- map HTML;
+- local map CSS/JavaScript;
+- frontend map API service;
+- Uganda boundary GeoJSON.
+
+External Leaflet resources and OpenStreetMap tiles are not placed in the app
+shell. If the map library/tiles cannot be reached, the page keeps a readable
+fallback instead of pretending a stale/offline basemap is available.
+
+### Phase 8.9 database status
+
+No new map schema is required because Phase 8.8 already supplied the coordinate
+columns and attraction hierarchy. One small data-correction migration is
+required after the coordinate QA described below.
+
+### Phase 8.9 coordinate correction
+
+The map sanity pass caught one Phase 8.8 data error before the map was packaged:
+`Kazinga Channel` had longitude `29.157595`, which placed the pin west of
+Uganda. Current GeoNames/OpenStreetMap-derived references place the channel near
+`-0.203611, 29.885556`. Migration
+`007_phase8_9_map_coordinate_correction.sql` updates that one tourism record.
+
+Because Phase 8.8 may already have been applied on a developer database, this is
+kept as a new migration rather than silently rewriting migration `006`.

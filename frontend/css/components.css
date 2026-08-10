@@ -3619,3 +3619,25 @@ html.home-handoff-running body {
   position: relative;
   z-index: 4;
 }
+
+/* ---------- Phase 8.9 destination → map deep links ---------- */
+.details-map-button {
+  position: absolute;
+  z-index: 6;
+  top: 28px;
+  left: 82px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border: 1px solid rgba(255,255,255,.36);
+  border-radius: 999px;
+  background: rgba(16,24,14,.42);
+  color: white;
+  backdrop-filter: blur(14px);
+  font-size: .72rem;
+  font-weight: 800;
+  transition: background 180ms ease, transform 180ms ease;
+}
+.details-map-button:hover { background: rgba(16,24,14,.7); transform: translateY(-1px); }
+.attraction-dialog-map-link { margin-top: 18px; width: max-content; }

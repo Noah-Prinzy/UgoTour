@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#172114" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Explore UgoTour destinations and attractions on an interactive map of Uganda." />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="../css/main.css?v=8.9.0" />
+  <link rel="stylesheet" href="../css/components.css?v=8.9.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.9.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.9.0" />
+  <link rel="stylesheet" href="../css/map.css?v=8.9.0" />
+  <title>Map | UgoTour</title>
+</head>
+<body class="dashboard-page map-page">
+  <header id="site-header"></header>
+
+  <main class="dashboard-main map-main">
+    <section class="map-dashboard" aria-labelledby="map-heading">
+      <header class="map-heading-row">
+        <div>
+          <p class="section-kicker">60 places · one country</p>
+          <h1 id="map-heading">Explore Uganda on the map.</h1>
+          <p>Move from national parks to heritage sites, islands, museums and local experiences without losing the bigger picture.</p>
+        </div>
+        <div class="map-library-summary" aria-label="Tourism library summary">
+          <div><strong id="map-destination-count">0</strong><span>Destinations</span></div>
+          <div><strong id="map-attraction-count">0</strong><span>Attractions</span></div>
+        </div>
+      </header>
+
+      <div class="map-filter-bar" aria-label="Map filters">
+        <label class="map-search" for="map-search-input">
+          <span class="sr-only">Search tourism places</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="map-search-input" type="search" placeholder="Search a place, district, region or category…" autocomplete="off" />
+        </label>
+
+        <div id="map-type-filters" class="map-type-filters" aria-label="Filter by place type">
+          <button type="button" class="is-active" data-type="all">All</button>
+          <button type="button" data-type="destination">Destinations</button>
+          <button type="button" data-type="attraction">Attractions</button>
+        </div>
+
+        <label class="map-select-label">
+          <span class="sr-only">Filter by category</span>
+          <select id="map-category-filter"><option value="all">All categories</option></select>
+        </label>
+
+        <label class="map-select-label">
+          <span class="sr-only">Filter by region</span>
+          <select id="map-region-filter"><option value="all">All Uganda</option></select>
+        </label>
+
+        <button id="map-reset-filters" class="map-reset-button" type="button">Reset</button>
+      </div>
+
+      <div class="map-workspace">
+        <aside class="map-results-panel" aria-labelledby="map-results-heading">
+          <div class="map-results-heading">
+            <div>
+              <p class="section-kicker">Places in view</p>
+              <h2 id="map-results-heading">Explore the library</h2>
+            </div>
+            <strong id="map-result-count" aria-live="polite">0</strong>
+          </div>
+          <div id="map-results-list" class="map-results-list"></div>
+          <div id="map-empty-state" class="map-empty-state" hidden>
+            <strong>No matching places</strong>
+            <p>Try another search or reset the map filters.</p>
+          </div>
+        </aside>
+
+        <section class="map-canvas-shell" aria-label="Interactive Uganda tourism map">
+          <div id="uganda-map" class="uganda-map" role="region" aria-label="Map of Uganda tourism destinations and attractions"></div>
+          <div class="map-floating-actions">
+            <button id="map-fit-uganda" type="button" title="Fit Uganda in view">Fit Uganda</button>
+          </div>
+          <p id="map-loading-state" class="map-loading-state">Loading Uganda tourism map…</p>
+          <div id="map-offline-state" class="map-offline-state" hidden>
+            <strong>The interactive map needs a connection.</strong>
+            <p>Your UgoTour place library is still available. Reconnect to load the map tiles.</p>
+            <button id="map-retry-button" class="secondary-button" type="button">Retry map</button>
+          </div>
+
+          <article id="map-place-panel" class="map-place-panel" hidden aria-live="polite">
+            <button id="map-place-panel-close" class="map-panel-close" type="button" aria-label="Close place information">×</button>
+            <img id="map-place-image" src="" alt="" />
+            <div class="map-place-copy">
+              <div class="map-place-meta"><span id="map-place-type"></span><span id="map-place-category"></span></div>
+              <h2 id="map-place-name"></h2>
+              <p id="map-place-location" class="map-place-location"></p>
+              <p id="map-place-description"></p>
+              <strong id="map-place-highlight"></strong>
+              <div class="map-place-actions">
+                <a id="map-place-details" class="primary-button" href="#">View details</a>
+                <button id="map-place-recenter" class="secondary-button" type="button">Recenter</button>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+
+      <footer class="map-source-note">
+        <p>Map tiles © OpenStreetMap contributors. UgoTour location data comes from the PostgreSQL tourism library.</p>
+        <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue ↗</a>
+      </footer>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.1.0/dist/leaflet.markercluster.js"></script>
+  <script type="module" src="../js/pages/map.js"></script>
+</body>
+</html>

@@ -9,7 +9,7 @@ export async function getHealth(_request, response) {
   sendJson(response, 200, {
     status: "ok",
     message: "UgoTour API is running",
-    phase: "8.5",
+    phase: "8.9",
     database: "connected"
   });
 }

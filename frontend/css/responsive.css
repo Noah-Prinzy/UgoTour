@@ -380,7 +380,7 @@
     bottom: 12px;
     min-height: 66px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     padding: 7px;
     border: 1px solid rgba(255,255,255,.55);
     border-radius: 24px;
@@ -1399,4 +1399,17 @@
   .details-page #site-footer .install-app-button {
     width: 100%;
   }
+}
+
+/* Phase 8.9: five mobile destinations in the shared bottom navigation. */
+@media (max-width: 720px) {
+  .details-map-button {
+    top: 18px;
+    left: 66px;
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: .62rem;
+  }
+  .mobile-bottom-nav a { font-size: .56rem; }
+  .mobile-bottom-nav a svg { width: 18px; height: 18px; }
 }

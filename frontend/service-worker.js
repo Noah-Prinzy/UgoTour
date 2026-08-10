@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-8-v1";
+const CACHE_NAME = "ugotour-phase8-9-v1";
 
 const APP_SHELL = [
   "./",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "./css/components.css",
   "./css/animations.css",
   "./css/responsive.css",
+  "./css/map.css",
   "./js/app.js",
   "./js/api.js",
   "./js/pwa.js",
@@ -20,15 +21,18 @@ const APP_SHELL = [
   "./js/services/booking-service.js",
   "./js/services/destination-service.js",
   "./js/services/attraction-service.js",
+  "./js/services/map-service.js",
   "./js/utils/validation.js",
   "./js/utils/assets.js",
   "./js/pages/destinations.js",
+  "./js/pages/map.js",
   "./js/pages/destination-details.js",
   "./js/pages/bookings.js",
   "./js/pages/login.js",
   "./js/pages/signup.js",
   "./js/pages/profile.js",
   "./pages/destinations.html",
+  "./pages/map.html",
   "./pages/destination-details.html",
   "./pages/bookings.html",
   "./pages/login.html",
@@ -37,7 +41,8 @@ const APP_SHELL = [
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./images/uganda-forest-fallback.jpg",
-  "./images/profile-page-background.jpg"
+  "./images/profile-page-background.jpg",
+  "./data/uganda-boundary.geojson"
 ];
 
 self.addEventListener("install", (event) => {
@@ -82,6 +87,10 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+
+  // Leaflet itself and OpenStreetMap map tiles are intentionally NOT pre-cached.
+  // The community OSM tile service prohibits bulk/offline prefetching; the map
+  // page instead shows an offline fallback when tiles cannot be reached.
 
   // Phase 8.5 keeps destination images network-first. This matters because the
   // developer replaces compatibility placeholders with the downloaded 2400px

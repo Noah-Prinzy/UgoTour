@@ -14,6 +14,7 @@ renderFooter();
 
 const params = new URLSearchParams(window.location.search);
 const destinationId = Number(params.get("id"));
+const focusedAttractionId = Number(params.get("attraction")) || null;
 const bookingForm = document.getElementById("booking-form");
 const bookingDate = document.getElementById("booking-date");
 const bookingTravellers = document.getElementById("booking-travellers");
@@ -59,7 +60,12 @@ async function initializePage() {
     // Attraction data is an enhancement. Keep the destination and booking
     // experience usable while an older local API process is still running.
     try {
-      renderAttractions(await getAttractionsByDestinationId(destinationId));
+      const attractions = await getAttractionsByDestinationId(destinationId);
+      renderAttractions(attractions);
+      if (focusedAttractionId) {
+        const focusedAttraction = attractions.find((item) => Number(item.id) === focusedAttractionId);
+        if (focusedAttraction) window.setTimeout(() => openAttraction(focusedAttraction), 180);
+      }
     } catch (error) {
       console.warn("Attractions are not available from this API process yet.", error);
     }
@@ -106,6 +112,8 @@ function openAttraction(attraction) {
   setText("attraction-dialog-location", [attraction.district, attraction.region].filter(Boolean).join(" · "));
   setText("attraction-dialog-description", attraction.description);
   setText("attraction-dialog-highlight", attraction.highlight || "A place worth exploring");
+  const mapLink = document.getElementById("attraction-dialog-map-link");
+  if (mapLink) mapLink.href = `./map.html?focus=attraction:${Number(attraction.id)}`;
   dialog.showModal();
 }
 
@@ -127,6 +135,8 @@ function renderDestination(item) {
   setText("details-days", item.suggestedDays ? `${item.suggestedDays} day${item.suggestedDays === 1 ? "" : "s"}` : "Flexible");
   setText("details-best-for", item.bestFor || "Curious travellers");
   setText("details-travel-tip", item.travelTip || "Plan ahead and leave room for spontaneous discoveries.");
+  const mapLink = document.getElementById("details-map-link");
+  if (mapLink) mapLink.href = `./map.html?focus=destination:${Number(item.id)}`;
 
   initializeDestinationGallery(item);
 

@@ -28,6 +28,7 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
       <div class="nav-links">
         ${navLink("Home", `${basePath}/index.html`, "index.html")}
         ${navLink("Destinations", `${basePath}/pages/destinations.html`, "destinations.html")}
+        ${navLink("Map", `${basePath}/pages/map.html`, "map.html")}
         ${navLink("Bookings", `${basePath}/pages/bookings.html`, "bookings.html")}
         ${navLink("Profile", profileHref, "profile.html")}
       </div>
@@ -36,6 +37,7 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
     <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
       ${mobileLink("Home", `${basePath}/index.html`, "index.html", homeIcon())}
       ${mobileLink("Explore", `${basePath}/pages/destinations.html`, "destinations.html", compassIcon())}
+      ${mobileLink("Map", `${basePath}/pages/map.html`, "map.html", mapPinIcon())}
       ${mobileLink("Trips", `${basePath}/pages/bookings.html`, "bookings.html", ticketIcon())}
       ${mobileLink("Profile", profileHref, "profile.html", userIcon())}
     </nav>
@@ -77,6 +79,7 @@ function svg(path) {
 }
 const homeIcon = () => svg('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/>');
 const compassIcon = () => svg('<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/>');
+const mapPinIcon = () => svg('<path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/>');
 const ticketIcon = () => svg('<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V7Z"/><path d="M12 8.5v7"/>');
 const userIcon = () => svg('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.7-4 3-6 6.5-6s5.8 2 6.5 6"/>');
 
