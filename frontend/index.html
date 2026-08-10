@@ -26,9 +26,28 @@
         <p class="hero-copy">
           Find destinations, experiences, culture and travel ideas in one simple tourism platform.
         </p>
+
         <div class="hero-actions">
           <button id="explore-button" class="primary-button">Explore destinations</button>
           <button id="about-button" class="secondary-button">How UgoTour works</button>
+        </div>
+
+        <!-- Phase 1: JavaScript-powered destination search. -->
+        <div class="hero-search">
+          <label for="destination-search">Search destinations</label>
+
+          <div class="search-box">
+            <input
+              type="text"
+              id="destination-search"
+              placeholder="Try Jinja, Bwindi or Murchison Falls..."
+              autocomplete="off"
+            />
+
+            <button id="search-button" type="button">Search</button>
+          </div>
+
+          <p id="search-message" aria-live="polite"></p>
         </div>
       </div>
 
@@ -44,6 +63,8 @@
         <p class="section-kicker">Starter content</p>
         <h2>Popular experiences</h2>
       </div>
+
+      <!-- JavaScript dynamically places destination cards in this grid. -->
       <div id="experience-grid" class="experience-grid"></div>
     </section>
   </main>
