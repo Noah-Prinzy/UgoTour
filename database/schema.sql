@@ -1,0 +1,2 @@
+-- UgoTour database schema placeholder.
+-- PostgreSQL tables will be designed after the frontend phase.

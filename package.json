@@ -1,0 +1,9 @@
+{
+  "name": "ugotour",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JavaScript-first tourism application starter for Uganda",
+  "scripts": {
+    "start:backend": "node backend/src/server.js"
+  }
+}
