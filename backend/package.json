@@ -1,10 +1,15 @@
 {
   "name": "ugotour-backend",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
-  "description": "UgoTour JavaScript/Node.js backend placeholder",
+  "description": "UgoTour framework-light JavaScript/Node.js REST API",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js && node --check src/router.js"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
