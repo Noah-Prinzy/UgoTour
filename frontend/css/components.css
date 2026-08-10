@@ -1138,20 +1138,21 @@
 /* ---------- Footer ---------- */
 .site-footer {
   width: min(var(--page-width), calc(100% - 40px));
-  margin: 0 auto 34px;
-  padding: 26px 30px;
+  margin: 0 auto;
+  padding: 32px 0 38px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-radius: 26px;
-  background: var(--forest-900);
-  color: var(--white);
+  border-top: 1px solid rgba(23,33,20,.13);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
 }
 
 .site-footer p {
   margin: 4px 0 0;
-  color: rgba(255,255,255,.58);
+  color: var(--muted);
   font-size: .78rem;
 }
 
@@ -1162,9 +1163,9 @@
 .install-app-button {
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid rgba(255,255,255,.25);
+  border: 1px solid var(--forest-900);
   border-radius: 999px;
-  background: rgba(255,255,255,.1);
+  background: var(--forest-900);
   color: var(--white);
   font-weight: 800;
 }
@@ -2306,9 +2307,10 @@ html.home-handoff-running body {
 .profile-page .site-footer {
   position: relative;
   z-index: 2;
-  border: 1px solid rgba(255, 255, 255, .14);
-  background: rgba(16, 24, 14, .88);
-  backdrop-filter: blur(18px);
+  border: 0;
+  border-top: 1px solid rgba(23,33,20,.13);
+  background: transparent;
+  backdrop-filter: none;
 }
 
 /* The image/overlay is applied directly to the body so it cannot be hidden by
@@ -3613,18 +3615,7 @@ html.home-handoff-running body {
 .details-page .booking-form .primary-button { min-height: 43px; margin-top: 3px; font-size: .7rem; }
 .details-page .booking-panel-number { font-size: .9rem; }
 .details-page .photo-credit { bottom: 11px; }
-.details-page #site-footer { position: relative; z-index: 4; }
-
-/* Destination footer is the page edge, not a card inside a cream band. */
 .details-page #site-footer {
-  width: 100%;
-  min-height: 94px;
-  margin: 0;
-  padding: 24px max(28px, calc((100vw - var(--page-width)) / 2));
-  border-radius: 0;
-  background: var(--forest-950);
-}
-
-.details-page #site-footer .install-app-button {
-  background: rgba(255,255,255,.08);
+  position: relative;
+  z-index: 4;
 }

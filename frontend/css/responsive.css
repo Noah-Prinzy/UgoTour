@@ -601,7 +601,8 @@
   }
 
   .site-footer {
-    margin-bottom: 102px;
+    margin-bottom: 0;
+    padding-bottom: 118px;
     align-items: start;
     flex-direction: column;
   }
@@ -1394,14 +1395,6 @@
   .details-page .booking-panel-copy,
   .details-page .booking-form { margin-left: 0; }
   .details-page .photo-credit { display: none; }
-
-  .details-page #site-footer {
-    width: 100%;
-    margin: 0;
-    padding: 26px 18px 112px;
-    align-items: stretch;
-    flex-direction: column;
-  }
 
   .details-page #site-footer .install-app-button {
     width: 100%;

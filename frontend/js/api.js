@@ -10,7 +10,7 @@
 export const API_BASE_URL =
   window.UGOTOUR_API_BASE_URL ||
   localStorage.getItem("ugotour_api_base_url") ||
-  "http://127.0.0.1:3001/api";
+  "http://127.0.0.1:3000/api";
 const AUTH_TOKEN_KEY = "ugotour_auth_token";
 
 // A small custom error lets page code distinguish HTTP errors such as 401/404
