@@ -3,20 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Browse and filter tourism destinations across Uganda with UgoTour."
+  />
   <title>Destinations | UgoTour</title>
+
+  <!-- Tailwind remains a design helper only. -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Our own CSS controls the reusable UgoTour visual system. -->
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="stylesheet" href="../css/responsive.css" />
 </head>
+
 <body class="bg-stone-50 text-slate-900">
+  <!-- navbar.js injects the reusable navigation here. -->
   <header id="site-header"></header>
-  <main class="section-shell page-shell">
-    <p class="section-kicker">Explore Uganda</p>
-    <h1 class="page-title">Destinations</h1>
-    <p>This page is prepared for destination search, filtering and API-powered listings.</p>
-    <div id="destination-list" class="experience-grid"></div>
+
+  <main>
+    <!-- ======================================================
+         DESTINATIONS HERO
+         ====================================================== -->
+    <section class="catalog-hero">
+      <div>
+        <p class="section-kicker">Explore Uganda</p>
+        <h1 class="page-title">Find your next destination.</h1>
+        <p class="catalog-intro">
+          Search UgoTour's starter catalog and filter places by the kind of
+          experience you want. All filtering is handled with vanilla JavaScript.
+        </p>
+      </div>
+
+      <div class="catalog-stat" aria-label="Destination catalog summary">
+        <strong id="catalog-total">0</strong>
+        <span>starter destinations</span>
+      </div>
+    </section>
+
+    <!-- ======================================================
+         SEARCH + CATEGORY FILTER CONTROLS
+         ====================================================== -->
+    <section class="section-shell catalog-section" aria-labelledby="catalog-heading">
+      <div class="catalog-heading-row">
+        <div>
+          <p class="section-kicker">Destination catalog</p>
+          <h2 id="catalog-heading">Explore by place or experience</h2>
+        </div>
+
+        <button id="reset-filters" class="secondary-button" type="button">
+          Reset filters
+        </button>
+      </div>
+
+      <div class="catalog-controls">
+        <label class="catalog-search" for="catalog-search-input">
+          <span>Search destinations</span>
+          <input
+            id="catalog-search-input"
+            type="search"
+            placeholder="Search name, region or category..."
+            autocomplete="off"
+          />
+        </label>
+
+        <!-- destinations.js generates these buttons from our data. -->
+        <div
+          id="category-filters"
+          class="category-filters"
+          aria-label="Filter destinations by category"
+        ></div>
+      </div>
+
+      <!-- JavaScript updates this text whenever filters change. -->
+      <p id="destination-summary" class="catalog-summary" aria-live="polite"></p>
+
+      <!-- JavaScript dynamically creates destination cards here. -->
+      <div id="destination-list" class="experience-grid destination-grid"></div>
+
+      <!-- Only shown when the current filter returns zero destinations. -->
+      <div id="destination-empty-state" class="empty-state" hidden>
+        <h3>No destinations matched.</h3>
+        <p>Try another search term or reset your category filter.</p>
+      </div>
+    </section>
   </main>
+
+  <!-- ========================================================
+       DESTINATION DETAILS DIALOG
+       ========================================================
+       JavaScript fills this dialog when View details is clicked.
+  -->
+  <dialog id="destination-dialog" class="destination-dialog">
+    <div class="destination-dialog-content">
+      <div class="dialog-topline">
+        <span id="dialog-category" class="tag"></span>
+        <button id="close-destination-dialog" class="dialog-close" type="button" aria-label="Close destination details">
+          ×
+        </button>
+      </div>
+
+      <p id="dialog-region" class="destination-region"></p>
+      <h2 id="dialog-name"></h2>
+      <p id="dialog-description" class="dialog-description"></p>
+
+      <div class="dialog-highlight">
+        <span>Experience highlight</span>
+        <strong id="dialog-highlight"></strong>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- footer.js injects the reusable footer here. -->
   <footer id="site-footer"></footer>
+
+  <!-- All catalog behavior lives in our own JavaScript module. -->
   <script type="module" src="../js/pages/destinations.js"></script>
 </body>
 </html>
