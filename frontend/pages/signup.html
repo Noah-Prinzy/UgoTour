@@ -5,43 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Create your UgoTour account." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/animations.css" />
-  <link rel="stylesheet" href="../css/responsive.css" />
-  <meta name="description" content="Create your UgoTour account." />
+  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
   <title>Sign Up | UgoTour</title>
 </head>
-<body class="visual-page auth-visual-page signup-page">
+<body class="auth-visual-page signup-page">
   <header id="site-header"></header>
-  <main>
-    <section class="page-visual-hero page-visual-hero--auth" aria-labelledby="signup-hero-title">
-      <img class="page-visual-hero-media" src="../images/destinations/sipi-falls/sipi-falls-01.jpg" alt="Sipi Falls landscape" />
-      <div class="page-visual-hero-shade" aria-hidden="true"></div>
-      <div class="page-visual-hero-inner">
-        <div class="page-visual-hero-copy"><p class="page-visual-kicker">Join UgoTour</p><h1 id="signup-hero-title">Make Uganda your next story.</h1><p>Create one travel identity for your profile, future bookings and every destination that catches your attention.</p></div>
-        <div class="hero-feature-pills"><span>Personal profile</span><span>Persistent bookings</span><span>Explore anywhere</span></div>
+  <main class="auth-entry-main">
+    <section class="auth-entry" aria-labelledby="signup-title">
+      <div class="auth-photo-panel">
+        <img src="../images/destinations/sipi-falls/sipi-falls-01.jpg" alt="Sipi Falls landscape" />
+        <div class="auth-photo-shade" aria-hidden="true"></div>
+        <div class="auth-photo-copy"><p>Travel deeper</p><h1>Create your Uganda story.</h1><span>Sipi Falls · Eastern Uganda</span></div>
       </div>
-    </section>
-
-    <section class="auth-content-wrap page-after-hero">
-      <div class="auth-form-panel auth-form-panel--standalone" aria-labelledby="signup-title">
-        <p class="section-kicker">Create account</p><h2 id="signup-title">Sign up</h2><p class="auth-form-copy">Use a valid email and a password with at least 8 characters.</p>
+      <div class="auth-form-panel">
+        <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
+        <p class="section-kicker">Create account</p>
+        <h2 id="signup-title">Join UgoTour</h2>
+        <p class="auth-form-copy">Create one secure travel identity for your profile and bookings.</p>
         <form id="signup-form" class="starter-form auth-form">
           <label>Full name<input id="signup-name" type="text" autocomplete="name" required /></label>
           <label>Email<input id="signup-email" type="email" autocomplete="email" required /></label>
           <label>Password<input id="signup-password" type="password" minlength="8" autocomplete="new-password" required /></label>
           <label>Confirm password<input id="signup-confirm-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-          <button class="primary-button auth-submit-button" type="submit">Create account</button><p id="signup-message" class="form-message" aria-live="polite"></p>
+          <button class="primary-button auth-submit-button" type="submit">Create account</button>
+          <p id="signup-message" class="form-message" aria-live="polite"></p>
         </form>
         <p class="auth-switch-copy">Already have an account? <a href="./login.html">Login here</a>.</p>
       </div>
     </section>
   </main>
-  <footer id="site-footer"></footer>
+  <footer id="site-footer" hidden></footer>
   <script type="module" src="../js/pages/signup.js"></script>
 </body>
 </html>

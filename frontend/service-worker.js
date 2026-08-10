@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-6-v1";
+const CACHE_NAME = "ugotour-phase8-7-v3";
 
 const APP_SHELL = [
   "./",
@@ -16,6 +16,7 @@ const APP_SHELL = [
   "./js/components/footer.js",
   "./js/components/destination-card.js",
   "./js/services/auth-service.js",
+  "./js/services/session-guard.js",
   "./js/services/booking-service.js",
   "./js/services/destination-service.js",
   "./js/utils/validation.js",
@@ -60,6 +61,26 @@ self.addEventListener("fetch", (event) => {
   // API data stays network-driven so account and booking information is never
   // served from an old service-worker cache.
   if (url.pathname.startsWith("/api/") || url.port === "3000") return;
+
+  // HTML, CSS and JavaScript are network-first so a visual architecture update
+  // cannot combine a new page structure with stale cached presentation logic.
+  if (
+    url.origin === self.location.origin &&
+    ["document", "style", "script"].includes(event.request.destination)
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
 
   // Phase 8.5 keeps destination images network-first. This matters because the
   // developer replaces compatibility placeholders with the downloaded 2400px

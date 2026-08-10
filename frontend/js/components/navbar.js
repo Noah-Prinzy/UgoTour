@@ -1,15 +1,18 @@
 import "../pwa.js";
 import { getCurrentUser, logoutUser } from "../services/auth-service.js";
 
-export async function renderNavbar(basePath = ".") {
+export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  let currentUser = null;
-  try {
-    currentUser = await getCurrentUser();
-  } catch (error) {
-    console.error("Could not load navbar session:", error);
+  let currentUser = validatedUser;
+  if (currentUser === undefined) {
+    try {
+      currentUser = await getCurrentUser();
+    } catch (error) {
+      console.error("Could not load navbar session:", error);
+      currentUser = null;
+    }
   }
 
   const profileHref = `${basePath}/pages/profile.html`;
@@ -40,7 +43,7 @@ export async function renderNavbar(basePath = ".") {
 
   document.getElementById("nav-logout-button")?.addEventListener("click", async () => {
     await logoutUser();
-    window.location.href = `${basePath}/index.html`;
+    window.location.replace(`${basePath}/pages/login.html`);
   });
 }
 

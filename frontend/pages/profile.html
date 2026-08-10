@@ -5,59 +5,74 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Manage your UgoTour profile and profile picture." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/animations.css" />
-  <link rel="stylesheet" href="../css/responsive.css" />
-  <meta name="description" content="Manage your UgoTour profile and profile picture." />
+  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
   <title>Profile | UgoTour</title>
 </head>
-<body class="visual-page profile-page">
+<body class="dashboard-page profile-page">
   <header id="site-header"></header>
-  <main class="profile-background-main">
-    <div id="profile-account-content" class="section-shell profile-account-content profile-account-content--background">
-      <section id="profile-logged-out" class="profile-logged-out" hidden>
-        <p class="section-kicker">Account</p><h2>You are not logged in.</h2><p>Login or create an account to manage your profile, photo and travel identity.</p>
-        <div class="profile-empty-actions"><a class="primary-button" href="./login.html">Login</a> <a class="secondary-button" href="./signup.html">Create account</a></div>
-      </section>
-
-      <section id="profile-logged-in" class="profile-layout" hidden>
-        <aside class="profile-summary-card">
-          <div class="profile-photo-shell">
-            <div id="profile-avatar" class="profile-avatar">UG</div>
-            <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Choose profile picture">✦</button>
-            <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+  <main class="dashboard-main">
+    <div id="profile-account-content" class="profile-dashboard">
+      <section id="profile-logged-out" hidden></section>
+      <section id="profile-logged-in">
+        <header class="profile-identity-card">
+          <div class="profile-banner" aria-hidden="true"></div>
+          <div class="profile-identity-content">
+            <div class="profile-photo-shell">
+              <div id="profile-avatar" class="profile-avatar">UG</div>
+              <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Choose profile picture">+</button>
+              <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+            </div>
+            <div class="profile-identity-copy">
+              <p class="section-kicker">Your UgoTour account</p>
+              <h1 id="profile-display-name">UgoTour User</h1>
+              <p id="profile-display-email">user@example.com</p>
+              <span>Member since <strong id="profile-member-since">—</strong></span>
+            </div>
+            <button id="profile-edit-shortcut" class="secondary-button" type="button">Edit profile</button>
           </div>
-          <div class="profile-photo-controls">
-            <button id="profile-photo-save" type="button" disabled>Save photo</button>
-            <button id="profile-photo-remove" type="button">Remove</button>
-          </div>
-          <p id="profile-photo-message" class="form-message" aria-live="polite"></p>
-          <h2 id="profile-display-name">UgoTour User</h2><p id="profile-display-email">user@example.com</p>
-          <div class="profile-meta-row"><span>Member since</span><strong id="profile-member-since">—</strong></div>
-          <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
-        </aside>
+        </header>
 
-        <div class="profile-settings-column">
-          <section class="profile-settings-card">
-            <p class="section-kicker">Personal details</p><h2>Edit profile</h2><p>Change the name and email stored with your PostgreSQL user record.</p>
-            <form id="profile-form" class="starter-form profile-form">
+        <div class="profile-dashboard-grid">
+          <section id="profile-details-card" class="profile-settings-card profile-details-card">
+            <div class="profile-card-heading"><div><p class="section-kicker">Profile details</p><h2>Name and email</h2></div></div>
+            <form id="profile-form" class="starter-form profile-form profile-form-inline">
               <label>Full name<input id="profile-name" type="text" autocomplete="name" required /></label>
               <label>Email<input id="profile-email" type="email" autocomplete="email" required /></label>
-              <button class="primary-button" type="submit">Save profile</button><p id="profile-message" class="form-message" aria-live="polite"></p>
+              <button class="primary-button" type="submit">Save profile</button>
+              <p id="profile-message" class="form-message" aria-live="polite"></p>
             </form>
           </section>
-          <section class="profile-settings-card">
-            <p class="section-kicker">Security</p><h2>Change password</h2><p>Your current password is verified on the backend before the secure hash is replaced.</p>
-            <form id="password-form" class="starter-form profile-form">
+
+          <section class="profile-settings-card profile-photo-card">
+            <div class="profile-card-heading"><div><p class="section-kicker">Profile photo</p><h2>Account image</h2></div></div>
+            <p>Choose a JPEG, PNG or WebP image. Preview it above, then save.</p>
+            <div class="profile-photo-controls">
+              <button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button>
+              <button id="profile-photo-remove" class="secondary-button" type="button">Remove photo</button>
+            </div>
+            <p id="profile-photo-message" class="form-message" aria-live="polite"></p>
+          </section>
+
+          <section class="profile-settings-card profile-security-card">
+            <div class="profile-card-heading"><div><p class="section-kicker">Security</p><h2>Change password</h2></div></div>
+            <form id="password-form" class="starter-form profile-form profile-form-password">
               <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
               <label>New password<input id="new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
               <label>Confirm new password<input id="confirm-new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-              <button class="secondary-button" type="submit">Change password</button><p id="password-message" class="form-message" aria-live="polite"></p>
+              <button class="secondary-button" type="submit">Change password</button>
+              <p id="password-message" class="form-message" aria-live="polite"></p>
             </form>
+          </section>
+
+          <section class="profile-settings-card profile-actions-card">
+            <div><p class="section-kicker">Account actions</p><h2>Session</h2><p>Logging out removes the bearer token from this device.</p></div>
+            <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
           </section>
         </div>
       </section>

@@ -70,6 +70,160 @@
   }
 }
 
+@media (max-width: 820px) {
+  .page-home .journey-copy-block h1 { font-size: clamp(3rem, 10vw, 4.8rem); }
+  .page-home .journey-rail-area { display: block; align-self: stretch; padding: 0; }
+  .page-home .journey-cards {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 4px 2px 8px;
+    overflow-x: auto;
+  }
+  .page-home .journey-card,
+  .page-home .journey-card.is-active,
+  .page-home .journey-card:not(.is-active) {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border-radius: 50%;
+    background: transparent;
+    transform: none;
+  }
+  .page-home .journey-card img,
+  .page-home .journey-card.is-active img {
+    inset: 3px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+  }
+  .page-home .journey-card.is-active img { inset: 0; width: 68px; height: 68px; }
+  .page-home .journey-card-copy,
+  .page-home .journey-card-order { display: none; }
+}
+
+/* Phase 8.7 responsive architecture */
+@media (max-width: 1050px) {
+  .journey-stage {
+    grid-template-columns: minmax(0, 1fr) 250px;
+    gap: 34px;
+  }
+
+  .journey-card-copy { left: 82px; }
+  .journey-card.is-active .journey-card-copy { left: 88px; }
+  .featured-destination-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dashboard-discovery-layout { grid-template-columns: 1fr; }
+  .journey-panel { position: static; }
+  .profile-dashboard-grid { grid-template-columns: 1fr; }
+  .profile-details-card,
+  .profile-security-card,
+  .profile-photo-card,
+  .profile-actions-card { grid-column: 1; grid-row: auto; }
+}
+
+@media (max-width: 820px) {
+  .auth-entry { grid-template-columns: 1fr; }
+  .auth-photo-panel { min-height: 330px; }
+  .auth-photo-copy { left: 30px; bottom: 30px; }
+  .auth-photo-copy h1 { max-width: 560px; font-size: clamp(2.4rem, 8vw, 4.4rem); }
+  .auth-entry .auth-form-panel { padding: 38px 30px 46px; }
+  .auth-brand { margin-bottom: 42px; }
+  .featured-destination-list { grid-template-columns: 1fr 1fr; }
+  .featured-destination-list .destination-card:first-child { grid-column: 1 / -1; }
+  .profile-form-inline,
+  .profile-form-password { grid-template-columns: 1fr 1fr; }
+  .profile-form-inline button,
+  .profile-form-password button { justify-self: start; }
+}
+
+@media (max-width: 720px) {
+  .dashboard-main { padding: 22px 0 32px; }
+  .dashboard-content-shell,
+  .discovery-dashboard,
+  .profile-dashboard { width: calc(100% - 28px); }
+  .dashboard-heading-row { align-items: start; }
+  .dashboard-heading-row h1,
+  .dashboard-content-shell .page-content-title h1 { font-size: clamp(2.45rem, 12vw, 3.8rem); }
+  .dashboard-count { min-width: 82px; padding: 8px 0 8px 12px; }
+  .dashboard-count strong { font-size: 1.45rem; }
+
+  .page-home .site-nav { background: rgba(10,17,9,.28); }
+  .journey-slider { min-height: 100svh; }
+  .journey-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: end;
+    gap: 12px;
+    padding: 105px 20px 34px;
+  }
+  .journey-copy-block { max-width: 100%; align-self: stretch; padding: 0; }
+  .journey-eyebrow { display: none; }
+  .journey-copy-block h1 { font-size: clamp(3rem, 16vw, 5rem); line-height: .88; }
+  .journey-description { max-width: 94%; margin-top: 14px; font-size: .82rem; line-height: 1.55; }
+  .journey-copy-actions { margin-top: 16px; }
+  .journey-highlight { display: none; }
+  .journey-rail-area { align-self: stretch; padding: 0; }
+  .journey-rail-label { margin-bottom: 6px; }
+  .journey-cards {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 3px 2px 7px;
+  }
+  .journey-card,
+  .journey-card.is-active {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .journey-card img,
+  .journey-card.is-active img { inset: 3px; width: 58px; height: 58px; }
+  .journey-card.is-active img { inset: 0; width: 64px; height: 64px; }
+  .journey-card-copy,
+  .journey-card-order { display: none; }
+  .journey-bottom-row { margin-top: 4px; }
+  .journey-photo-credit { display: none; }
+
+  .auth-entry-main { padding: 0; display: block; background: white; }
+  .auth-entry { min-height: 100vh; border-radius: 0; box-shadow: none; }
+  .auth-photo-panel { min-height: 290px; }
+  .auth-photo-copy { left: 22px; right: 22px; bottom: 24px; }
+  .auth-photo-copy h1 { margin-bottom: 10px; font-size: 2.55rem; }
+  .auth-entry .auth-form-panel { padding: 32px 22px 45px; }
+  .auth-brand { margin-bottom: 34px; }
+
+  .destinations-page .catalog-controls-elevated { grid-template-columns: 1fr auto; margin-top: 26px; }
+  .dashboard-featured { margin-top: 36px; }
+  .featured-destination-list { grid-template-columns: 1fr; }
+  .featured-destination-list .destination-card:first-child { grid-column: auto; }
+  .featured-destination-list .destination-card { min-height: 0; }
+  .dashboard-discovery-layout { margin-top: 40px; }
+  .destination-grid { grid-template-columns: 1fr; }
+  .dashboard-section-heading { align-items: start; flex-direction: column; gap: 8px; }
+
+  .profile-banner { height: 88px; }
+  .profile-identity-content { grid-template-columns: 94px 1fr; gap: 16px; padding: 18px 18px 24px; }
+  .profile-identity-content .profile-photo-shell,
+  .profile-identity-content .profile-avatar { width: 92px; height: 92px; }
+  .profile-identity-content .profile-photo-shell { margin-top: -58px; }
+  .profile-identity-copy h1 { font-size: 1.8rem; }
+  .profile-identity-content > .secondary-button { grid-column: 1 / -1; justify-self: start; }
+  .profile-page .profile-settings-card { padding: 22px 18px; }
+  .profile-form-inline,
+  .profile-form-password { grid-template-columns: 1fr; }
+  .profile-actions-card { align-items: start; flex-direction: column; }
+
+  .bookings-page .page-content-titlebar,
+  .bookings-heading-actions { align-items: start; flex-direction: column; }
+  .bookings-heading-actions { margin-top: 18px; }
+}
+
 @media (max-width: 720px) {
   :root {
     --radius-xl: 30px;
@@ -359,6 +513,71 @@
   .page-title {
     font-size: 2.65rem;
   }
+}
+
+/* Keep the Phase 8.7 mobile composition authoritative over legacy page rules. */
+@media (max-width: 720px) {
+  .dashboard-main { padding: 22px 0 32px; }
+  .dashboard-content-shell,
+  .discovery-dashboard,
+  .profile-dashboard { width: calc(100% - 28px); }
+  .dashboard-heading-row { align-items: start; }
+  .dashboard-heading-row h1,
+  .dashboard-content-shell .page-content-title h1 { font-size: clamp(2.45rem, 12vw, 3.8rem); }
+
+  .journey-slider { min-height: 100svh; }
+  .journey-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: end;
+    gap: 12px;
+    min-height: inherit;
+    padding: 105px 20px 34px;
+  }
+  .journey-copy-block { max-width: 100%; align-self: stretch; padding: 0; }
+  .journey-eyebrow { display: none; }
+  .journey-copy-block h1 { font-size: clamp(3rem, 16vw, 5rem); line-height: .88; }
+  .journey-description { display: block; max-width: 94%; margin-top: 14px; font-size: .82rem; line-height: 1.55; }
+  .journey-copy-actions { margin-top: 16px; }
+  .journey-highlight { display: none; }
+  .journey-rail-area { display: block; align-self: stretch; padding: 0; }
+  .journey-rail-label { display: block; margin-bottom: 6px; }
+  .journey-cards { display: flex; flex-direction: row; align-items: center; gap: 8px; overflow-x: auto; padding: 3px 2px 7px; }
+  .journey-card,
+  .journey-card.is-active { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; background: transparent; transform: none; }
+  .journey-card img,
+  .journey-card.is-active img { inset: 3px; width: 58px; height: 58px; border-radius: 50%; }
+  .journey-card.is-active img { inset: 0; width: 64px; height: 64px; }
+  .journey-card-copy,
+  .journey-card-order { display: none; }
+  .journey-bottom-row { display: flex; margin-top: 4px; }
+  .journey-photo-credit { display: none; }
+
+  .auth-entry-main { padding: 0; display: block; background: white; }
+  .auth-entry { min-height: 100vh; grid-template-columns: 1fr; border-radius: 0; box-shadow: none; }
+  .auth-photo-panel { min-height: 290px; }
+  .auth-photo-copy { left: 22px; right: 22px; bottom: 24px; }
+  .auth-photo-copy h1 { margin-bottom: 10px; font-size: 2.55rem; }
+  .auth-entry .auth-form-panel { padding: 32px 22px 45px; }
+  .auth-brand { margin-bottom: 34px; }
+
+  .featured-destination-list,
+  .destination-grid { grid-template-columns: 1fr; }
+  .featured-destination-list .destination-card:first-child { grid-column: auto; }
+  .dashboard-section-heading { align-items: start; flex-direction: column; gap: 8px; }
+
+  .profile-banner { height: 88px; }
+  .profile-identity-content { grid-template-columns: 94px 1fr; gap: 16px; padding: 18px 18px 24px; }
+  .profile-identity-content .profile-photo-shell,
+  .profile-identity-content .profile-avatar { width: 92px; height: 92px; }
+  .profile-identity-content .profile-photo-shell { margin-top: -58px; }
+  .profile-identity-content > .secondary-button { grid-column: 1 / -1; justify-self: start; }
+  .profile-form-inline,
+  .profile-form-password { grid-template-columns: 1fr; }
+  .profile-actions-card,
+  .bookings-page .page-content-titlebar,
+  .bookings-heading-actions { align-items: start; flex-direction: column; }
 }
 
 /* ========================================================================== */
@@ -730,4 +949,39 @@
   .profile-page .profile-logged-out {
     border-radius: 24px;
   }
+}
+
+/* Final Phase 8.7 selector layout wins over the earlier cinematic breakpoints. */
+@media (max-width: 820px) {
+  .page-home .journey-copy-block h1 { font-size: clamp(3rem, 10vw, 4.8rem); }
+  .page-home .journey-rail-area { display: block; align-self: stretch; padding: 0; }
+  .page-home .journey-cards {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    padding: 4px 2px 8px;
+    overflow-x: auto;
+  }
+  .page-home .journey-card,
+  .page-home .journey-card.is-active,
+  .page-home .journey-card:not(.is-active) {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border-radius: 50%;
+    background: transparent;
+    transform: none;
+  }
+  .page-home .journey-card img,
+  .page-home .journey-card.is-active img {
+    inset: 3px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+  }
+  .page-home .journey-card.is-active img { inset: 0; width: 68px; height: 68px; }
+  .page-home .journey-card-copy,
+  .page-home .journey-card-order { display: none; }
 }

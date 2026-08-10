@@ -1337,7 +1337,7 @@
   text-transform: uppercase;
 }
 
-.journey-cards {
+.page-home .journey-cards {
   min-width: 0;
   display: flex;
   align-items: end;
@@ -2307,3 +2307,281 @@ html.home-handoff-running body {
 }
 .profile-page::before,
 .profile-page::after { content: none; }
+
+/* ============================================================
+   PHASE 8.7 — APPLICATION VISUAL ARCHITECTURE REFRESH
+   ============================================================ */
+
+/* Shared authenticated dashboard shell */
+.dashboard-page {
+  background: #f6f5ef;
+}
+
+.dashboard-page #site-header {
+  position: sticky;
+  padding-top: 12px;
+}
+
+.dashboard-page .site-nav {
+  border-color: rgba(23, 33, 20, .08);
+  border-radius: 18px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 8px 30px rgba(23,33,20,.06);
+}
+
+.dashboard-main {
+  min-height: calc(100vh - 90px);
+  padding: 34px 0 70px;
+}
+
+.dashboard-content-shell,
+.discovery-dashboard,
+.profile-dashboard {
+  width: min(1240px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.dashboard-heading-row,
+.dashboard-section-heading,
+.profile-card-heading,
+.bookings-heading-actions {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.dashboard-heading-row h1,
+.dashboard-content-shell .page-content-title h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(2.7rem, 5vw, 5rem);
+  line-height: .95;
+  letter-spacing: -.06em;
+}
+
+.dashboard-heading-row > div:first-child > p:last-child {
+  max-width: 620px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.dashboard-count {
+  min-width: 112px;
+  padding: 13px 16px;
+  border-left: 1px solid var(--cream-200);
+}
+
+.dashboard-count strong,
+.dashboard-count span { display: block; }
+.dashboard-count strong { font-size: 1.8rem; line-height: 1; }
+.dashboard-count span { margin-top: 5px; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+
+/* Home: editorial copy with a circular vertical destination selector */
+.page-home .site-nav {
+  border-color: rgba(255,255,255,.18);
+  background: rgba(10,17,9,.16);
+  box-shadow: none;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.page-home .brand span { color: #d7dfc4; }
+.page-home .nav-links a,
+.page-home .nav-user-link { color: rgba(255,255,255,.76); }
+.page-home .nav-links a:hover,
+.page-home .nav-links a.is-active,
+.page-home .nav-user-link:hover { background: rgba(255,255,255,.13); color: white; }
+.page-home .nav-profile-pill { background: rgba(255,255,255,.12); }
+.page-home .nav-account .secondary-button { border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: white; }
+
+.journey-stage {
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 320px);
+  gap: clamp(50px, 8vw, 130px);
+  padding-inline: clamp(34px, 6vw, 92px);
+}
+
+.journey-copy-block {
+  max-width: 660px;
+  align-self: end;
+  padding-bottom: clamp(54px, 9vh, 90px);
+}
+
+.journey-eyebrow {
+  display: inline-flex;
+  margin: 0 0 18px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 999px;
+  color: rgba(255,255,255,.82);
+  background: rgba(5,12,5,.18);
+  font-size: .69rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.journey-copy-block h1 {
+  max-width: 720px;
+  font-size: clamp(3.7rem, 7vw, 7.2rem);
+  line-height: .88;
+}
+
+.journey-rail-area {
+  align-self: center;
+  padding-top: 62px;
+}
+
+.page-home .journey-cards {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 4px 0;
+  overflow: visible;
+}
+
+.page-home .journey-card,
+.page-home .journey-card.is-active,
+.page-home .journey-card:not(.is-active) {
+  width: 100%;
+  height: 78px;
+  flex: 0 0 78px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  filter: none;
+}
+
+.page-home .journey-card img {
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 68px;
+  height: 68px;
+  border: 2px solid rgba(255,255,255,.45);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.page-home .journey-card.is-active {
+  background: rgba(255,255,255,.11);
+}
+
+.page-home .journey-card.is-active img {
+  top: 1px;
+  width: 76px;
+  height: 76px;
+  border-color: white;
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+}
+
+.page-home .journey-card-shade { display: none; }
+.page-home .journey-card-copy { left: 90px; right: 34px; bottom: 20px; }
+.page-home .journey-card-order { top: 15px; right: 16px; left: auto; background: transparent; color: rgba(255,255,255,.58); }
+.page-home .journey-card.is-active .journey-card-copy { left: 98px; }
+.page-home .journey-card.is-active .journey-card-copy strong { font-size: 1.03rem; }
+.journey-bottom-row { margin-top: 17px; }
+
+/* Image-led authentication entry */
+.auth-visual-page { min-height: 100vh; background: var(--forest-950); }
+.auth-visual-page #site-header { display: none; }
+.auth-entry-main {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+}
+.auth-entry {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(360px, .72fr);
+  overflow: hidden;
+  background: white;
+}
+.auth-photo-panel { position: relative; min-height: 620px; overflow: hidden; }
+.auth-photo-panel > img { width: 100%; height: 100%; object-fit: cover; }
+.auth-photo-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,15,8,.72), transparent 62%); }
+.auth-photo-copy { position: absolute; left: clamp(30px, 5vw, 70px); right: 35px; bottom: clamp(34px, 6vh, 68px); color: white; }
+.auth-photo-copy p { margin: 0 0 10px; font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.auth-photo-copy h1 { max-width: 650px; margin: 0 0 18px; font-size: clamp(2.6rem, 5vw, 5.5rem); line-height: .92; letter-spacing: -.06em; }
+.auth-photo-copy span { color: rgba(255,255,255,.74); font-size: .8rem; }
+.auth-entry .auth-form-panel { align-self: center; padding: clamp(34px, 5vw, 68px); box-shadow: none; }
+.auth-brand { display: inline-block; margin-bottom: clamp(48px, 8vh, 90px); font-size: 1.35rem; font-weight: 800; letter-spacing: -.05em; }
+.auth-brand span { color: var(--sage-500); }
+.auth-entry .auth-form-panel h2 { margin: 8px 0 12px; font-size: clamp(2.2rem, 4vw, 3.6rem); }
+.auth-entry .auth-form { margin-top: 26px; }
+.auth-entry .starter-form label { gap: 8px; }
+.auth-entry .starter-form input { min-height: 52px; border-radius: 12px; background: #f7f7f2; }
+.auth-entry .auth-submit-button { width: 100%; border-radius: 12px; }
+.auth-session-note { margin: 26px 0 0; color: #8a9087; font-size: .72rem; line-height: 1.5; }
+
+/* Connected destination discovery dashboard */
+.discovery-dashboard { padding-top: 12px; }
+.destinations-page .catalog-controls-elevated {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.destinations-page .catalog-search input { min-height: 58px; border-radius: 14px; background: white; border-color: rgba(23,33,20,.1); }
+.destinations-page .category-filters { margin-top: 14px; justify-content: flex-start; }
+.dashboard-featured { margin-top: 48px; }
+.dashboard-section-heading { margin-bottom: 20px; }
+.dashboard-section-heading h2 { margin: 6px 0 0; font-size: clamp(1.6rem, 3vw, 2.4rem); letter-spacing: -.04em; }
+.featured-destination-list { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px; }
+.featured-destination-list .destination-card { min-height: 370px; display: grid; grid-template-rows: 1fr auto; }
+.featured-destination-list .destination-card:first-child { grid-row: span 1; }
+.featured-destination-list .destination-card-media { min-height: 235px; }
+.featured-destination-list .destination-card-content > p { display: none; }
+.featured-destination-list .destination-card-content { padding: 17px 18px; }
+.dashboard-discovery-layout { margin-top: 54px; display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 24px; align-items: start; }
+.dashboard-results { min-width: 0; }
+.destination-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.journey-panel { position: sticky; top: 106px; padding: 24px; border-radius: 18px; background: var(--forest-900); color: white; }
+.journey-panel h2 { margin: 6px 0 20px; font-size: 1.55rem; }
+.journey-panel .section-kicker { color: var(--sage-300); }
+.journey-panel-list { display: grid; gap: 8px; }
+.journey-panel-list a { display: grid; gap: 4px; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+.journey-panel-list span { font-size: .86rem; font-weight: 800; }
+.journey-panel-list small { color: rgba(255,255,255,.58); font-size: .7rem; }
+.journey-panel > a { display: inline-block; margin-top: 20px; color: #dce5ca; font-size: .78rem; font-weight: 800; }
+
+/* Clean profile dashboard using only fields supported by the API */
+.profile-page { min-height: 100vh; background: #f6f5ef; }
+.profile-identity-card { overflow: hidden; border: 1px solid rgba(23,33,20,.08); border-radius: 22px; background: white; }
+.profile-banner { height: 116px; background: linear-gradient(110deg, #dfe8d1, #f1ddba); }
+.profile-identity-content { position: relative; min-height: 150px; display: grid; grid-template-columns: 136px 1fr auto; gap: 26px; align-items: center; padding: 22px 30px 28px; }
+.profile-identity-content .profile-photo-shell { width: 126px; height: 126px; margin-top: -76px; }
+.profile-identity-content .profile-avatar { width: 126px; height: 126px; border: 5px solid white; box-shadow: 0 10px 32px rgba(23,33,20,.13); }
+.profile-identity-copy h1 { margin: 5px 0 2px; font-size: clamp(2rem, 4vw, 3.2rem); letter-spacing: -.05em; }
+.profile-identity-copy > p:not(.section-kicker) { margin: 0; color: var(--muted); }
+.profile-identity-copy > span { display: inline-block; margin-top: 12px; color: var(--muted); font-size: .78rem; }
+.profile-dashboard-grid { margin-top: 20px; display: grid; grid-template-columns: 1.35fr .65fr; gap: 20px; align-items: start; }
+.profile-page .profile-settings-card { padding: 28px; border: 1px solid rgba(23,33,20,.08); border-radius: 18px; background: white; box-shadow: none; backdrop-filter: none; }
+.profile-details-card, .profile-security-card { grid-column: 1; }
+.profile-photo-card { grid-column: 2; grid-row: 1; }
+.profile-actions-card { grid-column: 2; grid-row: 2; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.profile-page .profile-settings-card h2 { margin: 5px 0 0; font-size: 1.55rem; }
+.profile-form-inline { margin-top: 22px; display: grid; grid-template-columns: 1fr 1fr auto; gap: 14px; align-items: end; }
+.profile-form-inline .form-message { grid-column: 1 / -1; }
+.profile-form-password { margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; align-items: end; }
+.profile-form-password .form-message { grid-column: 1 / -1; }
+.profile-page .starter-form input { min-height: 50px; border-radius: 10px; background: #f8f8f4; }
+.profile-photo-card > p, .profile-actions-card p { color: var(--muted); font-size: .84rem; line-height: 1.65; }
+.profile-photo-controls { margin-top: 22px; display: flex; flex-wrap: wrap; }
+.profile-photo-controls button { width: auto; }
+.profile-actions-card .profile-logout-button { width: auto; margin: 0; color: var(--danger); }
+
+/* Bookings inherits the dashboard language without touching booking behavior */
+.bookings-page .dashboard-content-shell { padding-top: 16px; }
+.bookings-page .page-content-intro { padding: 0; }
+.bookings-page .page-content-titlebar { align-items: end; }
+.bookings-heading-actions { align-items: center; }
+.bookings-page .booking-list { margin-top: 28px; }
+.bookings-page .booking-card { border-radius: 18px; box-shadow: 0 10px 32px rgba(23,33,20,.07); }

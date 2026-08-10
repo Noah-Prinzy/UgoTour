@@ -1180,6 +1180,92 @@ No PostgreSQL migration is required for Phase 8.6.
 
 ---
 
+## Phase 8.7 — Application Visual Architecture Refresh
+
+Phase 8.7 turns the existing pages into one cohesive, authenticated tourism
+product. The Node.js built-in HTTP server, raw PostgreSQL queries, REST routes,
+destination data, booking operations and profile-photo storage remain intact.
+
+### Authentication entry gate
+
+- Added a reusable frontend session guard that treats the locally stored bearer
+  token only as a hint and validates it with `GET /api/profile`.
+- Home, Destinations, Destination Details, Bookings and Profile now require a
+  valid API session. Missing or rejected tokens lead to Login, and rejected
+  tokens are removed by the existing auth service.
+- Login and Sign Up validate an existing session before rendering. A valid
+  authenticated visitor is returned to Home.
+- Successful login and signup save the backend token and open Home. Logout
+  clears the token through the existing auth service and opens Login.
+
+### Visual architecture
+
+- **Home:** retained the database-driven fullscreen background crossfade,
+  destination copy, local gallery images, search handoff and three-card
+  **More to Discover** section. The desktop destination control is now a compact
+  vertical selector with circular images; it becomes a horizontal image selector
+  on mobile.
+- **Login and Sign Up:** replaced separate hero/form sections with one image-led
+  split composition using existing local Rwenzori and Sipi Falls photographs.
+  Only the working email, password, name and confirmation fields are present.
+- **Destinations:** removed the large hero and rebuilt the page as one connected
+  discovery dashboard with search, API-derived category filters, three featured
+  cards, the complete filtered grid, result count and reset action. An upcoming
+  journey panel is rendered only when the authenticated user has real bookings.
+- **Profile:** removed the Phase 8.6 full-page tourism background. The account
+  dashboard begins below navigation with the uploaded avatar, name, email and
+  API-provided creation date, followed by existing profile, photo, password and
+  logout actions.
+- **Navigation and Bookings:** authenticated navigation consistently shows the
+  user avatar/name and Home, Destinations, Bookings and Profile. Bookings now
+  uses the compact dashboard heading and shared spacing while preserving listing
+  and cancellation behavior.
+- **Responsive behavior:** desktop destination controls, tablet grids and mobile
+  stacked/horizontal layouts share the same spacing, form, card and focus system.
+
+### Files added
+
+- `frontend/js/services/session-guard.js`
+
+### Files modified
+
+- `frontend/index.html`
+- `frontend/pages/login.html`
+- `frontend/pages/signup.html`
+- `frontend/pages/destinations.html`
+- `frontend/pages/destination-details.html`
+- `frontend/pages/profile.html`
+- `frontend/pages/bookings.html`
+- `frontend/css/components.css`
+- `frontend/css/responsive.css`
+- `frontend/js/app.js`
+- `frontend/js/components/navbar.js`
+- `frontend/js/pages/login.js`
+- `frontend/js/pages/signup.js`
+- `frontend/js/pages/destinations.js`
+- `frontend/js/pages/destination-details.js`
+- `frontend/js/pages/bookings.js`
+- `frontend/js/pages/profile.js`
+- `frontend/service-worker.js`
+- `docs/PROJECT_PROGRESS.md`
+
+No files were removed. No PostgreSQL migration is required. The service-worker
+cache was incremented to `ugotour-phase8-7-v3` so installed clients receive the
+new HTML, CSS, JavaScript and session guard. Same-origin documents, styles and
+scripts now use a network-first service-worker strategy with cached fallback,
+preventing mixed old/new visual assets after future UI releases.
+
+### Phase 8.7 verification
+
+- Backend and frontend JavaScript syntax checks.
+- Local destination image verification and service-worker/manifest path audit.
+- Auth route checks for missing, invalid and valid bearer sessions.
+- Browser checks for login/signup routing, destination loading and selection,
+  search/filter/reset, profile forms/photo controls, bookings/cancellation UI,
+  console errors and desktop/tablet/mobile layout.
+
+---
+
 ## 14. Current persistence and integration status
 
 ```text

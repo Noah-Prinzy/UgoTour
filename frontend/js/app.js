@@ -4,8 +4,10 @@ import { renderFooter } from "./components/footer.js";
 import { createDestinationCard } from "./components/destination-card.js";
 import { getAllDestinations } from "./services/destination-service.js";
 import { resolveAssetPath } from "./utils/assets.js";
+import { requireAuthenticatedUser } from "./services/session-guard.js";
 
-await renderNavbar(".");
+const currentUser = await requireAuthenticatedUser(".");
+await renderNavbar(".", currentUser);
 renderFooter();
 
 const slider = document.getElementById("journey-slider");
@@ -16,6 +18,7 @@ const backgroundLayers = [
   document.getElementById("journey-bg-b")
 ].filter(Boolean);
 const cardRail = document.getElementById("journey-cards");
+const dotRail = document.getElementById("journey-dots");
 const copyBlock = document.getElementById("journey-copy");
 const counter = document.getElementById("journey-counter");
 const photoCredit = document.getElementById("journey-photo-credit");
@@ -27,7 +30,8 @@ const searchMessage = document.getElementById("search-message");
 const scrollCue = document.querySelector(".journey-scroll-cue");
 
 const AUTOPLAY_MS = 6500;
-const QUEUE_SIZE = 3;
+const QUEUE_SIZE = 5;
+const ACTIVE_SELECTOR_ORDER = Math.floor(QUEUE_SIZE / 2);
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let destinations = [];
@@ -72,26 +76,31 @@ function setText(id, value) {
 
 function queueIndicesFor(heroIndex) {
   if (!destinations.length) return [];
-  const count = Math.min(QUEUE_SIZE, Math.max(0, destinations.length - 1));
-  return Array.from({ length: count }, (_, offset) => (heroIndex + offset + 1) % destinations.length);
+  const count = Math.min(QUEUE_SIZE, destinations.length);
+  const activeOrder = Math.floor(count / 2);
+  return Array.from(
+    { length: count },
+    (_, order) => (heroIndex + order - activeOrder + destinations.length) % destinations.length
+  );
 }
 
 function createJourneyQueueCard(index, order) {
   const destination = destinations[index];
+  const isActive = order === ACTIVE_SELECTOR_ORDER;
   const button = document.createElement("button");
   button.type = "button";
-  button.className = `journey-card${order === 0 ? " is-next" : ""}`;
+  button.className = `journey-card${isActive ? " is-active" : ""}`;
   button.dataset.index = String(index);
   button.dataset.queueOrder = String(order);
   button.setAttribute("role", "option");
-  button.setAttribute("aria-selected", "false");
-  button.setAttribute("aria-label", order === 0 ? `Next destination: ${destination.name}` : `Show ${destination.name}`);
+  button.setAttribute("aria-selected", isActive ? "true" : "false");
+  button.setAttribute("aria-label", isActive ? `Current destination: ${destination.name}` : `Show ${destination.name}`);
 
   const image = resolveAssetPath(primaryImage(destination), ".");
   button.innerHTML = `
     <img src="${escapeAttribute(image)}" alt="" />
     <span class="journey-card-shade" aria-hidden="true"></span>
-    <span class="journey-card-order">${order === 0 ? "Next" : String(order + 1).padStart(2, "0")}</span>
+    <span class="journey-card-order">${isActive ? "Now" : String(index + 1).padStart(2, "0")}</span>
     <span class="journey-card-copy">
       <small>${escapeHtml(destination.category)}</small>
       <strong>${escapeHtml(destination.name)}</strong>
@@ -107,6 +116,21 @@ function renderJourneyQueue(heroIndex = activeIndex) {
   cardRail.innerHTML = "";
   queueIndicesFor(heroIndex).forEach((index, order) => {
     cardRail.appendChild(createJourneyQueueCard(index, order));
+  });
+}
+
+function renderJourneyDots() {
+  if (!dotRail) return;
+  dotRail.innerHTML = "";
+
+  destinations.forEach((destination, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = `journey-dot${index === activeIndex ? " is-active" : ""}`;
+    dot.setAttribute("aria-label", `Show ${destination.name}`);
+    dot.setAttribute("aria-current", index === activeIndex ? "true" : "false");
+    dot.addEventListener("click", () => changeDestination(index, null, index > activeIndex ? 1 : -1));
+    dotRail.appendChild(dot);
   });
 }
 
@@ -202,6 +226,7 @@ function updateHeroContent(destination) {
     photoCredit.textContent = photo.credit ? `Photo · ${photo.credit}` : "Destination photo";
     photoCredit.href = photo.sourceUrl || "https://unsplash.com";
   }
+  renderJourneyDots();
 }
 
 async function animateCopyChange(destination) {

@@ -8,22 +8,14 @@ import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import {
-  getCurrentUser,
-  hasLocalSessionToken,
   loginUser
 } from "../services/auth-service.js";
+import { redirectAuthenticatedUser } from "../services/session-guard.js";
 
-await renderNavbar("..");
-renderFooter();
-
-if (hasLocalSessionToken()) {
-  try {
-    if (await getCurrentUser()) {
-      window.location.href = "./profile.html";
-    }
-  } catch (error) {
-    console.error("Session check failed:", error);
-  }
+const redirected = await redirectAuthenticatedUser("../index.html");
+if (!redirected) {
+  await renderNavbar("..", null);
+  renderFooter();
 }
 
 const loginForm = document.getElementById("login-form");
@@ -44,8 +36,8 @@ loginForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  showMessage("Login successful. Opening your profile...", "success");
-  window.location.href = "./profile.html";
+  showMessage("Login successful. Opening UgoTour...", "success");
+  window.location.replace("../index.html");
 });
 
 function showMessage(message, type) {

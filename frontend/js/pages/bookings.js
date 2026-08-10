@@ -3,10 +3,11 @@ import { ApiError } from "../api.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { cancelBooking, getBookings } from "../services/booking-service.js";
-import { getCurrentUser } from "../services/auth-service.js";
 import { resolveAssetPath } from "../utils/assets.js";
+import { requireAuthenticatedUser } from "../services/session-guard.js";
 
-await renderNavbar("..");
+let currentUser = await requireAuthenticatedUser("..");
+await renderNavbar("..", currentUser);
 renderFooter();
 
 const bookingList = document.getElementById("booking-list");
@@ -14,14 +15,11 @@ const emptyState = document.getElementById("booking-empty-state");
 const authState = document.getElementById("booking-auth-state");
 const bookingTotal = document.getElementById("booking-total");
 const bookingStatus = document.getElementById("booking-status");
-let currentUser = null;
 let bookings = [];
 
 async function loadBookings() {
   if (bookingStatus) bookingStatus.textContent = "Loading your trips…";
   try {
-    currentUser = await getCurrentUser();
-    if (!currentUser) return showAuthenticationState();
     bookings = await getBookings();
     renderBookings();
     if (bookingStatus) bookingStatus.textContent = `${bookings.length} planned visit${bookings.length === 1 ? "" : "s"}.`;

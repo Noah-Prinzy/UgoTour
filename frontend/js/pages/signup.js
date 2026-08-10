@@ -8,23 +8,15 @@ import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import {
-  createAccount,
-  getCurrentUser,
-  hasLocalSessionToken
+  createAccount
 } from "../services/auth-service.js";
+import { redirectAuthenticatedUser } from "../services/session-guard.js";
 import { passwordsMatch } from "../utils/validation.js";
 
-await renderNavbar("..");
-renderFooter();
-
-if (hasLocalSessionToken()) {
-  try {
-    if (await getCurrentUser()) {
-      window.location.href = "./profile.html";
-    }
-  } catch (error) {
-    console.error("Session check failed:", error);
-  }
+const redirected = await redirectAuthenticatedUser("../index.html");
+if (!redirected) {
+  await renderNavbar("..", null);
+  renderFooter();
 }
 
 const signupForm = document.getElementById("signup-form");
@@ -53,8 +45,8 @@ signupForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  showMessage("Account saved to PostgreSQL. Opening your profile...", "success");
-  window.location.href = "./profile.html";
+  showMessage("Account created. Opening UgoTour...", "success");
+  window.location.replace("../index.html");
 });
 
 function showMessage(message, type) {

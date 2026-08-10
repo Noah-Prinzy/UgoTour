@@ -5,42 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="View and manage your UgoTour bookings." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/animations.css" />
-  <link rel="stylesheet" href="../css/responsive.css" />
-  <meta name="description" content="View and manage your UgoTour bookings." />
+  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
   <title>Bookings | UgoTour</title>
 </head>
-<body class="visual-page bookings-page">
+<body class="dashboard-page bookings-page">
   <header id="site-header"></header>
-  <main>
-    <section class="page-visual-hero page-visual-hero--bookings" aria-labelledby="bookings-hero-title">
-      <img class="page-visual-hero-media" src="../images/destinations/lake-bunyonyi/lake-bunyonyi-01.jpg" alt="Lake Bunyonyi landscape" />
-      <div class="page-visual-hero-shade" aria-hidden="true"></div>
-      <div class="page-visual-hero-inner">
-        <div class="page-visual-hero-copy">
-          <p class="page-visual-kicker">Your journeys</p>
-          <h1 id="bookings-hero-title">Trips worth looking forward to.</h1>
-          <p>Everything you plan with UgoTour stays attached to your account, giving you one calm place to return to before the adventure begins.</p>
-        </div>
-        <div class="hero-metric"><strong id="booking-total">0</strong><span>planned visits</span></div>
-      </div>
-      <a class="page-hero-scroll-cue" href="#booking-list"><span>View itinerary</span><span>↓</span></a>
-    </section>
-
-    <section class="section-shell page-after-hero bookings-content-shell">
+  <main class="dashboard-main">
+    <section class="section-shell bookings-content-shell dashboard-content-shell">
       <div class="page-content-intro">
         <div class="page-content-titlebar">
           <div class="page-content-title">
-            <p class="section-kicker">Itinerary</p>
-            <h2>My bookings</h2>
-            <p class="section-lead">Your upcoming Uganda journeys, travel dates and group details in one visual itinerary.</p>
+            <p class="section-kicker">Your journeys</p>
+            <h1 id="bookings-hero-title">My bookings</h1>
+            <p class="section-lead">Upcoming Uganda journeys, travel dates and group details in one calm itinerary.</p>
           </div>
-          <a class="secondary-button" href="./destinations.html">Explore destinations</a>
+          <div class="bookings-heading-actions">
+            <div class="dashboard-count"><strong id="booking-total">0</strong><span>planned visits</span></div>
+            <a class="secondary-button" href="./destinations.html">Explore destinations</a>
+          </div>
         </div>
         <p id="booking-status" class="catalog-summary booking-status-line" aria-live="polite"></p>
       </div>

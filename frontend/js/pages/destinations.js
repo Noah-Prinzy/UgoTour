@@ -12,8 +12,11 @@ import {
   getAllDestinations,
   getDestinationCategories
 } from "../services/destination-service.js";
+import { requireAuthenticatedUser } from "../services/session-guard.js";
+import { getBookings } from "../services/booking-service.js";
 
-await renderNavbar("..");
+const currentUser = await requireAuthenticatedUser("..");
+await renderNavbar("..", currentUser);
 renderFooter();
 
 const destinationList = document.getElementById("destination-list");
@@ -23,6 +26,9 @@ const destinationSummary = document.getElementById("destination-summary");
 const emptyState = document.getElementById("destination-empty-state");
 const resetButton = document.getElementById("reset-filters");
 const catalogTotal = document.getElementById("catalog-total");
+const featuredList = document.getElementById("featured-destination-list");
+const journeyPanel = document.getElementById("journey-panel");
+const journeyList = document.getElementById("journey-panel-list");
 const pageQuery = new URLSearchParams(window.location.search).get("q")?.trim() ?? "";
 
 let destinations = [];
@@ -95,9 +101,50 @@ function renderDestinations() {
     destinationList.appendChild(card);
   });
 
+  renderFeaturedDestinations(filteredDestinations.slice(0, 3));
+
   destinationSummary.textContent = `${filteredDestinations.length} of ${destinations.length} destinations shown`;
   emptyState.hidden = filteredDestinations.length !== 0;
   destinationList.hidden = filteredDestinations.length === 0;
+}
+
+function renderFeaturedDestinations(featured) {
+  if (!featuredList) return;
+  featuredList.innerHTML = "";
+  featured.forEach((destination, index) => {
+    const card = createDestinationCard(destination, {
+      detailsPagePath: "./destination-details.html",
+      assetBasePath: ".."
+    });
+    card.classList.add("featured-destination-card");
+    card.style.setProperty("--card-order", String(index));
+    featuredList.appendChild(card);
+  });
+}
+
+async function loadJourneyPanel() {
+  if (!journeyPanel || !journeyList) return;
+  try {
+    const bookings = await getBookings();
+    if (!bookings.length) return;
+    journeyList.innerHTML = bookings.slice(0, 3).map((booking) => `
+      <a href="./destination-details.html?id=${Number(booking.destinationId)}">
+        <span>${escapeHtml(booking.destinationName)}</span>
+        <small>${formatDate(booking.travelDate)} · ${Number(booking.travellers)} traveller${Number(booking.travellers) === 1 ? "" : "s"}</small>
+      </a>
+    `).join("");
+    journeyPanel.hidden = false;
+  } catch (error) {
+    console.error("Could not load journey summary:", error);
+  }
+}
+
+function formatDate(value) {
+  return new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value}T00:00:00`));
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
 function applyFilters() {
@@ -156,4 +203,4 @@ resetButton?.addEventListener("click", () => {
   applyFilters();
 });
 
-await loadCatalog();
+await Promise.all([loadCatalog(), loadJourneyPanel()]);

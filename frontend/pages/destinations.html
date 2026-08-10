@@ -5,56 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Browse Uganda destinations with UgoTour." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/animations.css" />
-  <link rel="stylesheet" href="../css/responsive.css" />
-  <meta name="description" content="Browse Uganda destinations with UgoTour." />
+  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
   <title>Destinations | UgoTour</title>
 </head>
-<body class="visual-page destinations-page">
+<body class="dashboard-page destinations-page">
   <header id="site-header"></header>
-  <main>
-    <section class="page-visual-hero page-visual-hero--destinations" aria-labelledby="destinations-hero-title">
-      <img class="page-visual-hero-media" src="../images/destinations/queen-elizabeth/queen-elizabeth-01.jpg" alt="Uganda landscape" />
-      <div class="page-visual-hero-shade" aria-hidden="true"></div>
-      <div class="page-visual-hero-inner">
-        <div class="page-visual-hero-copy">
-          <p class="page-visual-kicker">Choose your adventure</p>
-          <h1 id="destinations-hero-title">Find a place that feels like you.</h1>
-          <p>From gorilla forests and open savannah to Nile adventures and mountain trails, discover Uganda through journeys made for every kind of traveller.</p>
+  <main class="dashboard-main">
+    <section class="discovery-dashboard" aria-labelledby="catalog-heading">
+      <div class="dashboard-heading-row">
+        <div>
+          <p class="section-kicker">Travel discovery</p>
+          <h1 id="catalog-heading">Discover Uganda</h1>
+          <p>Search by place, region or travel style and shape your next journey.</p>
         </div>
-        <div class="hero-metric" aria-label="Destination count"><strong id="catalog-total">0</strong><span>places to explore</span></div>
-      </div>
-      <a class="page-hero-scroll-cue" href="#catalog-heading"><span>Explore destinations</span><span>↓</span></a>
-    </section>
-
-    <section class="section-shell catalog-section page-after-hero" aria-labelledby="catalog-heading">
-      <div class="page-content-intro">
-        <div class="page-content-titlebar">
-          <div class="page-content-title">
-            <p class="section-kicker">Discover</p>
-            <h2 id="catalog-heading">Explore Uganda</h2>
-            <p class="section-lead">Search by destination, region or travel style, then open any journey for its full gallery, planning notes and booking experience.</p>
-          </div>
-          <button id="reset-filters" class="secondary-button" type="button">Reset filters</button>
-        </div>
+        <div class="dashboard-count"><strong id="catalog-total">0</strong><span>destinations</span></div>
       </div>
 
       <div class="catalog-controls catalog-controls-elevated">
         <label class="catalog-search" for="catalog-search-input">
-          <span>Search destinations</span>
-          <input id="catalog-search-input" type="search" placeholder="Search name, region or category…" autocomplete="off" />
+          <span class="sr-only">Search destinations</span>
+          <input id="catalog-search-input" type="search" placeholder="Search destinations, regions or experiences…" autocomplete="off" />
         </label>
-        <div id="category-filters" class="category-filters" aria-label="Filter destinations by category"></div>
+        <button id="reset-filters" class="secondary-button" type="button">Reset</button>
       </div>
+      <div id="category-filters" class="category-filters" aria-label="Filter destinations by category"></div>
 
-      <p id="destination-summary" class="catalog-summary" aria-live="polite"></p>
-      <div id="destination-list" class="experience-grid destination-grid"></div>
-      <div id="destination-empty-state" class="empty-state" hidden><h3>No destination found.</h3><p>Try another search or reset your filters.</p></div>
+      <section class="dashboard-featured" aria-labelledby="featured-heading">
+        <div class="dashboard-section-heading"><div><p class="section-kicker">A place to begin</p><h2 id="featured-heading">Featured journeys</h2></div></div>
+        <div id="featured-destination-list" class="featured-destination-list"></div>
+      </section>
+
+      <div class="dashboard-discovery-layout">
+        <section class="dashboard-results" aria-labelledby="all-destinations-heading">
+          <div class="dashboard-section-heading">
+            <div><p class="section-kicker">Explore every route</p><h2 id="all-destinations-heading">All destinations</h2></div>
+            <p id="destination-summary" class="catalog-summary" aria-live="polite"></p>
+          </div>
+          <div id="destination-list" class="experience-grid destination-grid"></div>
+          <div id="destination-empty-state" class="empty-state" hidden><h3>No destination found.</h3><p>Try another search or reset your filters.</p></div>
+        </section>
+
+        <aside id="journey-panel" class="journey-panel" hidden>
+          <p class="section-kicker">Your journeys</p>
+          <h2>Upcoming trips</h2>
+          <div id="journey-panel-list" class="journey-panel-list"></div>
+          <a href="./bookings.html">View all bookings →</a>
+        </aside>
+      </div>
     </section>
   </main>
   <footer id="site-footer"></footer>

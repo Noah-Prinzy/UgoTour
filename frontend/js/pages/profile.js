@@ -3,14 +3,15 @@ import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import {
   changeCurrentUserPassword,
-  getCurrentUser,
   logoutUser,
   updateCurrentUserProfile,
   updateCurrentUserProfileImage
 } from "../services/auth-service.js";
 import { passwordsMatch } from "../utils/validation.js";
+import { requireAuthenticatedUser } from "../services/session-guard.js";
 
-await renderNavbar("..");
+let currentUser = await requireAuthenticatedUser("..");
+await renderNavbar("..", currentUser);
 renderFooter();
 
 const loggedOutState = document.getElementById("profile-logged-out");
@@ -20,16 +21,9 @@ const passwordForm = document.getElementById("password-form");
 const photoInput = document.getElementById("profile-photo-input");
 const photoSave = document.getElementById("profile-photo-save");
 const photoRemove = document.getElementById("profile-photo-remove");
-let currentUser = null;
 let pendingProfileImage = null;
 
 async function renderProfile() {
-  try { currentUser = await getCurrentUser(); } catch (error) { console.error(error); currentUser = null; }
-  if (!currentUser) {
-    loggedOutState?.removeAttribute("hidden");
-    loggedInState?.setAttribute("hidden", "");
-    return;
-  }
   loggedOutState?.setAttribute("hidden", "");
   loggedInState?.removeAttribute("hidden");
   setText("profile-display-name", currentUser.name);
@@ -70,6 +64,10 @@ passwordForm?.addEventListener("submit", async (event) => {
 });
 
 document.getElementById("profile-photo-edit")?.addEventListener("click", () => photoInput?.click());
+document.getElementById("profile-edit-shortcut")?.addEventListener("click", () => {
+  document.getElementById("profile-details-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  document.getElementById("profile-name")?.focus({ preventScroll: true });
+});
 
 photoInput?.addEventListener("change", async () => {
   const file = photoInput.files?.[0];
@@ -101,7 +99,7 @@ photoRemove?.addEventListener("click", async () => {
   if (result.success) { currentUser = result.user; pendingProfileImage = null; renderAvatar(null); if (photoSave) photoSave.disabled = true; await renderNavbar(".."); }
 });
 
-document.getElementById("profile-logout-button")?.addEventListener("click", async () => { await logoutUser(); window.location.href = "../index.html"; });
+document.getElementById("profile-logout-button")?.addEventListener("click", async () => { await logoutUser(); window.location.replace("./login.html"); });
 
 function resizeProfileImage(file) {
   return new Promise((resolve, reject) => {

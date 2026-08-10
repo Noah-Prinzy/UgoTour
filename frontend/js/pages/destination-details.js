@@ -3,11 +3,12 @@ import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
 import { createBooking } from "../services/booking-service.js";
-import { getCurrentUser } from "../services/auth-service.js";
 import { isFutureOrToday, isValidTravellerCount } from "../utils/validation.js";
 import { resolveAssetPath } from "../utils/assets.js";
+import { requireAuthenticatedUser } from "../services/session-guard.js";
 
-await renderNavbar("..");
+let currentUser = await requireAuthenticatedUser("..");
+await renderNavbar("..", currentUser);
 renderFooter();
 
 const params = new URLSearchParams(window.location.search);
@@ -21,15 +22,11 @@ const bookingSubmit = document.getElementById("booking-submit");
 const bookingMessage = document.getElementById("booking-message");
 const bookingLoginNote = document.getElementById("booking-login-note");
 let destination = null;
-let currentUser = null;
 
 async function initializePage() {
   prepareBookingDateInput();
   try {
-    [destination, currentUser] = await Promise.all([
-      getDestinationById(destinationId),
-      getCurrentUser().catch(() => null)
-    ]);
+    destination = await getDestinationById(destinationId);
 
     if (!destination) {
       setText("details-name", "Destination not found");

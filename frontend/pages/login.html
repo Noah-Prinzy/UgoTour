@@ -5,41 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Login to your UgoTour account." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/components.css" />
-  <link rel="stylesheet" href="../css/animations.css" />
-  <link rel="stylesheet" href="../css/responsive.css" />
-  <meta name="description" content="Login to your UgoTour account." />
+  <link rel="stylesheet" href="../css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.7.3" />
   <title>Login | UgoTour</title>
 </head>
-<body class="visual-page auth-visual-page login-page">
+<body class="auth-visual-page login-page">
   <header id="site-header"></header>
-  <main>
-    <section class="page-visual-hero page-visual-hero--auth" aria-labelledby="login-hero-title">
-      <img class="page-visual-hero-media" src="../images/destinations/rwenzori/rwenzori-01.jpg" alt="Rwenzori Mountains landscape" />
-      <div class="page-visual-hero-shade" aria-hidden="true"></div>
-      <div class="page-visual-hero-inner">
-        <div class="page-visual-hero-copy"><p class="page-visual-kicker">Welcome back</p><h1 id="login-hero-title">Your next escape is waiting.</h1><p>Return to your saved profile and journeys, then continue exploring Uganda from exactly where you left off.</p></div>
-        <div class="hero-feature-pills"><span>Secure sessions</span><span>Saved trips</span><span>One travel profile</span></div>
+  <main class="auth-entry-main">
+    <section class="auth-entry" aria-labelledby="login-title">
+      <div class="auth-photo-panel">
+        <img src="../images/destinations/rwenzori/rwenzori-01.jpg" alt="Rwenzori Mountains landscape" />
+        <div class="auth-photo-shade" aria-hidden="true"></div>
+        <div class="auth-photo-copy"><p>Explore Uganda</p><h1>Journeys begin with a place that moves you.</h1><span>Rwenzori Mountains · Western Uganda</span></div>
       </div>
-    </section>
-
-    <section class="auth-content-wrap page-after-hero">
-      <div class="auth-form-panel auth-form-panel--standalone" aria-labelledby="login-title">
-        <p class="section-kicker">Account</p><h2 id="login-title">Login</h2><p class="auth-form-copy">Enter the email and password you used when creating your account.</p>
+      <div class="auth-form-panel">
+        <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
+        <p class="section-kicker">Welcome back</p>
+        <h2 id="login-title">Login to continue</h2>
+        <p class="auth-form-copy">Your destinations, bookings and profile are waiting.</p>
         <form id="login-form" class="starter-form auth-form">
           <label>Email<input id="login-email" type="email" autocomplete="email" required /></label>
           <label>Password<input id="login-password" type="password" autocomplete="current-password" required /></label>
-          <button class="primary-button auth-submit-button" type="submit">Login</button><p id="login-message" class="form-message" aria-live="polite"></p>
+          <button class="primary-button auth-submit-button" type="submit">Login</button>
+          <p id="login-message" class="form-message" aria-live="polite"></p>
         </form>
         <p class="auth-switch-copy">New to UgoTour? <a href="./signup.html">Create an account</a>.</p>
+        <p class="auth-session-note">Your session stays active on this device until you log out or it expires.</p>
       </div>
     </section>
   </main>
-  <footer id="site-footer"></footer>
+  <footer id="site-footer" hidden></footer>
   <script type="module" src="../js/pages/login.js"></script>
 </body>
 </html>

@@ -11,10 +11,10 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="./css/main.css" />
-  <link rel="stylesheet" href="./css/components.css" />
-  <link rel="stylesheet" href="./css/animations.css" />
-  <link rel="stylesheet" href="./css/responsive.css" />
+  <link rel="stylesheet" href="./css/main.css?v=8.7.3" />
+  <link rel="stylesheet" href="./css/components.css?v=8.7.3" />
+  <link rel="stylesheet" href="./css/animations.css?v=8.7.3" />
+  <link rel="stylesheet" href="./css/responsive.css?v=8.7.3" />
 </head>
 <body class="page-home">
   <header id="site-header"></header>
@@ -48,20 +48,22 @@
 
       <div class="journey-stage">
         <div id="journey-copy" class="journey-copy-block">
+          <p class="journey-eyebrow">Curated journeys across Uganda</p>
           <p id="journey-kicker" class="journey-kicker">Nature · Northern Uganda</p>
           <h1 id="journey-title">Murchison Falls</h1>
           <p id="journey-description" class="journey-description">Loading your Uganda journey…</p>
           <div class="journey-copy-actions">
             <a id="journey-explore" class="journey-explore-button" href="./pages/destination-details.html?id=1">
-              <span aria-hidden="true">●</span> Explore journey
+              Explore destination <span aria-hidden="true">↗</span>
             </a>
             <span id="journey-highlight" class="journey-highlight">Discover Uganda</span>
           </div>
         </div>
 
         <div class="journey-rail-area">
-          <p class="journey-rail-label">Up next · three stories</p>
+          <p class="journey-rail-label">Explore Uganda</p>
           <div id="journey-cards" class="journey-cards" role="listbox" aria-label="Uganda destinations"></div>
+          <div id="journey-dots" class="journey-dots" aria-label="Select a destination"></div>
 
           <div class="journey-bottom-row">
             <div class="journey-controls" aria-label="Destination slider controls">
@@ -119,7 +121,7 @@
           <p class="section-kicker">More to discover</p>
           <h2>Uganda, one journey at a time.</h2>
         </div>
-        <a class="secondary-button" href="./pages/destinations.html">View all destinations</a>
+        <a class="secondary-button" href="./pages/destinations.html">View all destinations →</a>
       </div>
       <div id="experience-grid" class="experience-grid"></div>
     </section>
