@@ -1,70 +1,95 @@
 import { randomBytes } from "node:crypto";
-import { createUserId, sessions, users } from "../data/memory-store.js";
+import database from "../database/connection.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 
-function publicUser(user) {
-  // Never return passwordHash to the browser/API caller.
-  const { passwordHash, ...safeUser } = user;
-  return { ...safeUser };
+// Public user objects never expose password_hash to API callers.
+export function toPublicUser(user) {
+  if (!user) return null;
+
+  return {
+    id: Number(user.id),
+    name: user.name,
+    email: user.email,
+    createdAt: user.created_at ?? user.createdAt,
+    updatedAt: user.updated_at ?? user.updatedAt
+  };
 }
 
 export async function createAccount({ name, email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
 
-  const duplicate = users.some((user) => user.email === normalizedEmail);
+  // Check first so the client receives a friendly conflict message instead
+  // of a raw PostgreSQL unique-constraint error.
+  const duplicateResult = await database.query(
+    "SELECT id FROM users WHERE email = $1",
+    [normalizedEmail]
+  );
 
-  if (duplicate) {
+  if (duplicateResult.rowCount > 0) {
     const error = new Error("An account already exists with this email.");
     error.statusCode = 409;
     throw error;
   }
 
-  const user = {
-    id: createUserId(),
-    name: name.trim(),
-    email: normalizedEmail,
-    passwordHash: await hashPassword(password),
-    createdAt: new Date().toISOString()
-  };
+  const passwordHash = await hashPassword(password);
 
-  users.push(user);
+  const userResult = await database.query(
+    `
+      INSERT INTO users (name, email, password_hash)
+      VALUES ($1, $2, $3)
+      RETURNING id, name, email, created_at, updated_at
+    `,
+    [name.trim(), normalizedEmail, passwordHash]
+  );
 
-  const token = createSession(user.id);
+  const user = userResult.rows[0];
+  const token = await createSession(user.id);
 
   return {
-    user: publicUser(user),
+    user: toPublicUser(user),
     token
   };
 }
 
 export async function login({ email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
-  const user = users.find((item) => item.email === normalizedEmail);
 
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  const result = await database.query(
+    `
+      SELECT id, name, email, password_hash, created_at, updated_at
+      FROM users
+      WHERE email = $1
+    `,
+    [normalizedEmail]
+  );
+
+  const user = result.rows[0];
+
+  if (!user || !(await verifyPassword(password, user.password_hash))) {
     const error = new Error("Email or password is incorrect.");
     error.statusCode = 401;
     throw error;
   }
 
   return {
-    user: publicUser(user),
-    token: createSession(user.id)
+    user: toPublicUser(user),
+    token: await createSession(user.id)
   };
 }
 
-export function logout(token) {
-  if (token) {
-    sessions.delete(token);
-  }
+export async function logout(token) {
+  if (!token) return;
+
+  await database.query("DELETE FROM sessions WHERE token = $1", [token]);
 }
 
-export function toPublicUser(user) {
-  return publicUser(user);
-}
-
-function createSession(userId) {
+async function createSession(userId) {
   const token = randomBytes(32).toString("hex");
-  sessions.set(token, userId);
+
+  await database.query(
+    "INSERT INTO sessions (token, user_id) VALUES ($1, $2)",
+    [token, Number(userId)]
+  );
+
   return token;
 }

@@ -1,22 +1,21 @@
 import { getAuthenticatedUser } from "../middleware/auth.js";
 import { updateProfile, changePassword } from "../services/user-service.js";
-import { toPublicUser } from "../services/auth-service.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
 
-export function getProfile(request, response) {
-  const user = getAuthenticatedUser(request);
+export async function getProfile(request, response) {
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });
     return;
   }
 
-  sendJson(response, 200, { data: toPublicUser(user) });
+  sendJson(response, 200, { data: user });
 }
 
 export async function patchProfile(request, response) {
-  const user = getAuthenticatedUser(request);
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });
@@ -35,12 +34,18 @@ export async function patchProfile(request, response) {
     return;
   }
 
-  const updatedUser = updateProfile(user.id, body);
+  const updatedUser = await updateProfile(user.id, body);
+
+  if (!updatedUser) {
+    sendJson(response, 404, { error: "User not found." });
+    return;
+  }
+
   sendJson(response, 200, { data: updatedUser });
 }
 
 export async function patchPassword(request, response) {
-  const user = getAuthenticatedUser(request);
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });

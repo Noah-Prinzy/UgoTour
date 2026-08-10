@@ -1,40 +1,54 @@
-import { users } from "../data/memory-store.js";
+import database from "../database/connection.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { toPublicUser } from "./auth-service.js";
 
-export function updateProfile(userId, { name, email }) {
-  const user = users.find((item) => item.id === Number(userId));
+export async function updateProfile(userId, { name, email }) {
+  const numericUserId = Number(userId);
+  const normalizedEmail = email === undefined ? null : email.trim().toLowerCase();
 
-  if (!user) return null;
-
-  if (email !== undefined) {
-    const normalizedEmail = email.trim().toLowerCase();
-    const duplicate = users.some(
-      (item) => item.id !== user.id && item.email === normalizedEmail
+  if (normalizedEmail !== null) {
+    const duplicateResult = await database.query(
+      `
+        SELECT id
+        FROM users
+        WHERE email = $1 AND id <> $2
+      `,
+      [normalizedEmail, numericUserId]
     );
 
-    if (duplicate) {
+    if (duplicateResult.rowCount > 0) {
       const error = new Error("Another account already uses this email.");
       error.statusCode = 409;
       throw error;
     }
-
-    user.email = normalizedEmail;
   }
 
-  if (name !== undefined) {
-    user.name = name.trim();
-  }
+  const result = await database.query(
+    `
+      UPDATE users
+      SET
+        name = COALESCE($2, name),
+        email = COALESCE($3, email),
+        updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, name, email, created_at, updated_at
+    `,
+    [numericUserId, name === undefined ? null : name.trim(), normalizedEmail]
+  );
 
-  return toPublicUser(user);
+  return toPublicUser(result.rows[0]);
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {
-  const user = users.find((item) => item.id === Number(userId));
+  const result = await database.query(
+    "SELECT id, password_hash FROM users WHERE id = $1",
+    [Number(userId)]
+  );
 
+  const user = result.rows[0];
   if (!user) return false;
 
-  const matches = await verifyPassword(currentPassword, user.passwordHash);
+  const matches = await verifyPassword(currentPassword, user.password_hash);
 
   if (!matches) {
     const error = new Error("Current password is incorrect.");
@@ -42,6 +56,16 @@ export async function changePassword(userId, currentPassword, newPassword) {
     throw error;
   }
 
-  user.passwordHash = await hashPassword(newPassword);
+  const passwordHash = await hashPassword(newPassword);
+
+  await database.query(
+    `
+      UPDATE users
+      SET password_hash = $2, updated_at = NOW()
+      WHERE id = $1
+    `,
+    [Number(userId), passwordHash]
+  );
+
   return true;
 }

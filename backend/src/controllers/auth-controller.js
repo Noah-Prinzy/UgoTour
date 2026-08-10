@@ -31,7 +31,7 @@ export async function loginUser(request, response) {
   sendJson(response, 200, { data: result });
 }
 
-export function logoutUser(request, response) {
-  logout(getBearerToken(request));
+export async function logoutUser(request, response) {
+  await logout(getBearerToken(request));
   sendJson(response, 200, { message: "Logged out successfully." });
 }

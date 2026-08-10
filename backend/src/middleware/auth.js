@@ -1,19 +1,40 @@
-import { sessions, users } from "../data/memory-store.js";
+import database from "../database/connection.js";
 import { getBearerToken } from "../utils/http.js";
 
-// Looks up the currently authenticated user from a Bearer token.
-export function getAuthenticatedUser(request) {
+// Looks up the authenticated user by joining the persisted sessions and users
+// tables. Because this is a PostgreSQL query, callers must `await` this helper.
+export async function getAuthenticatedUser(request) {
   const token = getBearerToken(request);
 
   if (!token) {
     return null;
   }
 
-  const userId = sessions.get(token);
+  const result = await database.query(
+    `
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.created_at,
+        u.updated_at
+      FROM sessions AS s
+      INNER JOIN users AS u
+        ON u.id = s.user_id
+      WHERE s.token = $1
+    `,
+    [token]
+  );
 
-  if (!userId) {
-    return null;
-  }
+  const user = result.rows[0];
 
-  return users.find((user) => user.id === userId) ?? null;
+  if (!user) return null;
+
+  return {
+    id: Number(user.id),
+    name: user.name,
+    email: user.email,
+    createdAt: user.created_at,
+    updatedAt: user.updated_at
+  };
 }

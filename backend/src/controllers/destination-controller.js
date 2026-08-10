@@ -4,14 +4,15 @@ import {
 } from "../services/destination-service.js";
 import { sendJson } from "../utils/http.js";
 
-export function listDestinations(_request, response) {
+// Controllers are asynchronous now because their services query PostgreSQL.
+export async function listDestinations(_request, response) {
   sendJson(response, 200, {
-    data: getAllDestinations()
+    data: await getAllDestinations()
   });
 }
 
-export function getDestination(_request, response, params) {
-  const destination = getDestinationById(params.id);
+export async function getDestination(_request, response, params) {
+  const destination = await getDestinationById(params.id);
 
   if (!destination) {
     sendJson(response, 404, { error: "Destination not found." });

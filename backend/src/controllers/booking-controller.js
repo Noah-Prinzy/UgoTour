@@ -7,8 +7,8 @@ import {
 import { readJsonBody, sendJson, sendNoContent } from "../utils/http.js";
 import { isNonEmptyString, isPositiveInteger } from "../utils/validation.js";
 
-export function listBookings(request, response) {
-  const user = getAuthenticatedUser(request);
+export async function listBookings(request, response) {
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });
@@ -16,12 +16,12 @@ export function listBookings(request, response) {
   }
 
   sendJson(response, 200, {
-    data: getBookingsForUser(user.id)
+    data: await getBookingsForUser(user.id)
   });
 }
 
 export async function postBooking(request, response) {
-  const user = getAuthenticatedUser(request);
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });
@@ -45,19 +45,19 @@ export async function postBooking(request, response) {
     return;
   }
 
-  const booking = createBooking(user.id, body);
+  const booking = await createBooking(user.id, body);
   sendJson(response, 201, { data: booking });
 }
 
-export function deleteBooking(request, response, params) {
-  const user = getAuthenticatedUser(request);
+export async function deleteBooking(request, response, params) {
+  const user = await getAuthenticatedUser(request);
 
   if (!user) {
     sendJson(response, 401, { error: "Authentication required." });
     return;
   }
 
-  const deleted = deleteBookingForUser(user.id, params.id);
+  const deleted = await deleteBookingForUser(user.id, params.id);
 
   if (!deleted) {
     sendJson(response, 404, { error: "Booking not found." });
