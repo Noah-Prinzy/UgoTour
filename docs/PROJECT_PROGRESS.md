@@ -1144,6 +1144,40 @@ bringing the rest of UgoTour into the same image-led visual system.
 No PostgreSQL migration is required for Phase 8.5. It is a frontend visual
 consistency pass plus a small profile display synchronization update.
 
+
+---
+
+## Phase 8.6 — content hierarchy cleanup + no-hero Profile
+
+Phase 8.6 responds to the cross-page review after Phase 8.5. The Home page is
+unchanged.
+
+### Destinations and Bookings layout cleanup
+
+- Kept both photographic heroes, but rebuilt the cream content surface directly
+  underneath them with a clearer vertical rhythm.
+- Heading, supporting copy and page action now live in one intentional intro
+  block instead of appearing compressed against each other.
+- Search/filter controls on Destinations start after a consistent spacing gap.
+- Booking status, empty states and itinerary cards now start below the intro
+  without visually colliding with the page heading.
+- Desktop and mobile spacing were tuned separately so the rounded content
+  surface still overlaps the hero, but no longer feels crowded or disoriented.
+
+### Profile redesign
+
+- Removed the Profile hero completely, including its large promotional wording.
+- Profile information now begins immediately below the floating navigation.
+- Added one full-page tourism background image and a dark readability overlay.
+- Account/photo, Edit Profile and Change Password cards use translucent cream
+  surfaces over the photograph while preserving all existing profile API logic.
+- The dedicated `frontend/images/profile-page-background.jpg` uses the curated
+  Bwindi Unsplash selection by William Pietermans. Running
+  `npm run assets:download` refreshes that file from the same high-resolution
+  source used by the destination gallery.
+
+No PostgreSQL migration is required for Phase 8.6.
+
 ---
 
 ## 14. Current persistence and integration status

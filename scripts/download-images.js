@@ -8,7 +8,7 @@
 //   npm run assets:download
 //   npm run assets:verify
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -318,6 +318,19 @@ for (const image of images) {
     console.warn(`  Could not replace ${image.fileName}: ${error.message}`);
     console.warn("  The bundled placeholder remains only to prevent broken image paths.");
   }
+}
+
+// Phase 8.6 profile background reuses the curated Bwindi trekking selection.
+// Keeping a dedicated filename lets the Profile UI remain independent from the
+// destination gallery while still receiving the high-resolution download.
+try {
+  await copyFile(
+    join(imagesDirectory, "destinations", "bwindi", "bwindi-03.jpg"),
+    join(imagesDirectory, "profile-page-background.jpg")
+  );
+  console.log("Profile background synced -> frontend/images/profile-page-background.jpg");
+} catch (error) {
+  console.warn(`Could not sync profile background: ${error.message}`);
 }
 
 const manifest = {

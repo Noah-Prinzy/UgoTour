@@ -1,9 +1,9 @@
 {
   "name": "ugotour-backend",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "private": true,
   "type": "module",
-  "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL, PWA UI, profile images and Phase 8.5 cross-page visual consistency",
+  "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL, PWA UI, profile images and Phase 8.6 page-layout polish",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",

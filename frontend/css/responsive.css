@@ -644,3 +644,90 @@
   .page-hero-scroll-cue span:first-child { display: none; }
   .profile-hero-identity { width: 100%; }
 }
+
+/* ========================================================================== */
+/* PHASE 8.6 RESPONSIVE CONTENT + PROFILE                                     */
+/* ========================================================================== */
+@media (max-width: 900px) {
+  .page-content-titlebar {
+    gap: 24px;
+  }
+
+  .profile-background-main {
+    padding-top: 142px;
+  }
+
+  .profile-page .profile-layout {
+    grid-template-columns: 290px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .destinations-page .page-after-hero,
+  .bookings-page .page-after-hero {
+    width: 100%;
+    margin-top: -24px;
+    padding: 46px 18px 72px;
+    border-radius: 28px 28px 0 0;
+  }
+
+  .page-content-intro {
+    gap: 18px;
+    margin-bottom: 26px;
+  }
+
+  .page-content-titlebar {
+    display: grid;
+    gap: 20px;
+  }
+
+  .page-content-title h2 {
+    font-size: clamp(2.2rem, 10vw, 3.25rem);
+  }
+
+  .page-content-titlebar > .secondary-button {
+    width: max-content;
+    margin-top: 0;
+  }
+
+  .destinations-page .catalog-controls-elevated {
+    margin-top: 0;
+  }
+
+  .profile-page::before {
+    background-position: 58% center;
+  }
+
+  .profile-background-main {
+    padding: 116px 0 68px;
+  }
+
+  .profile-account-content--background {
+    width: calc(100% - 28px);
+  }
+
+  .profile-page .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page .profile-summary-card {
+    position: relative;
+    top: auto;
+  }
+}
+
+@media (max-width: 440px) {
+  .profile-background-main {
+    padding-top: 108px;
+  }
+
+  .profile-account-content--background {
+    width: calc(100% - 20px);
+  }
+
+  .profile-page .profile-summary-card,
+  .profile-page .profile-settings-card,
+  .profile-page .profile-logged-out {
+    border-radius: 24px;
+  }
+}

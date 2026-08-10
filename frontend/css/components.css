@@ -2127,3 +2127,183 @@ html.home-handoff-running body {
   from { transform: scale(1.015); }
   to { transform: scale(1.06); }
 }
+
+/* ========================================================================== */
+/* PHASE 8.6 — CONTENT HIERARCHY + PROFILE BACKGROUND                          */
+/* ========================================================================== */
+
+/* Destinations and Bookings keep their immersive heroes, but the content
+   surface underneath now has a deliberate vertical rhythm. The heading,
+   supporting copy and action button are treated as one intro block so text no
+   longer appears crowded or visually disconnected from the controls below. */
+.destinations-page .page-after-hero,
+.bookings-page .page-after-hero {
+  width: min(var(--page-width), calc(100% - 48px));
+  margin-inline: auto;
+  padding: clamp(56px, 5vw, 76px) clamp(30px, 4vw, 58px) 92px;
+}
+
+.destinations-page .catalog-section {
+  padding-top: clamp(56px, 5vw, 76px);
+}
+
+.page-content-intro {
+  display: grid;
+  gap: 22px;
+  margin-bottom: 34px;
+}
+
+.page-content-titlebar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(28px, 5vw, 72px);
+}
+
+.page-content-title {
+  max-width: 760px;
+}
+
+.page-content-title h2 {
+  margin: 8px 0 16px;
+  font-size: clamp(2.25rem, 4vw, 3.7rem);
+  line-height: .98;
+  letter-spacing: -.052em;
+  font-weight: 800;
+}
+
+.page-content-title .section-lead {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.page-content-titlebar > .secondary-button {
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
+
+.destinations-page .catalog-controls-elevated {
+  margin-top: 0;
+}
+
+.destinations-page .catalog-summary {
+  margin: 26px 0 0;
+}
+
+.destinations-page .destination-grid {
+  margin-top: 24px;
+}
+
+.bookings-page .bookings-content-shell {
+  min-height: 560px;
+}
+
+.bookings-page .booking-status-line {
+  margin: 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(23, 33, 20, .09);
+}
+
+.bookings-page .booking-list {
+  margin-top: 0;
+}
+
+.bookings-page .empty-state {
+  margin-top: 8px;
+}
+
+/* Profile intentionally has no hero in Phase 8.6. A single tourism background
+   fills the whole page while the actual account UI starts directly below the
+   floating navigation. The background is a locally stored Unsplash-sourced
+   Bwindi trekking image so the page still feels connected to UgoTour. */
+.profile-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: var(--forest-950);
+}
+
+.profile-page::before {
+  content: "";
+  position: fixed;
+  z-index: -2;
+  inset: 0;
+  background: url("../images/profile-page-background.jpg") center 42% / cover no-repeat;
+  transform: scale(1.015);
+}
+
+.profile-page::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 14, 7, .56) 0%, rgba(8, 14, 7, .42) 28%, rgba(8, 14, 7, .68) 100%),
+    linear-gradient(90deg, rgba(8, 14, 7, .22), rgba(8, 14, 7, .06));
+  backdrop-filter: blur(1px);
+}
+
+.profile-page #site-header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 30;
+}
+
+.profile-background-main {
+  min-height: 100vh;
+  padding: 156px 0 92px;
+}
+
+.profile-account-content--background {
+  width: min(var(--page-width), calc(100% - 40px));
+  margin: 0 auto;
+  padding: 0;
+  background: transparent;
+}
+
+.profile-page .profile-layout {
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 24px;
+}
+
+.profile-page .profile-summary-card,
+.profile-page .profile-settings-card,
+.profile-page .profile-logged-out {
+  border: 1px solid rgba(255, 255, 255, .54);
+  background: rgba(251, 250, 246, .92);
+  box-shadow: 0 26px 75px rgba(7, 13, 6, .28);
+  backdrop-filter: blur(20px) saturate(1.08);
+}
+
+.profile-page .profile-summary-card {
+  top: 118px;
+}
+
+.profile-page .profile-settings-card {
+  padding: clamp(28px, 3vw, 38px);
+}
+
+.profile-page .profile-logged-out {
+  margin-top: 0;
+}
+
+.profile-page .site-footer {
+  position: relative;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(16, 24, 14, .88);
+  backdrop-filter: blur(18px);
+}
+
+/* The image/overlay is applied directly to the body so it cannot be hidden by
+   a negative stacking layer behind the body's own background paint. */
+.profile-page {
+  background:
+    linear-gradient(180deg, rgba(8, 14, 7, .54) 0%, rgba(8, 14, 7, .42) 30%, rgba(8, 14, 7, .72) 100%),
+    linear-gradient(90deg, rgba(8, 14, 7, .18), rgba(8, 14, 7, .04)),
+    url("../images/profile-page-background.jpg") center 42% / cover fixed no-repeat;
+}
+.profile-page::before,
+.profile-page::after { content: none; }

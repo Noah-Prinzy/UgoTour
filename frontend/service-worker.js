@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-5-v1";
+const CACHE_NAME = "ugotour-phase8-6-v1";
 
 const APP_SHELL = [
   "./",
@@ -34,7 +34,8 @@ const APP_SHELL = [
   "./pages/profile.html",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  "./images/uganda-forest-fallback.jpg"
+  "./images/uganda-forest-fallback.jpg",
+  "./images/profile-page-background.jpg"
 ];
 
 self.addEventListener("install", (event) => {

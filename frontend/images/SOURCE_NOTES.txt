@@ -54,3 +54,8 @@ Rwenzori Mountains
 - images/destinations/rwenzori/rwenzori-01.jpg — Itote Rubombora — https://unsplash.com/photos/8PF8fl6e6yE
 - images/destinations/rwenzori/rwenzori-02.jpg — Itote Rubombora — https://unsplash.com/photos/q7MveQH8acU
 - images/destinations/rwenzori/rwenzori-03.jpg — Huzair Shafiq — https://unsplash.com/photos/FgcroAvD8Bk
+
+
+Profile page background (Phase 8.6)
+- images/profile-page-background.jpg — William Pietermans — Bwindi Impenetrable National Park trekking/forest selection — https://unsplash.com/photos/5SujvqCTuJc
+- The bundled file is a local compatibility copy. Running `npm run assets:download` re-syncs it from the curated high-resolution Bwindi slot.

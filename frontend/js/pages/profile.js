@@ -34,20 +34,12 @@ async function renderProfile() {
   loggedInState?.removeAttribute("hidden");
   setText("profile-display-name", currentUser.name);
   setText("profile-display-email", currentUser.email);
-  setText("profile-hero-name", currentUser.name);
-  setText("profile-hero-email", currentUser.email);
   setText("profile-member-since", formatDate(currentUser.createdAt));
   const name = document.getElementById("profile-name"); const email = document.getElementById("profile-email");
   if (name) name.value = currentUser.name; if (email) email.value = currentUser.email;
   renderAvatar(currentUser.profileImage);
-  renderHeroAvatar(currentUser.profileImage);
 }
 
-function renderHeroAvatar(imageData = null) {
-  const avatar = document.getElementById("profile-hero-avatar");
-  if (!avatar) return;
-  avatar.innerHTML = imageData ? `<img src="${imageData}" alt="" />` : escapeHtml(makeInitials(currentUser?.name));
-}
 
 function renderAvatar(imageData = null) {
   const avatar = document.getElementById("profile-avatar");
@@ -87,7 +79,6 @@ photoInput?.addEventListener("change", async () => {
   try {
     pendingProfileImage = await resizeProfileImage(file);
     renderAvatar(pendingProfileImage);
-    renderHeroAvatar(pendingProfileImage);
     if (photoSave) photoSave.disabled = false;
     showMessage("profile-photo-message", "Preview ready. Save the photo to your profile.", true);
   } catch {
@@ -100,14 +91,14 @@ photoSave?.addEventListener("click", async () => {
   photoSave.disabled = true;
   const result = await updateCurrentUserProfileImage(pendingProfileImage);
   showMessage("profile-photo-message", result.message, result.success);
-  if (result.success) { currentUser = result.user; pendingProfileImage = null; renderHeroAvatar(currentUser.profileImage); await renderNavbar(".."); }
+  if (result.success) { currentUser = result.user; pendingProfileImage = null; await renderNavbar(".."); }
   else photoSave.disabled = false;
 });
 
 photoRemove?.addEventListener("click", async () => {
   const result = await updateCurrentUserProfileImage(null);
   showMessage("profile-photo-message", result.message, result.success);
-  if (result.success) { currentUser = result.user; pendingProfileImage = null; renderAvatar(null); renderHeroAvatar(null); if (photoSave) photoSave.disabled = true; await renderNavbar(".."); }
+  if (result.success) { currentUser = result.user; pendingProfileImage = null; renderAvatar(null); if (photoSave) photoSave.disabled = true; await renderNavbar(".."); }
 });
 
 document.getElementById("profile-logout-button")?.addEventListener("click", async () => { await logoutUser(); window.location.href = "../index.html"; });
