@@ -1,13 +1,17 @@
 {
   "name": "ugotour-backend",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
-  "description": "UgoTour framework-light JavaScript/Node.js REST API",
+  "description": "UgoTour framework-light JavaScript/Node.js REST API with PostgreSQL connectivity",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "check": "node --check src/server.js && node --check src/router.js"
+    "check": "node --check src/server.js && node --check src/router.js && node --check src/database/connection.js && node --check src/database/test-connection.js",
+    "db:test": "node src/database/test-connection.js"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   },
   "engines": {
     "node": ">=20"
