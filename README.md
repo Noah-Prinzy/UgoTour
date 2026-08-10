@@ -2,17 +2,16 @@
 
 UgoTour is a JavaScript-first Uganda tourism **Progressive Web App (PWA)** for desktop and mobile browsers.
 
-## Phase 8.3 highlights
+## Phase 8.4 highlights
 
-- Scroll-linked fullscreen Hero -> Search dissolve
-- Direction-aware soft snap between Hero and Search resting positions
-- Exactly three complete upcoming destination cards at all times
-- Circular queue across all nine PostgreSQL destinations
-- First card leaves when it becomes the new fullscreen hero
-- Remaining cards shift forward and a new destination enters slot three
-- Background crossfade, copy animation and queue movement stay synchronized
-- Existing high-resolution destination galleries, profile pictures, bookings, authentication and PWA support retained
-- PWA cache advanced to Phase 8.3
+- One deliberate mouse-wheel, trackpad, touch-swipe or keyboard gesture triggers the complete fullscreen Hero -> Search transition
+- No more pixel-by-pixel scroll-linked fading
+- Hero image/UI fades and lifts while the Search/content surface rises and softly settles into place
+- Reverse upward gesture plays the full transition back to the fullscreen hero
+- Short post-transition momentum guard keeps trackpads from scrolling past the snapped Search section
+- Exactly three complete upcoming destination cards remain synchronized with the fullscreen destination queue
+- Existing background crossfades, destination galleries, profile pictures, bookings, authentication and PWA support retained
+- PWA cache advanced to Phase 8.4
 - One cumulative guide: `docs/PROJECT_PROGRESS.md`
 
 ## Images
@@ -26,7 +25,7 @@ npm run assets:verify
 
 ## Database
 
-Phase 8.3 adds no migration. If migrations 004 and 005 are already applied, no database command is required for this sub-phase.
+Phase 8.4 adds no migration. If migrations 004 and 005 are already applied, no database command is required for this sub-phase.
 
 ## Run
 
@@ -37,4 +36,4 @@ npm run db:test
 npm start
 ```
 
-Then open `frontend/index.html` using VS Code Live Server. If the PWA was already open, reload once so the new Phase 8.3 service-worker cache takes over.
+Then open `frontend/index.html` using VS Code Live Server. If the PWA was already open, reload once so the new Phase 8.4 service-worker cache takes over.

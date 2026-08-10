@@ -36,11 +36,18 @@ let transitionLocked = false;
 let autoplayTimer = null;
 let autoplayPaused = false;
 let activeBackgroundIndex = 0;
-let lastScrollY = window.scrollY;
-let lastScrollDirection = "down";
-let scrollSettledTimer = null;
-let snapAnimationToken = 0;
-let snapInProgress = false;
+
+// Phase 8.4: the Hero <-> Search handoff is gesture-triggered, not tied to
+// every pixel of scroll. A single deliberate wheel/touch gesture starts the
+// complete cinematic transition and locks out repeated gestures until it lands.
+const HANDOFF_DURATION_MS = 980;
+const WHEEL_TRIGGER = 18;
+const TOUCH_TRIGGER = 34;
+let homeHandoffLocked = false;
+let handoffCooldownUntil = 0;
+let wheelIntent = 0;
+let wheelIntentTimer = null;
+let touchStartY = null;
 
 function clamp(value, min = 0, max = 1) {
   return Math.min(max, Math.max(min, value));
@@ -303,89 +310,259 @@ function getContentSnapTop() {
   return contentSurface.getBoundingClientRect().top + window.scrollY;
 }
 
-function updateHeroScrollScene() {
-  if (!slider || !heroTransition) return;
-  const wrapperRect = heroTransition.getBoundingClientRect();
-  const stickyTravel = Math.max(1, heroTransition.offsetHeight - slider.offsetHeight);
-  const progress = clamp((-wrapperRect.top) / stickyTravel);
-
-  const uiOpacity = clamp(1 - (progress * 1.28));
-  const controlsOpacity = clamp(1 - (progress * 1.55));
-  const bgOpacity = clamp(1 - (progress * 0.42), 0.5, 1);
-  const shadeOpacity = clamp(1 - (progress * 0.18), 0.78, 1);
-
-  slider.style.setProperty("--hero-ui-opacity", uiOpacity.toFixed(3));
-  slider.style.setProperty("--hero-controls-opacity", controlsOpacity.toFixed(3));
-  slider.style.setProperty("--hero-ui-shift", `${(-30 * progress).toFixed(1)}px`);
-  slider.style.setProperty("--hero-ui-blur", `${(2.4 * progress).toFixed(2)}px`);
-  slider.style.setProperty("--hero-bg-opacity", bgOpacity.toFixed(3));
-  slider.style.setProperty("--hero-shade-opacity", shadeOpacity.toFixed(3));
-  contentSurface?.style.setProperty("--content-reveal", progress.toFixed(3));
-}
-
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-function smoothSnapTo(targetY) {
-  const token = ++snapAnimationToken;
+function animateWindowScroll(targetY, duration = HANDOFF_DURATION_MS) {
   const startY = window.scrollY;
   const distance = targetY - startY;
-  if (Math.abs(distance) < 3) return;
 
-  if (reduceMotion) {
-    window.scrollTo(0, targetY);
+  if (reduceMotion || Math.abs(distance) < 2) {
+    window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
+    return Promise.resolve();
+  }
+
+  // main.css enables smooth scrolling globally. For this one cinematic handoff
+  // JavaScript owns the motion, so temporarily force frame-by-frame scrolling.
+  const root = document.documentElement;
+  const body = document.body;
+  const previousRootBehavior = root.style.scrollBehavior;
+  const previousBodyBehavior = body.style.scrollBehavior;
+  root.style.scrollBehavior = "auto";
+  body.style.scrollBehavior = "auto";
+
+  return new Promise((resolve) => {
+    const startedAt = performance.now();
+
+    function frame(now) {
+      const progress = clamp((now - startedAt) / duration);
+      const eased = easeInOutCubic(progress);
+      window.scrollTo(0, startY + (distance * eased));
+
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+        return;
+      }
+
+      window.scrollTo(0, targetY);
+      root.style.scrollBehavior = previousRootBehavior;
+      body.style.scrollBehavior = previousBodyBehavior;
+      resolve();
+    }
+
+    requestAnimationFrame(frame);
+  });
+}
+
+function createHandoffAnimations(direction) {
+  if (reduceMotion || !slider?.animate || !contentSurface?.animate) return [];
+
+  const down = direction === "down";
+  const easing = "cubic-bezier(.22,.78,.18,1)";
+  const duration = HANDOFF_DURATION_MS;
+
+  // The whole photographic hero fades while the content surface rises/falls
+  // into place. The final content keyframe has a tiny overshoot so the section
+  // visibly settles — the soft snap the user requested.
+  const heroFrames = down
+    ? [
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0px)", offset: 0 },
+        { opacity: .96, transform: "translate3d(0,-6px,0) scale(.997)", filter: "blur(0px)", offset: .28 },
+        { opacity: .38, transform: "translate3d(0,-42px,0) scale(.988)", filter: "blur(1.2px)", offset: .78 },
+        { opacity: .08, transform: "translate3d(0,-58px,0) scale(.982)", filter: "blur(1.8px)", offset: 1 }
+      ]
+    : [
+        { opacity: .08, transform: "translate3d(0,-58px,0) scale(.982)", filter: "blur(1.8px)", offset: 0 },
+        { opacity: .42, transform: "translate3d(0,-36px,0) scale(.989)", filter: "blur(1px)", offset: .42 },
+        { opacity: .96, transform: "translate3d(0,5px,0) scale(1.002)", filter: "blur(0px)", offset: .88 },
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0px)", offset: 1 }
+      ];
+
+  const contentFrames = down
+    ? [
+        { opacity: .12, transform: "translate3d(0,120px,0) scale(.992)", offset: 0 },
+        { opacity: .42, transform: "translate3d(0,70px,0) scale(.995)", offset: .46 },
+        { opacity: 1, transform: "translate3d(0,-12px,0) scale(1)", offset: .9 },
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", offset: 1 }
+      ]
+    : [
+        { opacity: 1, transform: "translate3d(0,0,0) scale(1)", offset: 0 },
+        { opacity: .96, transform: "translate3d(0,10px,0) scale(.999)", offset: .18 },
+        { opacity: .4, transform: "translate3d(0,78px,0) scale(.994)", offset: .7 },
+        { opacity: .1, transform: "translate3d(0,120px,0) scale(.992)", offset: 1 }
+      ];
+
+  const animations = [
+    slider.animate(heroFrames, { duration, easing, fill: "both" }),
+    contentSurface.animate(contentFrames, { duration, easing, fill: "both" })
+  ];
+
+  if (copyBlock?.animate) {
+    const copyFrames = down
+      ? [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: .82, transform: "translateY(-8px)", offset: .25 },
+          { opacity: 0, transform: "translateY(-34px)" }
+        ]
+      : [
+          { opacity: 0, transform: "translateY(-30px)" },
+          { opacity: .78, transform: "translateY(7px)", offset: .72 },
+          { opacity: 1, transform: "translateY(0)" }
+        ];
+    animations.push(copyBlock.animate(copyFrames, { duration: duration * .78, easing, fill: "both" }));
+  }
+
+  if (cardRail?.animate) {
+    const queueFrames = down
+      ? [
+          { opacity: 1, transform: "translateY(0)" },
+          { opacity: 0, transform: "translateY(34px)", offset: 1 }
+        ]
+      : [
+          { opacity: 0, transform: "translateY(32px)" },
+          { opacity: 1, transform: "translateY(0)", offset: 1 }
+        ];
+    animations.push(cardRail.animate(queueFrames, { duration: duration * .72, easing, fill: "both" }));
+  }
+
+  return animations;
+}
+
+async function runHomeHandoff(direction) {
+  if (homeHandoffLocked || !slider || !contentSurface) return;
+
+  const contentTop = getContentSnapTop();
+  if (contentTop <= 0) return;
+
+  const down = direction === "down";
+  const targetY = down ? contentTop : 0;
+  homeHandoffLocked = true;
+  document.documentElement.classList.add("home-handoff-running", `home-handoff-${direction}`);
+
+  const animations = createHandoffAnimations(direction);
+
+  try {
+    if (reduceMotion) {
+      window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
+    } else {
+      await Promise.all([
+        animateWindowScroll(targetY),
+        ...animations.map((animation) => animation.finished.catch(() => {}))
+      ]);
+    }
+  } finally {
+    // Always finish on an exact resting point. Cancelling the temporary WAAPI
+    // animations restores normal CSS once the hero is fully off/on screen.
+    window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
+    animations.forEach((animation) => animation.cancel());
+    document.documentElement.classList.remove("home-handoff-running", "home-handoff-down", "home-handoff-up");
+    homeHandoffLocked = false;
+    handoffCooldownUntil = performance.now() + 320;
+    wheelIntent = 0;
+  }
+}
+
+function resetWheelIntentSoon() {
+  clearTimeout(wheelIntentTimer);
+  wheelIntentTimer = window.setTimeout(() => { wheelIntent = 0; }, 150);
+}
+
+function handleHomeWheel(event) {
+  if (!slider || !contentSurface) return;
+
+  // Touchpads often keep emitting momentum events after the user's initial
+  // gesture. Briefly swallow that tail so the Search section stays perfectly
+  // snapped instead of immediately drifting farther down the page.
+  if (homeHandoffLocked || performance.now() < handoffCooldownUntil) {
+    event.preventDefault();
     return;
   }
 
-  snapInProgress = true;
-  const duration = clamp(430 + Math.abs(distance) * 0.28, 430, 780);
-  const startedAt = performance.now();
-
-  function frame(now) {
-    if (token !== snapAnimationToken) {
-      snapInProgress = false;
-      return;
-    }
-    const t = clamp((now - startedAt) / duration);
-    window.scrollTo(0, startY + distance * easeInOutCubic(t));
-    updateHeroScrollScene();
-    if (t < 1) requestAnimationFrame(frame);
-    else {
-      snapInProgress = false;
-      lastScrollY = window.scrollY;
-    }
-  }
-  requestAnimationFrame(frame);
-}
-
-function cancelPendingSnap() {
-  if (!snapInProgress) return;
-  snapAnimationToken += 1;
-  snapInProgress = false;
-}
-
-function maybeSnapHeroScene() {
-  if (!contentSurface || !heroTransition || reduceMotion || snapInProgress) return;
   const y = window.scrollY;
   const contentTop = getContentSnapTop();
-  if (contentTop <= 0 || y <= 4 || y >= contentTop - 4) return;
+  const atHero = y <= 10;
+  const atContentBoundary = y >= contentTop - 8 && y <= contentTop + 64;
 
-  const position = clamp(y / contentTop);
-  let target;
-  if (lastScrollDirection === "down") target = position >= 0.29 ? contentTop : 0;
-  else target = position <= 0.76 ? 0 : contentTop;
-  smoothSnapTo(target);
+  if (atHero && event.deltaY > 0) {
+    event.preventDefault();
+    wheelIntent += Math.abs(event.deltaY);
+    resetWheelIntentSoon();
+    if (wheelIntent >= WHEEL_TRIGGER) runHomeHandoff("down");
+    return;
+  }
+
+  if (atContentBoundary && event.deltaY < 0) {
+    event.preventDefault();
+    wheelIntent += Math.abs(event.deltaY);
+    resetWheelIntentSoon();
+    if (wheelIntent >= WHEEL_TRIGGER) runHomeHandoff("up");
+    return;
+  }
+
+  wheelIntent = 0;
 }
 
-function handleHomeScroll() {
-  const currentY = window.scrollY;
-  if (Math.abs(currentY - lastScrollY) > 1) lastScrollDirection = currentY > lastScrollY ? "down" : "up";
-  lastScrollY = currentY;
-  updateHeroScrollScene();
+function handleTouchStart(event) {
+  if (event.touches.length !== 1) return;
+  touchStartY = event.touches[0].clientY;
+}
 
-  clearTimeout(scrollSettledTimer);
-  if (!snapInProgress) scrollSettledTimer = window.setTimeout(maybeSnapHeroScene, 145);
+function handleTouchMove(event) {
+  if (touchStartY == null || !slider || !contentSurface) return;
+
+  if (homeHandoffLocked) {
+    event.preventDefault();
+    return;
+  }
+
+  const currentY = event.touches[0]?.clientY;
+  if (currentY == null) return;
+  const gesture = touchStartY - currentY; // positive = finger moved up = scroll down
+  const y = window.scrollY;
+  const contentTop = getContentSnapTop();
+  const atHero = y <= 10;
+  const atContentBoundary = y >= contentTop - 8 && y <= contentTop + 54;
+
+  if (atHero && gesture > 0) {
+    // Hold the fullscreen hero still until the swipe is deliberate, then play
+    // the full handoff rather than partially dragging the page.
+    event.preventDefault();
+    if (gesture >= TOUCH_TRIGGER) {
+      touchStartY = null;
+      runHomeHandoff("down");
+    }
+    return;
+  }
+
+  if (atContentBoundary && gesture < 0) {
+    event.preventDefault();
+    if (Math.abs(gesture) >= TOUCH_TRIGGER) {
+      touchStartY = null;
+      runHomeHandoff("up");
+    }
+  }
+}
+
+function handleHomeKeydown(event) {
+  if (homeHandoffLocked || event.altKey || event.ctrlKey || event.metaKey) return;
+  const activeTag = document.activeElement?.tagName;
+  if (["INPUT", "TEXTAREA", "SELECT"].includes(activeTag)) return;
+
+  const y = window.scrollY;
+  const contentTop = getContentSnapTop();
+  const atHero = y <= 10;
+  const atContentBoundary = y >= contentTop - 8 && y <= contentTop + 50;
+  const downKeys = new Set(["ArrowDown", "PageDown", " "]);
+  const upKeys = new Set(["ArrowUp", "PageUp"]);
+
+  if (atHero && downKeys.has(event.key)) {
+    event.preventDefault();
+    runHomeHandoff("down");
+  } else if (atContentBoundary && upKeys.has(event.key)) {
+    event.preventDefault();
+    runHomeHandoff("up");
+  }
 }
 
 async function initialize() {
@@ -418,7 +595,6 @@ async function initialize() {
     }
 
     if (searchMessage) searchMessage.textContent = `${destinations.length} destinations ready to explore.`;
-    updateHeroScrollScene();
     restartAutoplay();
   } catch (error) {
     console.error(error);
@@ -441,14 +617,15 @@ slider?.addEventListener("focusout", (event) => {
 });
 
 document.addEventListener("visibilitychange", () => setAutoplayPaused(document.hidden));
-window.addEventListener("scroll", handleHomeScroll, { passive: true });
-window.addEventListener("resize", updateHeroScrollScene);
-window.addEventListener("wheel", cancelPendingSnap, { passive: true });
-window.addEventListener("touchstart", cancelPendingSnap, { passive: true });
+window.addEventListener("wheel", handleHomeWheel, { passive: false });
+window.addEventListener("touchstart", handleTouchStart, { passive: true });
+window.addEventListener("touchmove", handleTouchMove, { passive: false });
+window.addEventListener("touchend", () => { touchStartY = null; }, { passive: true });
+window.addEventListener("keydown", handleHomeKeydown);
 
 scrollCue?.addEventListener("click", (event) => {
   event.preventDefault();
-  smoothSnapTo(getContentSnapTop());
+  runHomeHandoff("down");
 });
 
 function escapeHtml(value) {

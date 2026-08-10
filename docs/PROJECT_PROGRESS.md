@@ -972,6 +972,58 @@ The service-worker cache key is now `ugotour-phase8-3-v1` so installed/cached co
 
 No new PostgreSQL migration is required for Phase 8.3. Databases with migrations 004 and 005 already applied are ready.
 
+
+## Phase 8.4 — One-gesture cinematic Hero ↔ Search handoff
+
+Phase 8.4 replaces the Phase 8.3 continuously scroll-linked Home transition with
+a discrete, deliberate gesture-driven handoff. The user now scrolls/swipes once
+from the fullscreen hero and JavaScript plays the entire transition before
+settling exactly on the Search/content surface.
+
+### Downward behavior
+
+```text
+Fullscreen hero
+      ↓ one deliberate scroll / swipe
+Hero copy + three-card queue fade/lift
+Hero photography softens and recedes
+Search/content surface rises from below
+Content slightly overshoots and settles
+      ↓
+Exact Search resting position
+```
+
+The browser's normal pixel-by-pixel scrolling is intercepted only at the Hero
+boundary. During the roughly one-second handoff, repeated wheel/touch events are
+locked out. A short momentum cooldown also swallows the tail of trackpad inertia
+so the page does not immediately drift past the Search section after landing.
+
+### Upward behavior
+
+When the user returns to the top boundary of the Search/content section and
+scrolls upward once, the same sequence is reversed: the content falls/fades away,
+the hero photography and UI return, and the viewport lands exactly at the
+fullscreen hero position.
+
+### Normal scrolling remains normal
+
+The cinematic interception is limited to the two resting positions:
+
+```text
+Hero ↔ Search = one-gesture cinematic handoff
+Search ↓ rest of page = ordinary browser scrolling
+```
+
+Keyboard PageDown/ArrowDown/Space and PageUp/ArrowUp are also supported at the
+relevant boundary, and `prefers-reduced-motion` users receive an immediate
+resting-position change instead of the full animation.
+
+The Phase 8.3 three-card circular destination queue remains intact and continues
+to synchronize with hero background/copy changes. The service-worker cache key
+is advanced to `ugotour-phase8-4-v1` so an installed PWA does not keep serving
+the previous scroll-linked Home JavaScript/CSS. No PostgreSQL migration is
+required for Phase 8.4.
+
 ## 13. Running the current application
 
 ### 13.1 Download and verify the final high-resolution destination images
@@ -1034,13 +1086,13 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-A healthy Phase 8.3 response from `/health` reports:
+A healthy Phase 8.4 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": "8.3",
+  "phase": "8.4",
   "database": "connected"
 }
 ```
@@ -1103,7 +1155,7 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 visual
+The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 / 8.3 / 8.4 visual
 and motion system. Phase 9 should focus on **production readiness and
 deployment**, including:
 

@@ -1644,50 +1644,46 @@
 
 
 /* ========================================================================== */
-/* PHASE 8.3 — SCROLL MORPH + THREE-CARD CIRCULAR DESTINATION QUEUE          */
+/* PHASE 8.4 — ONE-GESTURE HERO HANDOFF + THREE-CARD DESTINATION QUEUE        */
 /* ========================================================================== */
+
+/* The hero and content are now two clean resting screens. JavaScript does not
+   continuously map scroll pixels to opacity. Instead, one deliberate scroll /
+   swipe gesture plays the complete transition and lands exactly on Search. */
 .page-home .home-hero-transition {
   position: relative;
-  height: 160vh;
-  height: 160svh;
-  min-height: 1040px;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  min-height: 660px;
   background: var(--forest-950);
 }
 
 .page-home .journey-slider {
-  position: sticky;
-  top: 0;
-  will-change: contents;
-}
-
-.page-home .journey-stage {
-  opacity: var(--hero-ui-opacity, 1);
-  transform: translate3d(0, var(--hero-ui-shift, 0px), 0);
-  filter: blur(var(--hero-ui-blur, 0px));
+  position: relative;
+  top: auto;
   will-change: opacity, transform, filter;
 }
 
-.page-home .journey-progress,
-.page-home .journey-scroll-cue {
-  opacity: var(--hero-controls-opacity, 1);
-  will-change: opacity;
+.page-home .journey-stage,
+.page-home .journey-cards,
+.page-home .home-content-surface {
+  will-change: opacity, transform;
 }
 
-.page-home .journey-shade {
-  opacity: var(--hero-shade-opacity, 1);
-  will-change: opacity;
-}
-
-.page-home .journey-bg.is-active {
-  opacity: var(--hero-bg-opacity, 1);
+/* While JavaScript owns the cinematic handoff, suppress browser overscroll
+   chaining. We intentionally do NOT set overflow:hidden because the scripted
+   viewport scroll still needs to move from Hero to Search. */
+html.home-handoff-running,
+html.home-handoff-running body {
+  overscroll-behavior-y: none;
 }
 
 .page-home .home-content-surface {
   position: relative;
   z-index: 8;
   min-height: 100vh;
-  margin-top: -60vh;
-  margin-top: -60svh;
+  margin-top: 0;
   padding: 42px 0 72px;
   overflow: clip;
   border-radius: 46px 46px 0 0;
@@ -1705,7 +1701,6 @@
   border-radius: 999px;
   background: rgba(23, 33, 20, .18);
   transform: translateX(-50%);
-  opacity: calc(.45 + (var(--content-reveal, 0) * .55));
 }
 
 .page-home .home-content-surface .home-search-band { margin-top: 0; }
@@ -1779,14 +1774,13 @@
 
 @media (max-width: 820px) {
   .page-home .home-hero-transition {
-    height: 156vh;
-    height: 156svh;
-    min-height: 980px;
+    height: 100vh;
+    height: 100svh;
+    min-height: 700px;
   }
 
   .page-home .home-content-surface {
-    margin-top: -56vh;
-    margin-top: -56svh;
+    margin-top: 0;
     padding-top: 32px;
     border-radius: 34px 34px 0 0;
   }
@@ -1803,14 +1797,13 @@
 
 @media (max-width: 560px) {
   .page-home .home-hero-transition {
-    height: 150vh;
-    height: 150svh;
-    min-height: 900px;
+    height: 100vh;
+    height: 100svh;
+    min-height: 680px;
   }
 
   .page-home .home-content-surface {
-    margin-top: -50vh;
-    margin-top: -50svh;
+    margin-top: 0;
     padding: 28px 0 60px;
     border-radius: 28px 28px 0 0;
   }
@@ -1853,5 +1846,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-home .journey-stage { filter: none !important; }
+  .page-home .journey-slider,
+  .page-home .journey-stage,
+  .page-home .journey-cards,
+  .page-home .home-content-surface {
+    will-change: auto;
+  }
 }
