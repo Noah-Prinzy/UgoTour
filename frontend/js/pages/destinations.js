@@ -1,9 +1,8 @@
 // ============================================================
-// DESTINATIONS PAGE CONTROLLER - PHASE 3
+// DESTINATIONS PAGE CONTROLLER - PHASE 7
 // ============================================================
-// Search, category filtering and dynamic rendering are still handled
-// with vanilla JavaScript. In Phase 3, each card now links to ONE
-// reusable details page using the destination id in the URL.
+// Search/filter behavior remains vanilla JavaScript. The destination records
+// now arrive asynchronously from the Node.js REST API and PostgreSQL.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
@@ -13,19 +12,8 @@ import {
   getDestinationCategories
 } from "../services/destination-service.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
-
-// ============================================================
-// 1. LOAD LOCAL DATA
-// ============================================================
-
-const destinations = getAllDestinations();
-const categories = getDestinationCategories();
-
-// ============================================================
-// 2. FIND THE HTML ELEMENTS JAVASCRIPT CONTROLS
-// ============================================================
 
 const destinationList = document.getElementById("destination-list");
 const searchInput = document.getElementById("catalog-search-input");
@@ -35,22 +23,13 @@ const emptyState = document.getElementById("destination-empty-state");
 const resetButton = document.getElementById("reset-filters");
 const catalogTotal = document.getElementById("catalog-total");
 
-if (catalogTotal) {
-  catalogTotal.textContent = destinations.length;
-}
-
-// ============================================================
-// 3. SIMPLE PAGE STATE
-// ============================================================
+let destinations = [];
+let categories = [];
 
 const catalogState = {
   searchTerm: "",
   category: "All"
 };
-
-// ============================================================
-// 4. BUILD CATEGORY FILTER BUTTONS
-// ============================================================
 
 function renderCategoryFilters() {
   if (!categoryFilters) return;
@@ -73,10 +52,6 @@ function renderCategoryFilters() {
   });
 }
 
-// ============================================================
-// 5. FILTER THE DESTINATION ARRAY
-// ============================================================
-
 function getFilteredDestinations() {
   const normalizedSearch = catalogState.searchTerm.toLowerCase();
 
@@ -93,18 +68,13 @@ function getFilteredDestinations() {
       destination.highlight,
       destination.bestFor
     ]
+      .filter(Boolean)
       .join(" ")
       .toLowerCase();
 
-    const matchesSearch = searchableText.includes(normalizedSearch);
-
-    return matchesCategory && matchesSearch;
+    return matchesCategory && searchableText.includes(normalizedSearch);
   });
 }
-
-// ============================================================
-// 6. RENDER DESTINATION CARDS
-// ============================================================
 
 function renderDestinations() {
   if (!destinationList || !destinationSummary || !emptyState) return;
@@ -113,12 +83,11 @@ function renderDestinations() {
   destinationList.innerHTML = "";
 
   filteredDestinations.forEach((destination) => {
-    // The card component creates a link containing ?id=<destination id>.
-    const card = createDestinationCard(destination, {
-      detailsPagePath: "./destination-details.html"
-    });
-
-    destinationList.appendChild(card);
+    destinationList.appendChild(
+      createDestinationCard(destination, {
+        detailsPagePath: "./destination-details.html"
+      })
+    );
   });
 
   destinationSummary.textContent = `${filteredDestinations.length} of ${destinations.length} destinations shown`;
@@ -131,17 +100,41 @@ function applyFilters() {
   renderDestinations();
 }
 
-// ============================================================
-// 7. USER EVENTS
-// ============================================================
+async function loadCatalog() {
+  if (destinationSummary) {
+    destinationSummary.textContent = "Loading destinations from the API...";
+  }
 
-// Live search: runs every time the input value changes.
+  try {
+    destinations = await getAllDestinations();
+    categories = getDestinationCategories(destinations);
+
+    if (catalogTotal) {
+      catalogTotal.textContent = destinations.length;
+    }
+
+    applyFilters();
+  } catch (error) {
+    console.error("Could not load destinations:", error);
+
+    if (destinationSummary) {
+      destinationSummary.textContent = error.message;
+    }
+
+    if (destinationList) destinationList.hidden = true;
+    if (emptyState) {
+      emptyState.hidden = false;
+      const message = emptyState.querySelector("p");
+      if (message) message.textContent = "Start the Node.js backend, then refresh this page.";
+    }
+  }
+}
+
 searchInput?.addEventListener("input", (event) => {
   catalogState.searchTerm = event.target.value.trim();
   renderDestinations();
 });
 
-// Event delegation lets one listener control all generated filters.
 categoryFilters?.addEventListener("click", (event) => {
   const clickedButton = event.target.closest("[data-category]");
   if (!clickedButton) return;
@@ -155,12 +148,7 @@ resetButton?.addEventListener("click", () => {
   catalogState.category = "All";
 
   if (searchInput) searchInput.value = "";
-
   applyFilters();
 });
 
-// ============================================================
-// 8. INITIAL PAGE RENDER
-// ============================================================
-
-applyFilters();
+await loadCatalog();

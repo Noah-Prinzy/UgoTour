@@ -1,32 +1,70 @@
 // ============================================================
-// BOOKINGS PAGE CONTROLLER - PHASE 3
+// BOOKINGS PAGE CONTROLLER - PHASE 7
 // ============================================================
-// This page reads the temporary bookings from localStorage, renders
-// them with JavaScript and allows a user to cancel a saved booking.
+// Bookings are loaded from PostgreSQL through the authenticated REST API.
+// The browser no longer owns a local booking array.
 
+import { ApiError } from "../api.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { cancelBooking, getBookings } from "../services/booking-service.js";
+import { getCurrentUser } from "../services/auth-service.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
 
 const bookingList = document.getElementById("booking-list");
 const emptyState = document.getElementById("booking-empty-state");
+const authState = document.getElementById("booking-auth-state");
 const bookingTotal = document.getElementById("booking-total");
+const bookingStatus = document.getElementById("booking-status");
 
-// ============================================================
-// 1. RENDER ALL SAVED BOOKINGS
-// ============================================================
+let currentUser = null;
+let bookings = [];
+
+async function loadBookings() {
+  if (bookingStatus) bookingStatus.textContent = "Loading your bookings...";
+
+  try {
+    currentUser = await getCurrentUser();
+
+    if (!currentUser) {
+      showAuthenticationState();
+      return;
+    }
+
+    bookings = await getBookings();
+    renderBookings();
+
+    if (bookingStatus) {
+      bookingStatus.textContent = `${bookings.length} booking${bookings.length === 1 ? "" : "s"} loaded from PostgreSQL.`;
+    }
+  } catch (error) {
+    console.error("Could not load bookings:", error);
+
+    if (error instanceof ApiError && error.status === 401) {
+      showAuthenticationState();
+      return;
+    }
+
+    if (bookingStatus) bookingStatus.textContent = error.message;
+  }
+}
+
+function showAuthenticationState() {
+  if (bookingList) bookingList.hidden = true;
+  if (emptyState) emptyState.hidden = true;
+  if (authState) authState.hidden = false;
+  if (bookingTotal) bookingTotal.textContent = "0";
+  if (bookingStatus) bookingStatus.textContent = "Log in to view your database-backed bookings.";
+}
 
 function renderBookings() {
-  if (!bookingList || !emptyState || !bookingTotal) return;
+  if (!bookingList || !emptyState || !bookingTotal || !authState) return;
 
-  const bookings = getBookings();
   bookingList.innerHTML = "";
   bookingTotal.textContent = bookings.length;
-
-  // Show either the list or the empty-state message.
+  authState.hidden = true;
   bookingList.hidden = bookings.length === 0;
   emptyState.hidden = bookings.length !== 0;
 
@@ -34,10 +72,6 @@ function renderBookings() {
     bookingList.appendChild(createBookingCard(booking));
   });
 }
-
-// ============================================================
-// 2. BUILD ONE BOOKING CARD
-// ============================================================
 
 function createBookingCard(booking) {
   const article = document.createElement("article");
@@ -47,9 +81,9 @@ function createBookingCard(booking) {
   article.innerHTML = `
     <div class="booking-card-heading">
       <div>
-        <span class="tag">${booking.destinationCategory}</span>
-        <h3>${booking.destinationName}</h3>
-        <p>${booking.destinationRegion}</p>
+        <span class="tag">${escapeHtml(booking.destinationCategory || "Destination")}</span>
+        <h3>${escapeHtml(booking.destinationName)}</h3>
+        <p>${escapeHtml(booking.destinationRegion || "Uganda")}</p>
       </div>
 
       <a
@@ -63,7 +97,7 @@ function createBookingCard(booking) {
     <dl class="booking-meta-grid">
       <div>
         <dt>Travel date</dt>
-        <dd>${formatDate(booking.date)}</dd>
+        <dd>${formatDate(booking.travelDate)}</dd>
       </div>
 
       <div>
@@ -72,13 +106,13 @@ function createBookingCard(booking) {
       </div>
 
       <div>
-        <dt>Booked for</dt>
-        <dd>${booking.name}</dd>
+        <dt>Status</dt>
+        <dd>${escapeHtml(booking.status || "confirmed")}</dd>
       </div>
 
       <div>
-        <dt>Email</dt>
-        <dd>${booking.email}</dd>
+        <dt>Account</dt>
+        <dd>${escapeHtml(currentUser?.email || "Current user")}</dd>
       </div>
     </dl>
 
@@ -94,7 +128,6 @@ function createBookingCard(booking) {
   return article;
 }
 
-// Format YYYY-MM-DD into a friendlier date using the browser's Intl API.
 function formatDate(dateValue) {
   const date = new Date(`${dateValue}T00:00:00`);
 
@@ -105,20 +138,37 @@ function formatDate(dateValue) {
   }).format(date);
 }
 
-// ============================================================
-// 3. CANCEL A BOOKING
-// ============================================================
-// Event delegation means one listener can manage every dynamically
-// created Cancel button.
-
-bookingList?.addEventListener("click", (event) => {
+bookingList?.addEventListener("click", async (event) => {
   const cancelButton = event.target.closest("[data-cancel-booking]");
-
   if (!cancelButton) return;
 
-  cancelBooking(cancelButton.dataset.cancelBooking);
-  renderBookings();
+  cancelButton.disabled = true;
+  cancelButton.textContent = "Cancelling...";
+
+  try {
+    await cancelBooking(cancelButton.dataset.cancelBooking);
+    bookings = bookings.filter(
+      (booking) => booking.id !== Number(cancelButton.dataset.cancelBooking)
+    );
+    renderBookings();
+
+    if (bookingStatus) bookingStatus.textContent = "Booking cancelled successfully.";
+  } catch (error) {
+    console.error("Cancel booking error:", error);
+    cancelButton.disabled = false;
+    cancelButton.textContent = "Cancel booking";
+
+    if (bookingStatus) bookingStatus.textContent = error.message;
+  }
 });
 
-// Initial page render.
-renderBookings();
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+await loadBookings();

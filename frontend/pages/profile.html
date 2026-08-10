@@ -20,7 +20,7 @@
     <p class="section-kicker">Account</p>
     <h1 class="page-title">Your profile</h1>
 
-    <!-- JavaScript shows this section only when no local session exists. -->
+    <!-- JavaScript shows this section when the API reports no valid session. -->
     <section id="profile-logged-out" class="profile-logged-out" hidden>
       <h2>You are not logged in.</h2>
       <p>Create an account or log in before editing a UgoTour profile.</p>
@@ -30,7 +30,7 @@
       </div>
     </section>
 
-    <!-- JavaScript fills this section with the current user's saved data. -->
+    <!-- JavaScript fills this section with the current user's PostgreSQL data. -->
     <section id="profile-logged-in" class="profile-layout" hidden>
       <aside class="profile-summary-card">
         <div id="profile-avatar" class="profile-avatar">UG</div>
@@ -51,7 +51,7 @@
         <section class="profile-settings-card">
           <p class="section-kicker">Personal details</p>
           <h2>Edit profile</h2>
-          <p>These values are currently saved in this browser using JavaScript.</p>
+          <p>These values are loaded from and saved to PostgreSQL through the UgoTour API.</p>
 
           <form id="profile-form" class="starter-form profile-form">
             <label>
@@ -72,7 +72,7 @@
         <section class="profile-settings-card">
           <p class="section-kicker">Security</p>
           <h2>Change password</h2>
-          <p>The current password must match before JavaScript accepts a new one.</p>
+          <p>The backend verifies your current password before replacing its secure hash.</p>
 
           <form id="password-form" class="starter-form profile-form">
             <label>

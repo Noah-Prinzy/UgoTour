@@ -3,7 +3,7 @@
 // ============================================================
 // This function creates a destination card with vanilla JavaScript.
 // The optional detailsPagePath lets a page decide whether the card
-// should include a link to the Phase 3 destination-details page.
+// should include a link to the reusable destination-details page.
 
 export function createDestinationCard(
   destination,

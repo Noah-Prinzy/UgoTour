@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta
     name="description"
-    content="View a UgoTour destination and create a temporary frontend booking."
+    content="View a UgoTour destination and create a database-backed booking."
   />
   <title>Destination Details | UgoTour</title>
 
@@ -70,28 +70,33 @@
       </div>
 
       <!-- ====================================================
-           FRONTEND BOOKING FORM
+           DATABASE-BACKED BOOKING FORM
            ====================================================
-           This form does NOT send data to a server yet.
-           JavaScript validates it and stores bookings in localStorage.
+           JavaScript validates the input, then POSTs it to the Node.js API.
+           The backend associates the booking with the logged-in user.
       -->
       <aside class="booking-panel" aria-labelledby="booking-heading">
         <p class="section-kicker">Plan your visit</p>
         <h2 id="booking-heading">Create a booking</h2>
         <p class="booking-panel-copy">
-          Phase 3 stores this booking in your browser. We will move it to
-          PostgreSQL after the Node.js backend is built.
+          Phase 7 sends bookings through the Node.js REST API and stores them
+          permanently in PostgreSQL for your logged-in account.
+        </p>
+
+        <p id="booking-login-note" class="form-message form-message-error" hidden>
+          You need an account session before making a booking.
+          <a href="./login.html">Login here</a>.
         </p>
 
         <form id="booking-form" class="booking-form" novalidate>
           <label>
             <span>Full name</span>
-            <input id="booking-name" name="name" type="text" autocomplete="name" />
+            <input id="booking-name" name="name" type="text" autocomplete="name" readonly />
           </label>
 
           <label>
             <span>Email address</span>
-            <input id="booking-email" name="email" type="email" autocomplete="email" />
+            <input id="booking-email" name="email" type="email" autocomplete="email" readonly />
           </label>
 
           <label>
@@ -112,7 +117,7 @@
           <p id="booking-message" class="form-message" aria-live="polite"></p>
         </form>
 
-        <a class="booking-view-link" href="./bookings.html">View my saved bookings →</a>
+        <a class="booking-view-link" href="./bookings.html">View my database bookings →</a>
       </aside>
     </section>
 

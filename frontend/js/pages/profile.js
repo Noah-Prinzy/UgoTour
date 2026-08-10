@@ -1,8 +1,8 @@
 // ============================================================
-// PROFILE PAGE FUNCTIONALITY
+// PROFILE PAGE - PHASE 7
 // ============================================================
-// This page demonstrates protected/conditional frontend content. If there is
-// no current local user, we show a login prompt instead of editable profile UI.
+// Profile reads and writes now go through authenticated API endpoints. The
+// profile is persisted in PostgreSQL rather than a browser-local user array.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
@@ -14,7 +14,7 @@ import {
 } from "../services/auth-service.js";
 import { passwordsMatch } from "../utils/validation.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
 
 const loggedOutState = document.getElementById("profile-logged-out");
@@ -22,10 +22,15 @@ const loggedInState = document.getElementById("profile-logged-in");
 const profileForm = document.getElementById("profile-form");
 const passwordForm = document.getElementById("password-form");
 
-renderProfile();
+let currentUser = null;
 
-function renderProfile() {
-  const currentUser = getCurrentUser();
+async function renderProfile() {
+  try {
+    currentUser = await getCurrentUser();
+  } catch (error) {
+    console.error("Could not load profile:", error);
+    currentUser = null;
+  }
 
   if (!currentUser) {
     loggedOutState?.removeAttribute("hidden");
@@ -36,7 +41,6 @@ function renderProfile() {
   loggedOutState?.setAttribute("hidden", "");
   loggedInState?.removeAttribute("hidden");
 
-  // Put saved user data into the page and form fields.
   setText("profile-display-name", currentUser.name);
   setText("profile-display-email", currentUser.email);
   setText("profile-member-since", formatDate(currentUser.createdAt));
@@ -47,24 +51,28 @@ function renderProfile() {
   if (nameInput) nameInput.value = currentUser.name;
   if (emailInput) emailInput.value = currentUser.email;
 
-  // Build simple initials for the profile avatar without needing an image yet.
   setText("profile-avatar", makeInitials(currentUser.name));
 }
 
-profileForm?.addEventListener("submit", (event) => {
+profileForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const name = document.getElementById("profile-name")?.value ?? "";
   const email = document.getElementById("profile-email")?.value ?? "";
-  const result = updateCurrentUserProfile({ name, email });
+  const submitButton = profileForm.querySelector('button[type="submit"]');
 
+  if (submitButton) submitButton.disabled = true;
+
+  const result = await updateCurrentUserProfile({ name, email });
   showMessage("profile-message", result.message, result.success);
 
   if (result.success) {
-    // Re-render both the page and navbar so the changed name appears immediately.
-    renderProfile();
-    renderNavbar("..");
+    currentUser = result.user;
+    await renderProfile();
+    await renderNavbar("..");
   }
+
+  if (submitButton) submitButton.disabled = false;
 });
 
 passwordForm?.addEventListener("submit", async (event) => {
@@ -79,16 +87,21 @@ passwordForm?.addEventListener("submit", async (event) => {
     return;
   }
 
+  const submitButton = passwordForm.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+
   const result = await changeCurrentUserPassword(currentPassword, newPassword);
   showMessage("password-message", result.message, result.success);
 
   if (result.success) {
     passwordForm.reset();
   }
+
+  if (submitButton) submitButton.disabled = false;
 });
 
-document.getElementById("profile-logout-button")?.addEventListener("click", () => {
-  logoutUser();
+document.getElementById("profile-logout-button")?.addEventListener("click", async () => {
+  await logoutUser();
   window.location.href = "../index.html";
 });
 
@@ -123,3 +136,5 @@ function formatDate(isoDate) {
     year: "numeric"
   }).format(new Date(isoDate));
 }
+
+await renderProfile();

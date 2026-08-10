@@ -1,54 +1,70 @@
 # UgoTour
 
-UgoTour is a JavaScript-first tourism application for discovering destinations and experiences in Uganda.
+UgoTour is a JavaScript-first tourism application for discovering destinations,
+experiences and travel opportunities in Uganda.
 
-## Architecture
+## Technology architecture
 
 ### Frontend
-- HTML for structure
-- CSS + Tailwind CSS for design
-- Vanilla JavaScript for application functionality
+- HTML for page structure
+- CSS + Tailwind CSS for visual design
+- Vanilla JavaScript for functionality
+- `fetch()` for REST API communication
 
-### Backend (later phase)
+### Backend
 - JavaScript
-- Node.js
-- REST API
+- Node.js built-in HTTP server
+- custom REST routing/controllers/services/middleware
 
-### Database (later phase)
+### Database
 - PostgreSQL
 - `pg` / node-postgres
 - SQL
 
-## Completed phases
+## Current status
 
-### Phase 1 — Frontend foundation
-- reusable frontend structure
-- Home page destination search
-- JavaScript DOM rendering
+Phases 1–7 are complete. The vanilla JavaScript frontend is now connected to the
+Node.js REST API, and the API persists destinations, users, sessions, profiles
+and bookings in PostgreSQL.
 
-### Phase 2 — Destinations catalog
-- larger destination dataset
-- live search
-- category filtering
-- reusable destination cards
-- destination details dialog
+The browser no longer keeps duplicate destination/user/booking business data.
+It stores only the bearer token needed for the current authenticated session.
 
-### Phase 3 — Destination details and bookings
-- dynamic destination-details page using URL parameters
-- JavaScript booking form validation
-- localStorage booking persistence
-- bookings list and cancellation
+## Phase 7 database migration
 
-### Phase 4 — Authentication and profile
-- signup
-- duplicate-email checking
-- login
-- local session state
-- session-aware navbar
-- editable user profile
-- password changing
-- logout
-- commented JavaScript learning architecture
+If your database already contains the Phase 6 schema, run this once from the
+`backend` folder:
 
-## Important
-Phase 3 bookings and Phase 4 authentication currently use browser localStorage only. These are temporary frontend implementations used to learn the full flow before the Node.js REST API and PostgreSQL database are introduced.
+```powershell
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\003_add_destination_details.sql
+```
+
+## Running UgoTour locally
+
+First start the backend from `UgoTour/backend`:
+
+```powershell
+npm install
+npm run db:test
+npm run check
+npm start
+```
+
+Default backend URL:
+
+```text
+http://127.0.0.1:3000
+```
+
+Then serve `frontend/index.html` with VS Code Live Server. Keep the Node.js
+backend running while using the frontend because the browser now loads its data
+through the REST API.
+
+## Documentation
+
+All project architecture, completed phases, database setup and future progress
+are maintained in one cumulative document:
+
+```text
+docs/PROJECT_PROGRESS.md
+```

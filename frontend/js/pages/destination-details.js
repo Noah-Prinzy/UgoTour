@@ -1,36 +1,24 @@
 // ============================================================
-// DESTINATION DETAILS PAGE CONTROLLER - PHASE 3
+// DESTINATION DETAILS PAGE CONTROLLER - PHASE 7
 // ============================================================
-// This page demonstrates URLSearchParams, .find()-style data access,
-// DOM rendering, form validation, JavaScript objects and localStorage.
+// The selected destination and current user are loaded from the REST API.
+// Booking submission now creates a PostgreSQL booking instead of localStorage.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
 import { createBooking } from "../services/booking-service.js";
+import { getCurrentUser } from "../services/auth-service.js";
 import {
   isFutureOrToday,
-  isNotEmpty,
-  isValidEmail,
   isValidTravellerCount
 } from "../utils/validation.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
-
-// ============================================================
-// 1. READ THE DESTINATION ID FROM THE URL
-// ============================================================
-// Example URL: destination-details.html?id=3
-// URLSearchParams lets JavaScript read the ?id=3 query parameter.
 
 const urlParameters = new URLSearchParams(window.location.search);
 const destinationId = urlParameters.get("id");
-const destination = getDestinationById(destinationId);
-
-// ============================================================
-// 2. FIND PAGE ELEMENTS
-// ============================================================
 
 const detailsShell = document.getElementById("destination-details-shell");
 const notFoundSection = document.getElementById("destination-not-found");
@@ -50,26 +38,39 @@ const bookingEmail = document.getElementById("booking-email");
 const bookingDate = document.getElementById("booking-date");
 const bookingTravellers = document.getElementById("booking-travellers");
 const bookingMessage = document.getElementById("booking-message");
+const bookingSubmit = bookingForm?.querySelector('button[type="submit"]');
+const bookingLoginNote = document.getElementById("booking-login-note");
 
-// ============================================================
-// 3. HANDLE AN INVALID DESTINATION ID
-// ============================================================
+let destination = null;
+let currentUser = null;
 
-if (!destination) {
-  if (detailsShell) detailsShell.hidden = true;
-  if (notFoundSection) notFoundSection.hidden = false;
-} else {
+async function initializePage() {
+  try {
+    destination = await getDestinationById(destinationId);
+  } catch (error) {
+    console.error("Could not load destination:", error);
+    showBookingMessage(error.message, "error");
+  }
+
+  try {
+    currentUser = await getCurrentUser();
+  } catch (error) {
+    // Destination viewing remains available even if the profile check fails.
+    console.error("Could not load booking identity:", error);
+  }
+
+  if (!destination) {
+    if (detailsShell) detailsShell.hidden = true;
+    if (notFoundSection) notFoundSection.hidden = false;
+    return;
+  }
+
   renderDestinationDetails();
   prepareBookingDateInput();
+  prepareBookingIdentity();
 }
 
-// ============================================================
-// 4. RENDER THE SELECTED DESTINATION
-// ============================================================
-
 function renderDestinationDetails() {
-  if (!destination) return;
-
   document.title = `${destination.name} | UgoTour`;
 
   if (categoryElement) categoryElement.textContent = destination.category;
@@ -77,26 +78,31 @@ function renderDestinationDetails() {
   if (nameElement) nameElement.textContent = destination.name;
   if (descriptionElement) descriptionElement.textContent = destination.description;
   if (highlightElement) highlightElement.textContent = destination.highlight;
-  if (daysElement) daysElement.textContent = `${destination.suggestedDays} day${destination.suggestedDays === 1 ? "" : "s"}`;
-  if (bestForElement) bestForElement.textContent = destination.bestFor;
-  if (travelTipElement) travelTipElement.textContent = destination.travelTip;
 
-  // Activities are an array, so JavaScript creates one <li> for each item.
+  const suggestedDays = Number(destination.suggestedDays || 1);
+  if (daysElement) {
+    daysElement.textContent = `${suggestedDays} day${suggestedDays === 1 ? "" : "s"}`;
+  }
+
+  if (bestForElement) {
+    bestForElement.textContent = destination.bestFor || "Uganda explorers";
+  }
+
+  if (travelTipElement) {
+    travelTipElement.textContent = destination.travelTip || "Plan travel time and activities before departure.";
+  }
+
   if (activitiesElement) {
     activitiesElement.innerHTML = "";
+    const activities = Array.isArray(destination.activities) ? destination.activities : [];
 
-    destination.activities.forEach((activity) => {
+    activities.forEach((activity) => {
       const listItem = document.createElement("li");
       listItem.textContent = activity;
       activitiesElement.appendChild(listItem);
     });
   }
 }
-
-// ============================================================
-// 5. PREPARE THE DATE FIELD
-// ============================================================
-// Setting min prevents most browsers from selecting dates before today.
 
 function prepareBookingDateInput() {
   if (!bookingDate) return;
@@ -109,33 +115,44 @@ function prepareBookingDateInput() {
   bookingDate.min = `${year}-${month}-${day}`;
 }
 
-// ============================================================
-// 6. VALIDATE AND SAVE A BOOKING
-// ============================================================
+function prepareBookingIdentity() {
+  const isLoggedIn = Boolean(currentUser);
 
-bookingForm?.addEventListener("submit", (event) => {
-  // Prevent the browser's normal form submission/page refresh.
+  if (bookingName) {
+    bookingName.value = currentUser?.name ?? "";
+    bookingName.disabled = !isLoggedIn;
+  }
+
+  if (bookingEmail) {
+    bookingEmail.value = currentUser?.email ?? "";
+    bookingEmail.disabled = !isLoggedIn;
+  }
+
+  if (bookingDate) bookingDate.disabled = !isLoggedIn;
+  if (bookingTravellers) bookingTravellers.disabled = !isLoggedIn;
+  if (bookingSubmit) bookingSubmit.disabled = !isLoggedIn;
+
+  if (bookingLoginNote) {
+    bookingLoginNote.hidden = isLoggedIn;
+  }
+
+  if (!isLoggedIn) {
+    showBookingMessage("Log in before creating a booking.", "error");
+  }
+}
+
+bookingForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  if (!destination || !bookingMessage) return;
+  if (!destination || !currentUser) {
+    showBookingMessage("Log in before creating a booking.", "error");
+    return;
+  }
 
-  const name = bookingName?.value.trim() ?? "";
-  const email = bookingEmail?.value.trim() ?? "";
-  const date = bookingDate?.value ?? "";
+  const travelDate = bookingDate?.value ?? "";
   const travellers = Number(bookingTravellers?.value ?? 0);
 
-  // Validate one rule at a time so the user receives useful feedback.
-  if (!isNotEmpty(name)) {
-    showBookingMessage("Please enter your full name.", "error");
-    return;
-  }
-
-  if (!isValidEmail(email)) {
-    showBookingMessage("Please enter a valid email address.", "error");
-    return;
-  }
-
-  if (!isFutureOrToday(date)) {
+  if (!isFutureOrToday(travelDate)) {
     showBookingMessage("Please choose today or a future travel date.", "error");
     return;
   }
@@ -145,32 +162,37 @@ bookingForm?.addEventListener("submit", (event) => {
     return;
   }
 
-  // Build a plain JavaScript object representing the booking.
-  const newBooking = {
-    destinationId: destination.id,
-    destinationName: destination.name,
-    destinationRegion: destination.region,
-    destinationCategory: destination.category,
-    name,
-    email,
-    date,
-    travellers
-  };
+  setBookingBusy(true);
 
-  createBooking(newBooking);
+  try {
+    await createBooking({
+      destinationId: destination.id,
+      travelDate,
+      travellers
+    });
 
-  showBookingMessage(
-    `Booking saved for ${destination.name}. You can view it on the Bookings page.`,
-    "success"
-  );
+    showBookingMessage(
+      `Booking saved to PostgreSQL for ${destination.name}.`,
+      "success"
+    );
 
-  bookingForm.reset();
-  prepareBookingDateInput();
-
-  // Reset traveller count because form.reset() restores the HTML default,
-  // but being explicit makes the intended state easy to understand.
-  if (bookingTravellers) bookingTravellers.value = "1";
+    if (bookingDate) bookingDate.value = "";
+    if (bookingTravellers) bookingTravellers.value = "1";
+    prepareBookingDateInput();
+  } catch (error) {
+    console.error("Booking error:", error);
+    showBookingMessage(error.message, "error");
+  } finally {
+    setBookingBusy(false);
+  }
 });
+
+function setBookingBusy(isBusy) {
+  if (!bookingSubmit) return;
+
+  bookingSubmit.disabled = isBusy || !currentUser;
+  bookingSubmit.textContent = isBusy ? "Saving booking..." : "Save booking";
+}
 
 function showBookingMessage(message, type) {
   if (!bookingMessage) return;
@@ -179,3 +201,5 @@ function showBookingMessage(message, type) {
   bookingMessage.classList.remove("is-error", "is-success");
   bookingMessage.classList.add(type === "success" ? "is-success" : "is-error");
 }
+
+await initializePage();

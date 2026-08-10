@@ -1,22 +1,28 @@
 // ============================================================
-// REUSABLE NAVBAR COMPONENT
+// REUSABLE NAVBAR COMPONENT - PHASE 7
 // ============================================================
-// Every page calls renderNavbar(). Phase 4 makes the final area change
-// depending on whether a user is currently logged in.
+// The navbar now asks the backend who the current user is. Because that check
+// is an HTTP request, renderNavbar() is asynchronous and page modules await it.
 
 import { getCurrentUser, logoutUser } from "../services/auth-service.js";
 
-export function renderNavbar(basePath = ".") {
+export async function renderNavbar(basePath = ".") {
   const header = document.getElementById("site-header");
 
   if (!header) {
     return;
   }
 
-  const currentUser = getCurrentUser();
+  let currentUser = null;
 
-  // Logged-in users see their name and a Logout button.
-  // Logged-out users see Login and Sign up actions.
+  try {
+    currentUser = await getCurrentUser();
+  } catch (error) {
+    // If the API is offline, keep the page usable and show logged-out actions.
+    // The session token itself is preserved by auth-service.js.
+    console.error("Could not load navbar session:", error);
+  }
+
   const accountArea = currentUser
     ? `
       <div class="nav-account">
@@ -48,14 +54,12 @@ export function renderNavbar(basePath = ".") {
     </nav>
   `;
 
-  document.getElementById("nav-logout-button")?.addEventListener("click", () => {
-    logoutUser();
+  document.getElementById("nav-logout-button")?.addEventListener("click", async () => {
+    await logoutUser();
     window.location.href = `${basePath}/index.html`;
   });
 }
 
-// The user's name comes from input, so escape special HTML characters before
-// placing it inside innerHTML. This is a basic defense against HTML injection.
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")

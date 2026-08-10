@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta
     name="description"
-    content="View temporary UgoTour bookings saved in this browser."
+    content="View UgoTour bookings stored in PostgreSQL for your account."
   />
   <title>Bookings | UgoTour</title>
 
@@ -26,14 +26,14 @@
         <p class="section-kicker">Your trips</p>
         <h1 class="page-title">Saved bookings.</h1>
         <p class="catalog-intro">
-          These bookings are stored locally in your browser during Phase 3.
-          Later, the Node.js API and PostgreSQL database will store them permanently.
+          These bookings are loaded from your UgoTour account through the Node.js
+          REST API and stored permanently in PostgreSQL.
         </p>
       </div>
 
       <div class="catalog-stat" aria-label="Saved booking count">
         <strong id="booking-total">0</strong>
-        <span>saved bookings</span>
+        <span>database bookings</span>
       </div>
     </section>
 
@@ -47,12 +47,20 @@
         <a class="secondary-button" href="./destinations.html">Explore destinations</a>
       </div>
 
-      <!-- bookings.js dynamically creates cards in this container. -->
+      <p id="booking-status" class="catalog-summary" aria-live="polite"></p>
+
+      <!-- bookings.js dynamically creates PostgreSQL-backed cards here. -->
       <div id="booking-list" class="booking-list"></div>
+
+      <div id="booking-auth-state" class="empty-state" hidden>
+        <h3>Login required.</h3>
+        <p>Your bookings belong to your UgoTour account, so log in before viewing them.</p>
+        <a class="primary-button inline-button" href="./login.html">Login</a>
+      </div>
 
       <div id="booking-empty-state" class="empty-state" hidden>
         <h3>No bookings saved yet.</h3>
-        <p>Choose a destination and create your first temporary booking.</p>
+        <p>Choose a destination and create your first database-backed booking.</p>
         <a class="primary-button inline-button" href="./destinations.html">Browse destinations</a>
       </div>
     </section>

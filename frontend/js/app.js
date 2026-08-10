@@ -1,98 +1,103 @@
+// ============================================================
+// HOME PAGE CONTROLLER - PHASE 7
+// ============================================================
+// The Home page now gets featured destinations through fetch() from the real
+// Node.js/PostgreSQL API instead of importing a local JavaScript data array.
+
 import { renderNavbar } from "./components/navbar.js";
 import { renderFooter } from "./components/footer.js";
 import { createDestinationCard } from "./components/destination-card.js";
 import { getStarterDestinations } from "./services/destination-service.js";
 
-// Render the reusable page components.
-renderNavbar(".");
+await renderNavbar(".");
 renderFooter();
 
-// Get the main destination grid from the HTML page.
 const grid = document.getElementById("experience-grid");
-
-// Get a local copy of our temporary starter destination data.
-const destinations = getStarterDestinations();
-
-// Reusable rendering function.
-// It can display all destinations or only a filtered list.
-function renderDestinations(destinationList) {
-  if (!grid) {
-    return;
-  }
-
-  // Remove any destination cards that are currently displayed.
-  grid.innerHTML = "";
-
-  // Create one card for every destination in the supplied list.
-  destinationList.forEach((destination) => {
-    const card = createDestinationCard(destination);
-    grid.appendChild(card);
-  });
-}
-
-// Display all starter destinations when the page first loads.
-renderDestinations(destinations);
-
-// Find the search interface elements in index.html.
 const searchInput = document.getElementById("destination-search");
 const searchButton = document.getElementById("search-button");
 const searchMessage = document.getElementById("search-message");
 
-// Search destinations by their name or category.
-function searchDestinations() {
-  if (!searchInput || !searchMessage) {
-    return;
-  }
+let destinations = [];
 
-  // trim() removes unnecessary spaces.
-  // toLowerCase() makes the search case-insensitive.
-  const searchTerm = searchInput.value.trim().toLowerCase();
+function renderDestinations(destinationList) {
+  if (!grid) return;
 
-  // An empty search restores every destination.
-  if (searchTerm === "") {
-    renderDestinations(destinations);
-    searchMessage.textContent = "Showing all destinations.";
-    return;
-  }
+  grid.innerHTML = "";
 
-  // filter() creates a new array containing only destinations
-  // whose name or category includes the search term.
-  const filteredDestinations = destinations.filter((destination) => {
-    const name = destination.name.toLowerCase();
-    const category = destination.category.toLowerCase();
-
-    return name.includes(searchTerm) || category.includes(searchTerm);
+  destinationList.forEach((destination) => {
+    const card = createDestinationCard(destination, {
+      detailsPagePath: "./pages/destination-details.html"
+    });
+    grid.appendChild(card);
   });
+}
 
-  // Replace the current cards with the matching results.
-  renderDestinations(filteredDestinations);
+async function loadFeaturedDestinations() {
+  if (searchMessage) {
+    searchMessage.textContent = "Loading destinations from UgoTour...";
+  }
 
-  // Give the user feedback about the search result.
-  if (filteredDestinations.length === 0) {
-    searchMessage.textContent = `No destinations found for "${searchInput.value}".`;
-  } else {
-    searchMessage.textContent = `${filteredDestinations.length} destination(s) found.`;
+  try {
+    destinations = await getStarterDestinations();
+    renderDestinations(destinations);
+
+    if (searchMessage) {
+      searchMessage.textContent = "Featured destinations loaded from the UgoTour API.";
+    }
+  } catch (error) {
+    console.error("Could not load Home destinations:", error);
+
+    if (searchMessage) {
+      searchMessage.textContent = error.message;
+    }
   }
 }
 
-// Run the search when the Search button is clicked.
-searchButton?.addEventListener("click", searchDestinations);
+function searchDestinations() {
+  if (!searchInput || !searchMessage) return;
 
-// Also run the search when Enter is pressed inside the search input.
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  if (searchTerm === "") {
+    renderDestinations(destinations);
+    searchMessage.textContent = "Showing all featured destinations.";
+    return;
+  }
+
+  const filteredDestinations = destinations.filter((destination) => {
+    const searchableText = [
+      destination.name,
+      destination.category,
+      destination.region
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return searchableText.includes(searchTerm);
+  });
+
+  renderDestinations(filteredDestinations);
+
+  searchMessage.textContent = filteredDestinations.length === 0
+    ? `No featured destinations found for "${searchInput.value}".`
+    : `${filteredDestinations.length} destination(s) found.`;
+}
+
+searchButton?.addEventListener("click", searchDestinations);
 searchInput?.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     searchDestinations();
   }
 });
 
-// Home page Explore button.
 document.getElementById("explore-button")?.addEventListener("click", () => {
   window.location.href = "./pages/destinations.html";
 });
 
-// Temporary explanation button for the starter phase.
 document.getElementById("about-button")?.addEventListener("click", () => {
   alert(
-    "UgoTour will combine a JavaScript frontend, Node.js REST API and PostgreSQL database."
+    "UgoTour now connects its vanilla JavaScript frontend to a Node.js REST API backed by PostgreSQL."
   );
 });
+
+await loadFeaturedDestinations();

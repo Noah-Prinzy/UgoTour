@@ -9,8 +9,8 @@ function mapBooking(row) {
     userId: Number(row.user_id),
     destinationId: Number(row.destination_id),
     destinationName: row.destination_name,
-    // PostgreSQL DATE values may arrive as a Date object depending on driver
-    // settings. Normalize the API value to YYYY-MM-DD.
+    destinationCategory: row.destination_category,
+    destinationRegion: row.destination_region,
     travelDate:
       row.travel_date instanceof Date
         ? row.travel_date.toISOString().slice(0, 10)
@@ -46,7 +46,9 @@ export async function createBooking(userId, input) {
 
   return mapBooking({
     ...result.rows[0],
-    destination_name: destination.name
+    destination_name: destination.name,
+    destination_category: destination.category,
+    destination_region: destination.region
   });
 }
 
@@ -58,6 +60,8 @@ export async function getBookingsForUser(userId) {
         b.user_id,
         b.destination_id,
         d.name AS destination_name,
+        d.category AS destination_category,
+        d.region AS destination_region,
         b.travel_date,
         b.travellers,
         b.created_at

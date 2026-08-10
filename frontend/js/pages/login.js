@@ -1,17 +1,28 @@
 // ============================================================
-// LOGIN PAGE FUNCTIONALITY
+// LOGIN PAGE - PHASE 7
 // ============================================================
+// Credentials are verified by the Node.js backend against PostgreSQL. A
+// successful login saves only the returned bearer token in this browser.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
-import { getCurrentUser, loginUser } from "../services/auth-service.js";
+import {
+  getCurrentUser,
+  hasLocalSessionToken,
+  loginUser
+} from "../services/auth-service.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
 
-// A logged-in user goes straight to their profile.
-if (getCurrentUser()) {
-  window.location.href = "./profile.html";
+if (hasLocalSessionToken()) {
+  try {
+    if (await getCurrentUser()) {
+      window.location.href = "./profile.html";
+    }
+  } catch (error) {
+    console.error("Session check failed:", error);
+  }
 }
 
 const loginForm = document.getElementById("login-form");
@@ -24,23 +35,16 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = document.getElementById("login-password")?.value ?? "";
 
   setFormBusy(true);
+  const result = await loginUser(email, password);
 
-  try {
-    const result = await loginUser(email, password);
-
-    if (!result.success) {
-      showMessage(result.message, "error");
-      return;
-    }
-
-    showMessage("Login successful. Opening your profile...", "success");
-    window.location.href = "./profile.html";
-  } catch (error) {
-    console.error("Login error:", error);
-    showMessage("UgoTour could not log you in from this browser.", "error");
-  } finally {
+  if (!result.success) {
+    showMessage(result.message, "error");
     setFormBusy(false);
+    return;
   }
+
+  showMessage("Login successful. Opening your profile...", "success");
+  window.location.href = "./profile.html";
 });
 
 function showMessage(message, type) {
@@ -52,7 +56,6 @@ function showMessage(message, type) {
 
 function setFormBusy(isBusy) {
   const submitButton = loginForm?.querySelector('button[type="submit"]');
-
   if (!submitButton) return;
 
   submitButton.disabled = isBusy;

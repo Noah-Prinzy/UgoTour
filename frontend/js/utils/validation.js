@@ -12,8 +12,8 @@ export function isNotEmpty(value) {
   return String(value).trim().length > 0;
 }
 
-// For Phase 4 we use a simple learning rule: at least 8 characters.
-// The backend will later enforce the real password policy too.
+// The frontend mirrors the backend learning rule: at least 8 characters.
+// The backend remains the final authority and validates the password again.
 export function isValidPassword(password) {
   return typeof password === "string" && password.length >= 8;
 }

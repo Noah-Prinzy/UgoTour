@@ -1,9 +1,9 @@
 {
   "name": "ugotour-backend",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
-  "description": "UgoTour framework-light JavaScript/Node.js REST API backed by PostgreSQL",
+  "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL and Phase 7 frontend integration",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",

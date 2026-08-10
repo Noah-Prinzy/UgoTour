@@ -1,25 +1,35 @@
 // ============================================================
-// SIGNUP PAGE FUNCTIONALITY
+// SIGNUP PAGE - PHASE 7
 // ============================================================
+// Signup now POSTs to /api/auth/signup. The backend hashes the password with
+// scrypt, saves the user in PostgreSQL and returns a bearer session token.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
-import { createAccount, getCurrentUser } from "../services/auth-service.js";
+import {
+  createAccount,
+  getCurrentUser,
+  hasLocalSessionToken
+} from "../services/auth-service.js";
 import { passwordsMatch } from "../utils/validation.js";
 
-renderNavbar("..");
+await renderNavbar("..");
 renderFooter();
 
-// If a user is already logged in, they do not need another signup form.
-if (getCurrentUser()) {
-  window.location.href = "./profile.html";
+if (hasLocalSessionToken()) {
+  try {
+    if (await getCurrentUser()) {
+      window.location.href = "./profile.html";
+    }
+  } catch (error) {
+    console.error("Session check failed:", error);
+  }
 }
 
 const signupForm = document.getElementById("signup-form");
 const signupMessage = document.getElementById("signup-message");
 
 signupForm?.addEventListener("submit", async (event) => {
-  // Stop the browser from refreshing the page when the form submits.
   event.preventDefault();
 
   const name = document.getElementById("signup-name")?.value ?? "";
@@ -34,24 +44,16 @@ signupForm?.addEventListener("submit", async (event) => {
 
   setFormBusy(true);
 
-  try {
-    const result = await createAccount({ name, email, password });
+  const result = await createAccount({ name, email, password });
 
-    if (!result.success) {
-      showMessage(result.message, "error");
-      return;
-    }
-
-    showMessage("Account created. Opening your profile...", "success");
-
-    // Small synchronous navigation is enough; no background process is used.
-    window.location.href = "./profile.html";
-  } catch (error) {
-    console.error("Signup error:", error);
-    showMessage("UgoTour could not create the account in this browser.", "error");
-  } finally {
+  if (!result.success) {
+    showMessage(result.message, "error");
     setFormBusy(false);
+    return;
   }
+
+  showMessage("Account saved to PostgreSQL. Opening your profile...", "success");
+  window.location.href = "./profile.html";
 });
 
 function showMessage(message, type) {
@@ -63,7 +65,6 @@ function showMessage(message, type) {
 
 function setFormBusy(isBusy) {
   const submitButton = signupForm?.querySelector('button[type="submit"]');
-
   if (!submitButton) return;
 
   submitButton.disabled = isBusy;
