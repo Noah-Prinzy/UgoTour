@@ -1,3 +1,4 @@
+import "../ui-motion.js";
 // ============================================================
 // DESTINATIONS PAGE CONTROLLER - PHASE 8
 // ============================================================
@@ -22,14 +23,17 @@ const destinationSummary = document.getElementById("destination-summary");
 const emptyState = document.getElementById("destination-empty-state");
 const resetButton = document.getElementById("reset-filters");
 const catalogTotal = document.getElementById("catalog-total");
+const pageQuery = new URLSearchParams(window.location.search).get("q")?.trim() ?? "";
 
 let destinations = [];
 let categories = [];
 
 const catalogState = {
-  searchTerm: "",
+  searchTerm: pageQuery,
   category: "All"
 };
+
+if (searchInput && pageQuery) searchInput.value = pageQuery;
 
 function renderCategoryFilters() {
   if (!categoryFilters) return;
@@ -82,13 +86,13 @@ function renderDestinations() {
   const filteredDestinations = getFilteredDestinations();
   destinationList.innerHTML = "";
 
-  filteredDestinations.forEach((destination) => {
-    destinationList.appendChild(
-      createDestinationCard(destination, {
-        detailsPagePath: "./destination-details.html",
-        assetBasePath: ".."
-      })
-    );
+  filteredDestinations.forEach((destination, index) => {
+    const card = createDestinationCard(destination, {
+      detailsPagePath: "./destination-details.html",
+      assetBasePath: ".."
+    });
+    card.style.setProperty("--card-order", String(index));
+    destinationList.appendChild(card);
   });
 
   destinationSummary.textContent = `${filteredDestinations.length} of ${destinations.length} destinations shown`;

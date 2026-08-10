@@ -1,3 +1,4 @@
+import "../ui-motion.js";
 import { ApiError } from "../api.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";

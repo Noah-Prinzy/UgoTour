@@ -726,27 +726,182 @@ PATCH /api/profile/photo
 
 The browser validates and resizes JPEG/PNG/WebP input before sending the image. The backend stores the resulting profile image against the authenticated user and supports removing it again. This is suitable for the current learning/local prototype; a large public deployment would normally move user-uploaded binaries to dedicated file/object storage and keep only their URL in PostgreSQL.
 
-## 13. Running the current application
+### 12.4 Phase 8.1 — cinematic motion system and exact-location galleries
 
-### 13.1 Download the selected source images
+Phase 8.1 is a **sub-phase of Phase 8**. It keeps the Phase 8 color palette,
+photographic direction, profile system and PWA work, but replaces the more
+static presentation with a stronger motion/layout language based on the
+supplied `inspiration.mp4` reference.
 
-From the **UgoTour project root**, run this while connected to the internet:
+The video was studied for movement and composition rather than copied for its
+colors or imagery. The patterns adapted into UgoTour are:
+
+- a full-bleed cinematic background destination image;
+- a small location/category kicker paired with an oversized destination title;
+- a horizontal rail of portrait destination cards;
+- an active card that lifts/scales above its neighbors;
+- card-to-background continuity when a destination is selected;
+- title, location and description text that fade/slide between destinations;
+- a thin timed progress line for autoplay;
+- previous/next circular controls and a numeric slide counter;
+- subtle slow background movement for depth;
+- staged entrance/reveal motion instead of every element appearing at once;
+- motion that is disabled/simplified when `prefers-reduced-motion` is enabled.
+
+The Home page now implements that language with vanilla JavaScript. Clicking a
+destination card creates a temporary image layer at the card's position and
+animates it outward until it fills the hero. The underlying hero image is then
+already in place, making the selected card feel as though it became the next
+scene. Autoplay advances approximately every 6.5 seconds and restarts the thin
+progress indicator. Hover, focus and hidden-tab states pause the timer.
+
+A shared `frontend/js/ui-motion.js` module now gives the remaining screens a
+consistent motion grammar. It uses `IntersectionObserver` for staged reveals
+and `MutationObserver` so cards created later from API results also animate.
+Destinations, Destination Details, Bookings, Login, Sign Up and Profile keep
+their own page layouts, but now enter with the same restrained reveal/slide
+behavior instead of unrelated animations.
+
+#### Multi-image destination photography
+
+The old Phase 8 single-photo workflow is superseded by location-specific
+**multi-image galleries**. The current curated set contains 32 image slots for
+the nine PostgreSQL destinations:
+
+```text
+Murchison Falls                   4 images
+Bwindi Impenetrable National Park 4 images
+Jinja                             4 images
+Queen Elizabeth National Park     4 images
+Kidepo Valley National Park       4 images
+Lake Bunyonyi                     3 images
+Sipi Falls                        2 images
+Kampala                           4 images
+Rwenzori Mountains                3 images
+                                  ---------
+Total                            32 images
+```
+
+Current paths are grouped by destination, for example:
+
+```text
+frontend/images/destinations/murchison-falls/murchison-01.jpg
+frontend/images/destinations/murchison-falls/murchison-02.jpg
+frontend/images/destinations/bwindi/bwindi-01.jpg
+frontend/images/destinations/jinja/jinja-01.jpg
+...
+```
+
+Phase 8.1 uses Unsplash destination photography for the actual travel gallery
+set. Pinterest remains a **UI/motion inspiration source only** in this
+sub-phase; the travel photography uses dedicated source pages with clearer
+location/credit metadata. Every selected page and photographer is recorded in
+`frontend/images/SOURCE_NOTES.txt`.
+
+The artifact ZIP contains compatibility placeholders at all expected paths so
+there are no broken local image references when the project is copied. The
+preparation environment cannot retrieve the final third-party image binaries,
+so the developer must run the included downloader on an internet-connected
+machine before judging final image sharpness. The downloader requests
+2400px-class files and creates a completion manifest only when the curated set
+has been fetched.
+
+The quality gate is intentionally strict:
 
 ```powershell
 npm run assets:download
+npm run assets:verify
 ```
 
-This writes/replaces the selected destination photos directly inside `frontend/images/`. The app can still run if a source download is temporarily unavailable because local fallbacks are bundled.
+`assets:verify` refuses to approve the compatibility placeholders. It requires
+all **32/32** curated files in the download manifest, a minimum resolution of
+**1400 × 800**, and a basic file-size threshold. This prevents an incomplete or
+blurry gallery from accidentally being treated as finished.
 
-### 13.2 Apply the migration
+#### Database and API gallery support
 
-For an existing Phase 7 local database, the earlier migrations should already be applied. Apply the new Phase 8 migration once from `UgoTour/backend`:
+Migration `005_phase8_1_destination_galleries.sql` adds:
+
+```text
+destinations.gallery_images JSONB
+```
+
+Each destination stores an ordered array such as:
+
+```json
+[
+  {
+    "url": "images/destinations/jinja/jinja-01.jpg",
+    "credit": "Photographer name",
+    "sourceUrl": "Unsplash source page"
+  },
+  {
+    "url": "images/destinations/jinja/jinja-02.jpg",
+    "credit": "Photographer name",
+    "sourceUrl": "Unsplash source page"
+  }
+]
+```
+
+The destination API now returns `galleryImages` in addition to the existing
+primary `imageUrl`. This lets the frontend use the same database-backed photo
+set everywhere instead of hard-coding separate image lists in page scripts.
+
+UI usage of the gallery data now includes:
+
+- **Home:** each destination uses its primary gallery image in the cinematic
+  slider and portrait card rail;
+- **Destinations:** cards crossfade to a second exact-location photo on
+  hover/focus when one is available;
+- **Destination Details:** an animated thumbnail gallery switches the main
+  photograph and its photographer/source credit;
+- **database seed/migration:** local image paths and their credits are persisted
+  so the gallery remains API-driven.
+
+## 13. Running the current application
+
+### 13.1 Download and verify the final high-resolution destination images
+
+From the **UgoTour project root**, run these commands while connected to the
+internet:
+
+```powershell
+npm run assets:download
+npm run assets:verify
+```
+
+The downloader writes the curated files directly under:
+
+```text
+frontend/images/destinations/
+```
+
+Do not treat the bundled compatibility placeholders as the final photography.
+Continue only when the downloader reports **32/32** and the verifier confirms
+that all 32 images meet the Phase 8.1 minimum quality target of **1400 × 800**.
+If the downloader reports fewer than 32 successful files, run it again while
+connected to the internet and then run the verifier again.
+
+### 13.2 Apply the Phase 8 / Phase 8.1 migrations
+
+If migration `004_phase8_visuals_and_profile_photo.sql` was already applied
+from the first Phase 8 build, apply only migration 005 from `UgoTour/backend`:
+
+```powershell
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\005_phase8_1_destination_galleries.sql
+```
+
+If Phase 8 migration 004 has **not** been applied yet, run 004 first and then
+005:
 
 ```powershell
 psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\004_phase8_visuals_and_profile_photo.sql
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\005_phase8_1_destination_galleries.sql
 ```
 
-This adds profile-image storage and destination photo metadata.
+Migration 004 adds profile-image/destination-photo metadata fields. Migration
+005 adds the ordered multi-image JSONB galleries and updates all nine existing
+destination rows to the new local gallery paths.
 
 ### 13.3 Start the backend
 
@@ -765,13 +920,13 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-A healthy Phase 8 response from `/health` reports:
+A healthy Phase 8.1 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": 8,
+  "phase": "8.1",
   "database": "connected"
 }
 ```
@@ -785,12 +940,18 @@ frontend/index.html
 ```
 
 Keep `npm start` running in the backend terminal while browsing the frontend.
+Because the service worker caches local assets, refresh/reload the PWA after
+running `assets:download` so the new gallery files can replace any previously
+cached compatibility placeholders. Phase 8.1 uses network-first handling for
+`frontend/images/destinations/` to make this replacement safer during local
+development.
 
 ### 13.5 PWA installation
 
-When the frontend is served from **localhost** or a deployed **HTTPS** address, supported browsers can offer installation. UgoTour includes `manifest.webmanifest`, `service-worker.js`, app icons, theme colors and an install button that appears when the browser exposes the install prompt.
-
-For local testing from another device on the same network, the backend can be started with a LAN-accessible host and the frontend API base URL can be overridden. Production deployment configuration will be finalized in the next phase.
+When the frontend is served from **localhost** or a deployed **HTTPS** address,
+supported browsers can offer installation. UgoTour includes
+`manifest.webmanifest`, `service-worker.js`, app icons, theme colors and an
+install button that appears when the browser exposes the install prompt.
 
 ---
 
@@ -799,7 +960,9 @@ For local testing from another device on the same network, the backend can be st
 ```text
 Destinations          -> PostgreSQL ✅
 Destination details   -> PostgreSQL ✅
-Destination photos    -> local frontend/images + PostgreSQL source metadata ✅
+Destination galleries -> 32 curated local paths + PostgreSQL JSONB metadata ✅
+Image source mapping  -> exact-location/high-resolution Unsplash source set documented ✅
+Image quality gate    -> implemented; passes only after 32/32 download + >= 1400×800
 Users                 -> PostgreSQL ✅
 Password hashes       -> PostgreSQL ✅
 Profile pictures      -> PostgreSQL ✅
@@ -808,6 +971,8 @@ Profile changes       -> PostgreSQL ✅
 Bookings              -> PostgreSQL ✅
 Frontend API calls    -> fetch() ✅
 Bearer authentication -> API headers ✅
+Cinematic Home motion -> vanilla JavaScript ✅
+Shared page reveals   -> IntersectionObserver / MutationObserver ✅
 Responsive mobile UI  -> CSS + vanilla JS ✅
 PWA shell/install     -> manifest + service worker ✅
 ```
@@ -824,7 +989,9 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and visually polished. Phase 9 should focus on **production readiness and deployment**, including:
+The application is now functionally connected and has the Phase 8 / 8.1 visual
+and motion system. Phase 9 should focus on **production readiness and
+deployment**, including:
 
 - environment-based backend database credentials;
 - production API base URL configuration;
@@ -841,7 +1008,8 @@ The application is now functionally connected and visually polished. Phase 9 sho
 
 Do not create separate `PHASE_X_*.md` documents inside `docs/`.
 
-All future architecture changes, completed features, setup steps and phase notes must be appended to or updated inside:
+All future architecture changes, completed features, setup steps and phase notes
+must be appended to or updated inside:
 
 ```text
 docs/PROJECT_PROGRESS.md

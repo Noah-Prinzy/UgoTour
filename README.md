@@ -6,46 +6,57 @@ UgoTour is a JavaScript-first Uganda tourism **Progressive Web App (PWA)**. It i
 
 - HTML
 - CSS + Tailwind as a visual helper
-- Vanilla JavaScript for frontend functionality
+- Vanilla JavaScript for frontend functionality and motion
 - Node.js built-in HTTP server
 - REST API
 - `pg` / node-postgres
 - PostgreSQL
 
-## Phase 8 highlights
+## Phase 8.1 highlights
 
-- Forest-green / cream travel UI inspired by the supplied mobile design references
-- Manrope typography
-- Responsive desktop navigation and mobile bottom navigation
-- Local destination photography in `frontend/images/`
-- Image source downloader for selected Unsplash and Pinterest sources
-- PostgreSQL-backed destinations, users, sessions and bookings
-- Profile picture upload, resize, preview, remove and persistence
-- PWA manifest, service worker, icons and install support
+- Phase 8 visual system retained, with a new motion/layout sub-phase based on the supplied travel-carousel video
+- Cinematic Home destination slider with card-to-background morph transitions
+- Autoplay, progress line, circular navigation controls, active-card lift and content transitions
+- Shared staged reveal motion across Destinations, Bookings, Login, Sign Up, Profile and Destination Details
+- Exact-location multi-image galleries for all nine PostgreSQL destinations
+- 32 curated Unsplash photo sources mapped to local paths under `frontend/images/destinations/`
+- Destination cards use a second gallery image on hover/focus instead of repeating one static image
+- Destination Details has an animated thumbnail gallery
+- Strict image quality verification after download: successful 32/32 manifest + minimum 1400×800
+- Profile picture upload/persistence and PWA support remain from Phase 8
 - One cumulative guide: `docs/PROJECT_PROGRESS.md`
 
-## 1. Download the selected destination images
+## 1. Download the final high-resolution destination galleries
 
-The ZIP includes local fallback images so the interface works immediately. To replace those fallbacks with the selected web-source photos on your internet-connected PC, run from the project root:
+The ZIP keeps compatibility placeholders so paths never break, but **do not treat those placeholders as the final photography**. From the project root on your internet-connected PC run:
 
 ```powershell
 npm run assets:download
+npm run assets:verify
 ```
 
-The files are saved directly into:
+The downloader requests 2400px-class Unsplash files and writes them directly into:
 
 ```text
-frontend/images/
+frontend/images/destinations/
 ```
 
-Image source pages and attribution notes are in `frontend/images/SOURCE_NOTES.txt`.
+Only continue once the downloader reports **32/32** and the verifier reports that all 32 images passed. Source pages and photo credits are recorded in `frontend/images/SOURCE_NOTES.txt`.
 
-## 2. Upgrade an existing Phase 7 database
+## 2. Upgrade the database
 
-From `backend` run:
+If migration 004 from the first Phase 8 build is already applied, you only need migration 005:
+
+```powershell
+cd backend
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\005_phase8_1_destination_galleries.sql
+```
+
+For a database that has not received the first Phase 8 migration yet, apply 004 before 005:
 
 ```powershell
 psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\004_phase8_visuals_and_profile_photo.sql
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\005_phase8_1_destination_galleries.sql
 ```
 
 Then:
@@ -60,4 +71,4 @@ npm start
 
 Open `frontend/index.html` with VS Code Live Server during local development. Keep the backend terminal running.
 
-For the complete architecture, phase history, API details, PWA notes and image-source information, see `docs/PROJECT_PROGRESS.md`.
+For the complete architecture, phase history, API details, PWA notes, motion design and image-source information, see `docs/PROJECT_PROGRESS.md`.

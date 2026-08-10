@@ -1,7 +1,7 @@
 -- ================================================================
--- UgoTour PostgreSQL schema - through Phase 8
+-- UgoTour PostgreSQL schema - through Phase 8.1
 -- ================================================================
--- Fresh database setup. Existing databases should apply their missing numbered migrations through 004
+-- Fresh database setup. Existing databases should apply their missing numbered migrations through 005
 -- instead of recreating tables.
 
 CREATE TABLE IF NOT EXISTS users (
@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS destinations (
     image_url TEXT,
     photo_credit VARCHAR(180),
     photo_source_url TEXT,
+    gallery_images JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

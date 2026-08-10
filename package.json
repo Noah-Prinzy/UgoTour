@@ -1,10 +1,12 @@
 {
   "name": "ugotour",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "description": "JavaScript-first Uganda tourism PWA with vanilla frontend, Node.js REST API and PostgreSQL",
   "scripts": {
     "start:backend": "node backend/src/server.js",
-    "assets:download": "node scripts/download-images.js"
-  }
+    "assets:download": "node scripts/download-images.js",
+    "assets:verify": "node scripts/verify-images.js"
+  },
+  "type": "module"
 }

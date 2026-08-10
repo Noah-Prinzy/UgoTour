@@ -20,40 +20,64 @@
   <header id="site-header"></header>
 
   <main>
-    <section class="home-hero" aria-labelledby="home-title">
+    <!--
+      Phase 8.1 takes the supplied video as MOTION/LAYOUT inspiration only:
+      cinematic background, oversized editorial title, a horizontal card rail,
+      progress line and card-to-background continuity. UgoTour keeps its own
+      colors, Uganda content and JavaScript-first architecture.
+    -->
+    <section id="journey-slider" class="journey-slider" aria-labelledby="journey-title">
       <img
-        id="home-hero-image"
-        class="home-hero-media"
-        src="./images/murchison-falls.jpg"
-        alt="Murchison Falls in Uganda"
+        id="journey-bg"
+        class="journey-bg"
+        src="./images/destinations/murchison-falls/murchison-01.jpg"
+        alt=""
+        aria-hidden="true"
       />
+      <div class="journey-shade" aria-hidden="true"></div>
+      <div class="journey-progress" aria-hidden="true"><span id="journey-progress-fill"></span></div>
 
-      <div class="home-hero-content">
-        <p class="hero-kicker">Discover the Pearl of Africa</p>
-        <h1 id="home-title">Choose your <span>Ugandan adventure.</span></h1>
-        <p class="hero-copy">
-          Forests, waterfalls, wildlife, lakes and city culture — plan a trip through Uganda from one clean travel experience.
-        </p>
-
-        <div class="hero-search">
-          <label for="destination-search">Where do you want to go?</label>
-          <div class="search-box">
-            <input id="destination-search" type="search" placeholder="Search Jinja, Bwindi, Sipi…" autocomplete="off" />
-            <button id="search-button" type="button">Search</button>
+      <div class="journey-stage">
+        <div id="journey-copy" class="journey-copy-block">
+          <p id="journey-kicker" class="journey-kicker">Nature · Northern Uganda</p>
+          <h1 id="journey-title">Murchison Falls</h1>
+          <p id="journey-description" class="journey-description">Loading your Uganda journey…</p>
+          <div class="journey-copy-actions">
+            <a id="journey-explore" class="journey-explore-button" href="./pages/destination-details.html?id=1">
+              <span aria-hidden="true">●</span> Explore journey
+            </a>
+            <span id="journey-highlight" class="journey-highlight">Discover Uganda</span>
           </div>
-          <p id="search-message" aria-live="polite"></p>
         </div>
 
-        <div class="hero-actions">
-          <button id="explore-button" class="primary-button" type="button">Explore places</button>
-          <button id="about-button" class="secondary-button" type="button">How it works</button>
+        <div class="journey-rail-area">
+          <p class="journey-rail-label">Choose your next story</p>
+          <div id="journey-cards" class="journey-cards" role="listbox" aria-label="Uganda destinations"></div>
+
+          <div class="journey-bottom-row">
+            <div class="journey-controls" aria-label="Destination slider controls">
+              <button id="journey-prev" class="journey-arrow" type="button" aria-label="Previous destination">←</button>
+              <button id="journey-next" class="journey-arrow" type="button" aria-label="Next destination">→</button>
+              <span id="journey-counter" class="journey-counter" aria-live="polite">01 / 09</span>
+            </div>
+            <a id="journey-photo-credit" class="journey-photo-credit" href="https://unsplash.com" target="_blank" rel="noreferrer">Destination photo</a>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="hero-location-card" aria-label="Featured destination">
-        <span>Featured escape</span>
-        <strong id="hero-featured-name">Murchison Falls</strong>
-        <p id="hero-featured-region">Northern Uganda</p>
+    <section class="home-search-band" aria-labelledby="home-search-heading">
+      <div class="home-search-copy">
+        <p class="section-kicker">Find your route</p>
+        <h2 id="home-search-heading">Where in Uganda are you heading?</h2>
+      </div>
+      <div class="home-search-control">
+        <label class="sr-only" for="destination-search">Search Uganda destinations</label>
+        <div class="search-box">
+          <input id="destination-search" type="search" placeholder="Search Jinja, Bwindi, Sipi…" autocomplete="off" />
+          <button id="search-button" type="button">Search</button>
+        </div>
+        <p id="search-message" aria-live="polite">Loading Uganda destinations…</p>
       </div>
     </section>
 
@@ -62,13 +86,13 @@
         <strong>Travel your way</strong>
         <p>Pick the mood, then discover a destination that fits it.</p>
       </div>
-      <a class="discovery-chip" href="./pages/destinations.html">
+      <a class="discovery-chip" href="./pages/destinations.html?q=Wildlife">
         <strong>Wildlife</strong><p>Safari & gorillas</p>
       </a>
-      <a class="discovery-chip" href="./pages/destinations.html">
+      <a class="discovery-chip" href="./pages/destinations.html?q=Adventure">
         <strong>Adventure</strong><p>Nile & mountains</p>
       </a>
-      <a class="discovery-chip" href="./pages/destinations.html">
+      <a class="discovery-chip" href="./pages/destinations.html?q=Nature">
         <strong>Nature</strong><p>Waterfalls & lakes</p>
       </a>
     </section>
@@ -76,8 +100,8 @@
     <section class="section-shell">
       <div class="section-heading">
         <div>
-          <p class="section-kicker">Popular now</p>
-          <h2>Start with these escapes.</h2>
+          <p class="section-kicker">More to discover</p>
+          <h2>Uganda, one journey at a time.</h2>
         </div>
         <a class="secondary-button" href="./pages/destinations.html">View all destinations</a>
       </div>

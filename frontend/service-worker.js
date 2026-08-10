@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-v1";
+const CACHE_NAME = "ugotour-phase8-1-v2";
 
 const APP_SHELL = [
   "./",
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "./js/app.js",
   "./js/api.js",
   "./js/pwa.js",
+  "./js/ui-motion.js",
   "./js/components/navbar.js",
   "./js/components/footer.js",
   "./js/components/destination-card.js",
@@ -33,15 +34,6 @@ const APP_SHELL = [
   "./pages/profile.html",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
-  "./images/murchison-falls.jpg",
-  "./images/bwindi.jpg",
-  "./images/jinja-pinterest.jpg",
-  "./images/queen-elizabeth.jpg",
-  "./images/kidepo.jpg",
-  "./images/lake-bunyonyi.jpg",
-  "./images/sipi-falls.jpg",
-  "./images/kampala.jpg",
-  "./images/rwenzori.jpg",
   "./images/uganda-forest-fallback.jpg"
 ];
 
@@ -64,9 +56,27 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(event.request.url);
 
-  // API data should stay network-driven so account and booking information is
-  // never served from an old service-worker cache.
+  // API data stays network-driven so account and booking information is never
+  // served from an old service-worker cache.
   if (url.pathname.startsWith("/api/") || url.port === "3000") return;
+
+  // Phase 8.1 destination images are network-first. This matters because the
+  // developer replaces compatibility placeholders with the downloaded 2400px
+  // files after copying the ZIP; the service worker must not trap an old image.
+  if (url.origin === self.location.origin && url.pathname.includes("/images/destinations/")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cached) => {

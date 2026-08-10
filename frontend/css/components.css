@@ -753,7 +753,7 @@
   inset: 0;
   background:
     linear-gradient(90deg, rgba(15,23,13,.92), rgba(15,23,13,.58) 55%, rgba(15,23,13,.25)),
-    url("../images/lake-bunyonyi.jpg") center/cover;
+    url("../images/destinations/lake-bunyonyi/lake-bunyonyi-01.jpg") center/cover;
 }
 
 .bookings-hero > * {
@@ -878,13 +878,13 @@
   inset: 0;
   background:
     linear-gradient(0deg, rgba(14,21,12,.86), rgba(14,21,12,.08) 70%),
-    url("../images/bwindi.jpg") center/cover;
+    url("../images/destinations/bwindi/bwindi-01.jpg") center/cover;
 }
 
 .auth-login-intro::before {
   background:
     linear-gradient(0deg, rgba(14,21,12,.86), rgba(14,21,12,.08) 70%),
-    url("../images/lake-bunyonyi.jpg") center/cover;
+    url("../images/destinations/lake-bunyonyi/lake-bunyonyi-01.jpg") center/cover;
 }
 
 .auth-intro-panel > * {
@@ -1144,4 +1144,451 @@
   background: rgba(255,255,255,.1);
   color: var(--white);
   font-weight: 800;
+}
+
+/* ========================================================================== */
+/* PHASE 8.1 — CINEMATIC TRAVEL UI / VIDEO-INSPIRED LAYOUT                   */
+/* ========================================================================== */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.journey-slider {
+  position: relative;
+  isolation: isolate;
+  width: min(1440px, calc(100% - 24px));
+  min-height: clamp(640px, 78vh, 820px);
+  margin: 12px auto 0;
+  overflow: hidden;
+  border-radius: 38px;
+  background: var(--forest-950);
+  color: var(--white);
+  box-shadow: 0 28px 80px rgba(15, 24, 13, .22);
+}
+
+.journey-bg,
+.journey-shade,
+.journey-morph-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.journey-bg {
+  z-index: -3;
+  object-fit: cover;
+  transform: scale(1.015);
+  animation: journey-ken-burns 6.5s ease-in-out infinite alternate;
+}
+
+.journey-shade {
+  z-index: -2;
+  background:
+    linear-gradient(90deg, rgba(8, 13, 7, .82) 0%, rgba(8, 13, 7, .56) 37%, rgba(8, 13, 7, .17) 70%, rgba(8, 13, 7, .34) 100%),
+    linear-gradient(0deg, rgba(8, 13, 7, .62), transparent 44%);
+}
+
+.journey-progress {
+  position: absolute;
+  z-index: 6;
+  top: 22px;
+  left: 28px;
+  right: 28px;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .24);
+}
+
+.journey-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: rgba(255,255,255,.92);
+}
+
+.journey-stage {
+  position: relative;
+  z-index: 2;
+  min-height: inherit;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(520px, 1.3fr);
+  align-items: end;
+  gap: clamp(34px, 5vw, 86px);
+  padding: clamp(92px, 11vh, 130px) clamp(34px, 5vw, 76px) clamp(40px, 6vh, 62px);
+}
+
+.journey-copy-block {
+  max-width: 580px;
+  align-self: center;
+  padding-bottom: 36px;
+}
+
+.journey-kicker {
+  margin: 0 0 10px;
+  color: rgba(255,255,255,.82);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.journey-copy-block h1 {
+  max-width: 650px;
+  margin: 0;
+  font-size: clamp(4rem, 7vw, 7.7rem);
+  line-height: .82;
+  letter-spacing: -.075em;
+  font-weight: 800;
+  text-wrap: balance;
+}
+
+.journey-description {
+  max-width: 520px;
+  margin: 24px 0 0;
+  color: rgba(255,255,255,.77);
+  font-size: clamp(.88rem, 1.2vw, 1.02rem);
+  line-height: 1.7;
+}
+
+.journey-copy-actions {
+  margin-top: 26px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.journey-explore-button {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 17px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.38);
+  background: rgba(255,255,255,.11);
+  color: var(--white);
+  backdrop-filter: blur(12px);
+  font-size: .8rem;
+  font-weight: 800;
+  transition: transform 220ms ease, background 220ms ease;
+}
+
+.journey-explore-button:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.19);
+}
+
+.journey-explore-button span {
+  color: #f3d56f;
+  font-size: .7rem;
+}
+
+.journey-highlight {
+  max-width: 230px;
+  color: rgba(255,255,255,.66);
+  font-size: .72rem;
+  line-height: 1.4;
+}
+
+.journey-rail-area {
+  min-width: 0;
+  align-self: end;
+}
+
+.journey-rail-label {
+  margin: 0 0 12px;
+  color: rgba(255,255,255,.68);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.journey-cards {
+  min-width: 0;
+  display: flex;
+  align-items: end;
+  gap: 15px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 20px 12px 22px 1px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.journey-cards::-webkit-scrollbar { display: none; }
+
+.journey-card {
+  position: relative;
+  flex: 0 0 clamp(165px, 14vw, 205px);
+  height: clamp(230px, 30vh, 290px);
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 24px;
+  background: rgba(255,255,255,.12);
+  color: var(--white);
+  box-shadow: 0 18px 42px rgba(0,0,0,.24);
+  scroll-snap-align: center;
+  transform-origin: bottom center;
+  transition:
+    transform 480ms cubic-bezier(.18,.82,.2,1),
+    flex-basis 480ms cubic-bezier(.18,.82,.2,1),
+    opacity 300ms ease,
+    box-shadow 420ms ease,
+    filter 420ms ease;
+}
+
+.journey-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 900ms cubic-bezier(.18,.82,.2,1);
+}
+
+.journey-card:hover img,
+.journey-card:focus-visible img {
+  transform: scale(1.045);
+}
+
+.journey-card.is-active {
+  flex-basis: clamp(195px, 17vw, 240px);
+  transform: translateY(-13px) scale(1.025);
+  box-shadow: 0 26px 60px rgba(0,0,0,.34);
+  border-color: rgba(255,255,255,.72);
+}
+
+.journey-card:not(.is-active) {
+  filter: saturate(.9);
+}
+
+.journey-card-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(7,12,6,.83), transparent 63%);
+}
+
+.journey-card-copy {
+  position: absolute;
+  z-index: 2;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  text-align: left;
+}
+
+.journey-card-copy small {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255,255,255,.68);
+  font-size: .61rem;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.journey-card-copy strong {
+  display: block;
+  font-size: clamp(.88rem, 1.1vw, 1.04rem);
+  line-height: 1.08;
+  letter-spacing: -.025em;
+}
+
+.journey-bottom-row {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.journey-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.journey-arrow {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.35);
+  border-radius: 50%;
+  background: rgba(12,18,10,.28);
+  color: var(--white);
+  backdrop-filter: blur(10px);
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+.journey-arrow:hover {
+  transform: scale(1.07);
+  background: rgba(255,255,255,.17);
+}
+
+.journey-counter {
+  min-width: 68px;
+  margin-left: 4px;
+  color: rgba(255,255,255,.78);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.journey-photo-credit {
+  max-width: 220px;
+  color: rgba(255,255,255,.56);
+  font-size: .64rem;
+  text-align: right;
+}
+
+.journey-photo-credit:hover { color: var(--white); }
+
+.journey-morph-layer {
+  z-index: 5;
+  object-fit: cover;
+  pointer-events: none;
+  box-shadow: 0 28px 70px rgba(0,0,0,.28);
+}
+
+.home-search-band {
+  width: min(var(--page-width), calc(100% - 40px));
+  margin: 28px auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(360px, 1.2fr);
+  align-items: center;
+  gap: 34px;
+  padding: 28px 32px;
+  border: 1px solid rgba(23,33,20,.08);
+  border-radius: 28px;
+  background: rgba(255,255,255,.62);
+  box-shadow: var(--shadow-card);
+}
+
+.home-search-copy h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.6rem, 2.7vw, 2.7rem);
+  line-height: 1.02;
+  letter-spacing: -.045em;
+}
+
+.home-search-control .search-box {
+  background: var(--cream-50);
+}
+
+.home-search-control #search-message {
+  min-height: 18px;
+  margin: 8px 4px 0;
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+/* Exact-location thumbnail stack on Destination Details, inspired by the
+   reference video's persistent card rail and the user's earlier mobile UI. */
+.details-gallery {
+  position: absolute;
+  z-index: 4;
+  top: 112px;
+  right: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.details-gallery-thumb {
+  width: 68px;
+  height: 80px;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.48);
+  border-radius: 18px;
+  background: rgba(15,22,13,.2);
+  backdrop-filter: blur(9px);
+  transition: transform 190ms ease, border-color 190ms ease, background 190ms ease;
+}
+
+.details-gallery-thumb:hover,
+.details-gallery-thumb.is-active {
+  transform: translateX(-5px) scale(1.04);
+  border-color: var(--white);
+  background: rgba(255,255,255,.28);
+}
+
+.details-gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+/* Cards use two local gallery files. The second exact-location photograph
+   crossfades on hover/focus so one image is not repeated everywhere. */
+.destination-card {
+  animation-delay: calc(var(--card-order, 0) * 48ms);
+}
+
+.destination-card-media .destination-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.destination-card-image-primary {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 520ms cubic-bezier(.18,.82,.2,1), transform 760ms cubic-bezier(.18,.82,.2,1);
+}
+
+.destination-card-image-secondary {
+  opacity: 0;
+  transform: scale(1.055);
+  transition: opacity 520ms cubic-bezier(.18,.82,.2,1), transform 900ms cubic-bezier(.18,.82,.2,1);
+}
+
+.destination-card:hover .destination-card-media .destination-card-image-primary,
+.destination-card:focus-within .destination-card-media .destination-card-image-primary {
+  opacity: .08;
+  transform: scale(1.035);
+}
+
+.destination-card:hover .destination-card-media .destination-card-image-secondary,
+.destination-card:focus-within .destination-card-media .destination-card-image-secondary {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.destination-card-media::before {
+  content: "View journey ↗";
+  position: absolute;
+  z-index: 3;
+  right: 14px;
+  bottom: 14px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  color: var(--forest-950);
+  font-size: .66rem;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.destination-card:hover .destination-card-media::before,
+.destination-card:focus-within .destination-card-media::before {
+  opacity: 1;
+  transform: translateY(0);
 }

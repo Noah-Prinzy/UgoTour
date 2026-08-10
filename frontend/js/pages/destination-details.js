@@ -1,3 +1,4 @@
+import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
@@ -57,19 +58,7 @@ function renderDestination(item) {
   setText("details-best-for", item.bestFor || "Curious travellers");
   setText("details-travel-tip", item.travelTip || "Plan ahead and leave room for spontaneous discoveries.");
 
-  const image = document.getElementById("details-image");
-  if (image) {
-    image.src = resolveAssetPath(item.imageUrl, "..");
-    image.alt = item.name;
-  }
-
-  const credit = document.getElementById("details-photo-credit");
-  if (credit) {
-    const isPinterest = String(item.photoSourceUrl || "").includes("pinterest.");
-    const sourceLabel = isPinterest ? "Pinterest" : "Unsplash";
-    credit.textContent = item.photoCredit ? `Photo: ${item.photoCredit} · ${sourceLabel}` : `Photo via ${sourceLabel}`;
-    credit.href = item.photoSourceUrl || "https://unsplash.com";
-  }
+  renderDestinationGallery(item);
 
   const activities = document.getElementById("details-activities");
   if (activities) {
@@ -79,6 +68,80 @@ function renderDestination(item) {
       li.textContent = activity;
       activities.appendChild(li);
     });
+  }
+}
+
+function getDestinationPhotos(item) {
+  const gallery = Array.isArray(item.galleryImages) ? item.galleryImages : [];
+  if (gallery.length) return gallery;
+
+  return [{
+    url: item.imageUrl,
+    credit: item.photoCredit,
+    sourceUrl: item.photoSourceUrl
+  }].filter((photo) => photo.url);
+}
+
+function renderDestinationGallery(item) {
+  const gallery = document.getElementById("details-gallery");
+  const photos = getDestinationPhotos(item);
+
+  if (!photos.length) return;
+
+  setDetailsPhoto(photos[0], item, false);
+
+  if (!gallery) return;
+  gallery.innerHTML = "";
+
+  photos.forEach((photo, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `details-gallery-thumb${index === 0 ? " is-active" : ""}`;
+    button.setAttribute("aria-label", `Show ${item.name} photo ${index + 1}`);
+    button.innerHTML = `<img src="${resolveAssetPath(photo.url, "..")}" alt="" loading="lazy" />`;
+
+    button.addEventListener("click", () => {
+      gallery.querySelectorAll(".details-gallery-thumb").forEach((thumb) => thumb.classList.remove("is-active"));
+      button.classList.add("is-active");
+      setDetailsPhoto(photo, item, true);
+    });
+
+    gallery.appendChild(button);
+  });
+}
+
+function setDetailsPhoto(photo, item, animate = true) {
+  const image = document.getElementById("details-image");
+  const credit = document.getElementById("details-photo-credit");
+  const nextSrc = resolveAssetPath(photo.url, "..");
+
+  if (image) {
+    const swap = () => {
+      image.src = nextSrc;
+      image.alt = item.name;
+    };
+
+    if (animate && image.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const out = image.animate(
+        [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(1.035)" }],
+        { duration: 180, easing: "ease-in", fill: "forwards" }
+      );
+
+      out.finished.then(() => {
+        swap();
+        image.animate(
+          [{ opacity: 0, transform: "scale(.985)" }, { opacity: 1, transform: "scale(1)" }],
+          { duration: 420, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }
+        );
+      });
+    } else {
+      swap();
+    }
+  }
+
+  if (credit) {
+    credit.textContent = photo.credit ? `Photo: ${photo.credit} · Unsplash` : "Photo via Unsplash";
+    credit.href = photo.sourceUrl || "https://unsplash.com";
   }
 }
 
@@ -130,8 +193,21 @@ document.getElementById("details-favorite")?.addEventListener("click", (event) =
   event.currentTarget.textContent = saved ? "♡" : "♥";
 });
 
-function setBusy(busy) { if (bookingSubmit) { bookingSubmit.disabled = busy || !currentUser; bookingSubmit.textContent = busy ? "Saving…" : "Save booking"; } }
-function showBookingMessage(message, type) { if (!bookingMessage) return; bookingMessage.textContent = message; bookingMessage.className = `form-message ${type === "success" ? "is-success" : "is-error"}`; }
-function setText(id, value) { const element = document.getElementById(id); if (element) element.textContent = value ?? ""; }
+function setBusy(busy) {
+  if (!bookingSubmit) return;
+  bookingSubmit.disabled = busy || !currentUser;
+  bookingSubmit.textContent = busy ? "Saving…" : "Save booking";
+}
+
+function showBookingMessage(message, type) {
+  if (!bookingMessage) return;
+  bookingMessage.textContent = message;
+  bookingMessage.className = `form-message ${type === "success" ? "is-success" : "is-error"}`;
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value ?? "";
+}
 
 await initializePage();

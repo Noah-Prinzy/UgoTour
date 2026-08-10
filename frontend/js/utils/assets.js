@@ -1,8 +1,8 @@
 // ============================================================
-// FRONTEND ASSET PATH HELPER - PHASE 8
+// FRONTEND ASSET PATH HELPER - PHASE 8.1
 // ============================================================
 // Destination photo paths come from PostgreSQL as project-relative paths such
-// as "images/murchison-falls.jpg". Pages inside /pages are one directory
+// as "images/destinations/murchison-falls/murchison-01.jpg". Pages inside /pages are one directory
 // deeper than index.html, so they pass ".." as the base path.
 
 export function resolveAssetPath(assetPath, basePath = ".") {
