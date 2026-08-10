@@ -1,34 +1,32 @@
 // ============================================================
 // REUSABLE DESTINATION CARD COMPONENT
 // ============================================================
-// This function creates a card using vanilla JavaScript DOM methods.
-// The optional showDetailsButton setting lets the Destinations page
-// add a Details button without forcing that button onto every page.
+// This function creates a destination card with vanilla JavaScript.
+// The optional detailsPagePath lets a page decide whether the card
+// should include a link to the Phase 3 destination-details page.
 
 export function createDestinationCard(
   destination,
-  { showDetailsButton = false } = {}
+  { detailsPagePath = null } = {}
 ) {
   const article = document.createElement("article");
   article.className = "experience-card destination-card";
   article.dataset.destinationId = destination.id;
 
-  // A small region label is shown only when region data exists.
   const regionMarkup = destination.region
     ? `<p class="destination-region">${destination.region}</p>`
     : "";
 
-  // The action button is optional because this component is reused
-  // by both the Home page and the full Destinations catalog.
-  const actionMarkup = showDetailsButton
+  // If a details path is supplied, build a URL such as:
+  // ./destination-details.html?id=3
+  const actionMarkup = detailsPagePath
     ? `
-      <button
+      <a
         class="destination-details-button"
-        type="button"
-        data-view-destination="${destination.id}"
+        href="${detailsPagePath}?id=${destination.id}"
       >
-        View details
-      </button>
+        View full details
+      </a>
     `
     : "";
 

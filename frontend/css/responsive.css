@@ -57,3 +57,73 @@
     padding: 24px 20px;
   }
 }
+
+/* ============================================================
+   PHASE 3 - DETAILS + BOOKINGS RESPONSIVE RULES
+   ============================================================ */
+
+@media (max-width: 980px) {
+  .details-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-panel {
+    position: static;
+  }
+
+  .booking-meta-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .bookings-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    padding: 42px 34px;
+  }
+
+  .activity-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .details-shell {
+    width: min(100% - 18px, 1180px);
+    margin-top: 10px;
+  }
+
+  .details-main,
+  .booking-panel {
+    padding: 24px 20px;
+    border-radius: 22px;
+  }
+
+  .details-title {
+    font-size: clamp(2.7rem, 14vw, 4.6rem);
+  }
+
+  .details-topline,
+  .booking-card-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .details-info-grid,
+  .activity-list,
+  .booking-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bookings-hero {
+    width: min(100% - 18px, 1180px);
+    margin-top: 10px;
+    padding: 34px 22px;
+    border-radius: 24px;
+  }
+
+  .booking-details-link {
+    white-space: normal;
+  }
+}

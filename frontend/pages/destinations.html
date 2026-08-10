@@ -32,8 +32,8 @@
         <p class="section-kicker">Explore Uganda</p>
         <h1 class="page-title">Find your next destination.</h1>
         <p class="catalog-intro">
-          Search UgoTour's starter catalog and filter places by the kind of
-          experience you want. All filtering is handled with vanilla JavaScript.
+          Search UgoTour's starter catalog, filter places by experience,
+          then open a full destination page to plan a visit.
         </p>
       </div>
 
@@ -83,7 +83,6 @@
       <!-- JavaScript dynamically creates destination cards here. -->
       <div id="destination-list" class="experience-grid destination-grid"></div>
 
-      <!-- Only shown when the current filter returns zero destinations. -->
       <div id="destination-empty-state" class="empty-state" hidden>
         <h3>No destinations matched.</h3>
         <p>Try another search term or reset your category filter.</p>
@@ -91,32 +90,6 @@
     </section>
   </main>
 
-  <!-- ========================================================
-       DESTINATION DETAILS DIALOG
-       ========================================================
-       JavaScript fills this dialog when View details is clicked.
-  -->
-  <dialog id="destination-dialog" class="destination-dialog">
-    <div class="destination-dialog-content">
-      <div class="dialog-topline">
-        <span id="dialog-category" class="tag"></span>
-        <button id="close-destination-dialog" class="dialog-close" type="button" aria-label="Close destination details">
-          ×
-        </button>
-      </div>
-
-      <p id="dialog-region" class="destination-region"></p>
-      <h2 id="dialog-name"></h2>
-      <p id="dialog-description" class="dialog-description"></p>
-
-      <div class="dialog-highlight">
-        <span>Experience highlight</span>
-        <strong id="dialog-highlight"></strong>
-      </div>
-    </div>
-  </dialog>
-
-  <!-- footer.js injects the reusable footer here. -->
   <footer id="site-footer"></footer>
 
   <!-- All catalog behavior lives in our own JavaScript module. -->

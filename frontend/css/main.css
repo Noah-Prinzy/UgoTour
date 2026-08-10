@@ -297,3 +297,151 @@ input {
 .destination-grid[hidden] {
   display: none;
 }
+
+/* ============================================================
+   PHASE 3 - DESTINATION DETAILS + BOOKINGS LAYOUT
+   ============================================================ */
+
+.details-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 34px auto 90px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 34px;
+  align-items: start;
+}
+
+.details-main {
+  min-width: 0;
+  padding: 46px;
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: var(--surface);
+}
+
+.details-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.details-title {
+  max-width: 800px;
+  margin: 18px 0 0;
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.details-description {
+  max-width: 760px;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.8;
+}
+
+.details-highlight {
+  display: grid;
+  gap: 7px;
+  margin-top: 30px;
+  padding: 22px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ecfdf5, #fffbeb);
+}
+
+.details-highlight span,
+.details-info-card span,
+.travel-tip span {
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.details-highlight strong {
+  font-size: 1.18rem;
+}
+
+.details-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.details-info-card {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fafaf9;
+}
+
+.details-subsection {
+  margin-top: 48px;
+}
+
+.details-subsection h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.travel-tip {
+  margin-top: 36px;
+  padding: 24px;
+  border-left: 4px solid var(--brand);
+  border-radius: 0 18px 18px 0;
+  background: #f8fafc;
+}
+
+.travel-tip p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.booking-panel {
+  position: sticky;
+  top: 24px;
+  padding: 28px;
+  border: 1px solid rgba(22, 101, 52, 0.14);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #ffffff, #f0fdf4);
+  box-shadow: 0 24px 70px rgba(23, 32, 51, 0.08);
+}
+
+.booking-panel h2 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.booking-panel-copy {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.bookings-hero {
+  width: min(1180px, calc(100% - 32px));
+  margin: 28px auto 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 48px;
+  padding: 54px 58px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #f8fafc, #ecfdf5 62%, #fffbeb);
+}
+
+.booking-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}

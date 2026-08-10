@@ -243,3 +243,174 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* ============================================================
+   PHASE 3 - DETAILS + BOOKING COMPONENTS
+   ============================================================ */
+
+.back-link {
+  display: inline-flex;
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.activity-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-list li {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  font-weight: 750;
+}
+
+.booking-form {
+  display: grid;
+  gap: 17px;
+  margin-top: 24px;
+}
+
+.booking-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.booking-form label span {
+  font-size: 0.86rem;
+}
+
+.booking-form input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid #d6d3d1;
+  border-radius: 12px;
+  background: #fff;
+  outline: none;
+}
+
+.booking-form input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.1);
+}
+
+.booking-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.form-message.is-error {
+  color: #b91c1c;
+}
+
+.form-message.is-success {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.booking-view-link {
+  display: inline-flex;
+  margin-top: 18px;
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.booking-view-link:hover {
+  text-decoration: underline;
+}
+
+.inline-button {
+  display: inline-flex;
+  margin-top: 20px;
+}
+
+.booking-card {
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.booking-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.booking-card-heading .tag {
+  margin-bottom: 14px;
+}
+
+.booking-card h3 {
+  margin: 0;
+  font-size: 1.55rem;
+}
+
+.booking-card-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.booking-details-link {
+  color: var(--brand);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.booking-details-link:hover {
+  text-decoration: underline;
+}
+
+.booking-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 24px 0 0;
+}
+
+.booking-meta-grid div {
+  min-width: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.booking-meta-grid dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.booking-meta-grid dd {
+  margin: 6px 0 0;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.cancel-booking-button {
+  margin-top: 22px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.cancel-booking-button:hover {
+  text-decoration: underline;
+}
