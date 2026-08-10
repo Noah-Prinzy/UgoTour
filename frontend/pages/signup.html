@@ -1,3 +1,76 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sign Up | UgoTour</title><script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"></head>
-<body class="bg-stone-50 text-slate-900"><header id="site-header"></header><main class="section-shell page-shell"><p class="section-kicker">Create account</p><h1 class="page-title">Sign up</h1><form id="signup-form" class="starter-form"><label>Name<input id="signup-name" type="text" required></label><label>Email<input id="signup-email" type="email" required></label><label>Password<input id="signup-password" type="password" minlength="6" required></label><button class="primary-button" type="submit">Create account</button><p id="signup-message" class="form-message"></p></form></main><footer id="site-footer"></footer><script type="module" src="../js/pages/signup.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create your UgoTour account." />
+  <title>Sign Up | UgoTour</title>
+
+  <!-- Tailwind is used only as a visual/design helper. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body class="bg-stone-50 text-slate-900">
+  <header id="site-header"></header>
+
+  <main class="auth-page-shell">
+    <!-- The left panel explains the purpose of the account. -->
+    <section class="auth-intro-panel">
+      <p class="section-kicker">Join UgoTour</p>
+      <h1>Create your travel account.</h1>
+      <p>
+        Save your identity in this Phase 4 frontend prototype and use the same
+        account to log in, update your profile and later connect bookings to users.
+      </p>
+
+      <div class="auth-feature-list">
+        <span>✓ JavaScript form validation</span>
+        <span>✓ Local account/session simulation</span>
+        <span>✓ Editable user profile</span>
+      </div>
+    </section>
+
+    <section class="auth-form-panel" aria-labelledby="signup-title">
+      <p class="section-kicker">Create account</p>
+      <h2 id="signup-title">Sign up</h2>
+      <p class="auth-form-copy">Use an email and a password of at least 8 characters.</p>
+
+      <form id="signup-form" class="starter-form auth-form">
+        <label>
+          Full name
+          <input id="signup-name" type="text" autocomplete="name" required />
+        </label>
+
+        <label>
+          Email
+          <input id="signup-email" type="email" autocomplete="email" required />
+        </label>
+
+        <label>
+          Password
+          <input id="signup-password" type="password" minlength="8" autocomplete="new-password" required />
+        </label>
+
+        <label>
+          Confirm password
+          <input id="signup-confirm-password" type="password" minlength="8" autocomplete="new-password" required />
+        </label>
+
+        <button class="primary-button auth-submit-button" type="submit">Create account</button>
+        <p id="signup-message" class="form-message" aria-live="polite"></p>
+      </form>
+
+      <p class="auth-switch-copy">
+        Already have an account? <a href="./login.html">Login here</a>.
+      </p>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script type="module" src="../js/pages/signup.js"></script>
+</body>
+</html>

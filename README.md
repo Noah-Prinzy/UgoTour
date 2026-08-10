@@ -1,30 +1,54 @@
 # UgoTour
 
-UgoTour is a JavaScript-first tourism application starter focused on Uganda.
+UgoTour is a JavaScript-first tourism application for discovering destinations and experiences in Uganda.
 
 ## Architecture
 
 ### Frontend
-- HTML — page structure
-- CSS — custom styling
-- Tailwind CSS — design utilities only
-- Vanilla JavaScript — application functionality
+- HTML for structure
+- CSS + Tailwind CSS for design
+- Vanilla JavaScript for application functionality
 
-### Backend
+### Backend (later phase)
 - JavaScript
 - Node.js
-- REST API architecture
+- REST API
 
-### Database
-- PostgreSQL — persistent data storage
-- SQL — schema and queries
-- pg / node-postgres — Node.js PostgreSQL driver
+### Database (later phase)
+- PostgreSQL
+- `pg` / node-postgres
+- SQL
 
-## Main rule
-Frameworks/libraries may assist with visual design, but application functionality should be implemented primarily in JavaScript.
+## Completed phases
 
-## Current phase
-The project is scaffolded for frontend-first development. Backend and database folders are prepared for later implementation.
+### Phase 1 — Frontend foundation
+- reusable frontend structure
+- Home page destination search
+- JavaScript DOM rendering
 
-## Start the frontend
-Open `frontend/index.html` in a browser, or serve the `frontend` folder using a simple local development server such as the VS Code Live Server extension.
+### Phase 2 — Destinations catalog
+- larger destination dataset
+- live search
+- category filtering
+- reusable destination cards
+- destination details dialog
+
+### Phase 3 — Destination details and bookings
+- dynamic destination-details page using URL parameters
+- JavaScript booking form validation
+- localStorage booking persistence
+- bookings list and cancellation
+
+### Phase 4 — Authentication and profile
+- signup
+- duplicate-email checking
+- login
+- local session state
+- session-aware navbar
+- editable user profile
+- password changing
+- logout
+- commented JavaScript learning architecture
+
+## Important
+Phase 3 bookings and Phase 4 authentication currently use browser localStorage only. These are temporary frontend implementations used to learn the full flow before the Node.js REST API and PostgreSQL database are introduced.

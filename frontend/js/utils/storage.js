@@ -1,15 +1,19 @@
 // ============================================================
 // LOCAL STORAGE HELPERS
 // ============================================================
-// These helpers keep JSON conversion in one place instead of repeating
-// JSON.stringify() and JSON.parse() throughout the application.
+// localStorage can only save text. These helpers convert JavaScript values
+// to/from JSON so the rest of UgoTour can work with normal arrays/objects.
+//
+// IMPORTANT: localStorage is temporary frontend storage for our learning
+// prototype. In a production app, users and sessions will live in the
+// Node.js/PostgreSQL backend instead.
 
 export function saveLocal(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-// fallbackValue is returned when nothing has been saved yet or if the
-// stored JSON cannot be read. This makes our pages more defensive.
+// fallbackValue is returned when nothing has been saved yet or when stored
+// JSON is damaged. This prevents one bad local value from crashing a page.
 export function readLocal(key, fallbackValue = null) {
   const value = localStorage.getItem(key);
 
@@ -23,4 +27,9 @@ export function readLocal(key, fallbackValue = null) {
     console.error(`Could not read localStorage key: ${key}`, error);
     return fallbackValue;
   }
+}
+
+// Remove one saved value completely.
+export function removeLocal(key) {
+  localStorage.removeItem(key);
 }

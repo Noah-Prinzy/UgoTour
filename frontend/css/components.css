@@ -414,3 +414,155 @@
 .cancel-booking-button:hover {
   text-decoration: underline;
 }
+
+/* ============================================================
+   PHASE 4 - AUTHENTICATION + PROFILE COMPONENTS
+   ============================================================ */
+
+.nav-account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-login-link,
+.nav-user-link {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.nav-login-link:hover,
+.nav-user-link:hover {
+  color: var(--brand);
+}
+
+.nav-signup-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-feature-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 36px;
+  color: #365143;
+  font-weight: 750;
+}
+
+.auth-form.starter-form,
+.profile-form.starter-form {
+  max-width: none;
+  margin-top: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.auth-form input,
+.profile-form input {
+  background: #fff;
+}
+
+.auth-submit-button {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-switch-copy {
+  margin: 22px 0 0;
+  color: var(--muted);
+}
+
+.auth-switch-copy a {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.auth-switch-copy a:hover {
+  text-decoration: underline;
+}
+
+.form-message-success {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.form-message-error {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none !important;
+}
+
+.profile-avatar {
+  width: 92px;
+  height: 92px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand), #0f766e);
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  box-shadow: 0 18px 42px rgba(22, 101, 52, 0.2);
+}
+
+.profile-summary-card h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  letter-spacing: -0.035em;
+}
+
+.profile-summary-card > p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.profile-meta-row {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.profile-meta-row span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-logout-button {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.profile-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.profile-empty-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[hidden] {
+  display: none !important;
+}

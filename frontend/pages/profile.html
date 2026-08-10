@@ -1,3 +1,104 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Profile | UgoTour</title><script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script><link rel="stylesheet" href="../css/main.css"><link rel="stylesheet" href="../css/components.css"></head>
-<body class="bg-stone-50 text-slate-900"><header id="site-header"></header><main class="section-shell page-shell"><p class="section-kicker">Account</p><h1 class="page-title">Profile</h1><p>This page is reserved for user profile functionality.</p></main><footer id="site-footer"></footer><script type="module" src="../js/pages/profile.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Manage your UgoTour profile." />
+  <title>Profile | UgoTour</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/animations.css" />
+  <link rel="stylesheet" href="../css/responsive.css" />
+</head>
+<body class="bg-stone-50 text-slate-900">
+  <header id="site-header"></header>
+
+  <main class="section-shell page-shell profile-page-shell">
+    <p class="section-kicker">Account</p>
+    <h1 class="page-title">Your profile</h1>
+
+    <!-- JavaScript shows this section only when no local session exists. -->
+    <section id="profile-logged-out" class="profile-logged-out" hidden>
+      <h2>You are not logged in.</h2>
+      <p>Create an account or log in before editing a UgoTour profile.</p>
+      <div class="profile-empty-actions">
+        <a class="primary-button" href="./login.html">Login</a>
+        <a class="secondary-button" href="./signup.html">Create account</a>
+      </div>
+    </section>
+
+    <!-- JavaScript fills this section with the current user's saved data. -->
+    <section id="profile-logged-in" class="profile-layout" hidden>
+      <aside class="profile-summary-card">
+        <div id="profile-avatar" class="profile-avatar">UG</div>
+        <h2 id="profile-display-name">UgoTour User</h2>
+        <p id="profile-display-email">user@example.com</p>
+
+        <div class="profile-meta-row">
+          <span>Member since</span>
+          <strong id="profile-member-since">—</strong>
+        </div>
+
+        <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">
+          Logout
+        </button>
+      </aside>
+
+      <div class="profile-settings-column">
+        <section class="profile-settings-card">
+          <p class="section-kicker">Personal details</p>
+          <h2>Edit profile</h2>
+          <p>These values are currently saved in this browser using JavaScript.</p>
+
+          <form id="profile-form" class="starter-form profile-form">
+            <label>
+              Full name
+              <input id="profile-name" type="text" autocomplete="name" required />
+            </label>
+
+            <label>
+              Email
+              <input id="profile-email" type="email" autocomplete="email" required />
+            </label>
+
+            <button class="primary-button" type="submit">Save profile</button>
+            <p id="profile-message" class="form-message" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="profile-settings-card">
+          <p class="section-kicker">Security</p>
+          <h2>Change password</h2>
+          <p>The current password must match before JavaScript accepts a new one.</p>
+
+          <form id="password-form" class="starter-form profile-form">
+            <label>
+              Current password
+              <input id="current-password" type="password" autocomplete="current-password" required />
+            </label>
+
+            <label>
+              New password
+              <input id="new-password" type="password" minlength="8" autocomplete="new-password" required />
+            </label>
+
+            <label>
+              Confirm new password
+              <input id="confirm-new-password" type="password" minlength="8" autocomplete="new-password" required />
+            </label>
+
+            <button class="secondary-button" type="submit">Change password</button>
+            <p id="password-message" class="form-message" aria-live="polite"></p>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script type="module" src="../js/pages/profile.js"></script>
+</body>
+</html>

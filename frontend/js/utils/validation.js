@@ -1,14 +1,25 @@
 // ============================================================
 // REUSABLE VALIDATION HELPERS
 // ============================================================
-// Keeping small validation rules here avoids rewriting them in every form.
+// Keeping validation rules in one file means signup, login, booking and
+// profile forms can share the same rules instead of rewriting them.
 
 export function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
 }
 
 export function isNotEmpty(value) {
   return String(value).trim().length > 0;
+}
+
+// For Phase 4 we use a simple learning rule: at least 8 characters.
+// The backend will later enforce the real password policy too.
+export function isValidPassword(password) {
+  return typeof password === "string" && password.length >= 8;
+}
+
+export function passwordsMatch(password, confirmation) {
+  return password === confirmation;
 }
 
 export function isValidTravellerCount(value) {
