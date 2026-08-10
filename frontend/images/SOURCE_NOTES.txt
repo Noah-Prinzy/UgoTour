@@ -1,0 +1,66 @@
+UgoTour Phase 8 image notes
+============================
+
+The website reads destination image paths from PostgreSQL, but the image files
+live locally in this folder so the browser is not hotlinking production photos.
+
+Bundled fallback files
+----------------------
+The ZIP contains locally bundled fallbacks derived from the two Pinterest-style
+UI reference images supplied by the user in this conversation. They make the UI
+work immediately even without internet access.
+
+Source-image downloader
+-----------------------
+From the UgoTour root run:
+
+    npm run assets:download
+
+The downloader replaces the destination fallbacks with the selected web-source
+photos below when internet access is available.
+
+UNSPLASH
+- murchison-falls.jpg
+  Ivan Sabayuki
+  https://unsplash.com/photos/a-river-with-a-waterfall-8WZRp0H75ao
+
+- bwindi.jpg
+  Nathalie Lays
+  https://unsplash.com/photos/a-gorilla-standing-in-the-middle-of-a-forest-Lb65e5jMBMo
+
+- queen-elizabeth.jpg
+  Simone Dinoia
+  https://unsplash.com/photos/an-elephant-walks-across-the-african-savanna-ewBGsxuMv3Y
+
+- kidepo.jpg
+  CLINTON MWEBAZE
+  https://unsplash.com/photos/a-herd-of-zebra-standing-on-top-of-a-grass-covered-field-1ejHmmazdjI
+
+- lake-bunyonyi.jpg
+  Wietse Jongsma
+  https://unsplash.com/photos/a-scenic-view-of-a-lake-surrounded-by-mountains-xd0k2HB4voA
+
+- sipi-falls.jpg
+  Tony Samuel Gachie
+  https://unsplash.com/photos/a-waterfall-in-the-middle-of-a-lush-green-forest-BnjZe8tQUXQ
+
+- kampala.jpg
+  Robin Kutesa
+  https://unsplash.com/photos/city-skyline-bathed-in-warm-sunset-light-Q3ymlvOJGFs
+
+- rwenzori.jpg
+  Itote Rubombora
+  https://unsplash.com/photos/green-trees-on-mountain-during-daytime-8PF8fl6e6yE
+
+PINTEREST
+- jinja-pinterest.jpg
+  Pinterest pin linking to Viator imagery for a Jinja / Source of the Nile trip
+  https://www.pinterest.com/pin/explore-the-source-of-the-nile-ssezibwa-falls-and-mabira-forest--424886546113650179/
+
+Important licensing note
+------------------------
+Unsplash source pages identify the selected Unsplash photographs as free to use
+under the Unsplash License. Pinterest is an aggregation/discovery platform and
+does not itself grant rights to every pinned image. For a public commercial
+release, verify the original Pinterest image owner's permission or replace that
+single Jinja image with a licensed original-source photo.

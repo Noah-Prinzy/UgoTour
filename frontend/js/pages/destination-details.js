@@ -1,205 +1,137 @@
-// ============================================================
-// DESTINATION DETAILS PAGE CONTROLLER - PHASE 7
-// ============================================================
-// The selected destination and current user are loaded from the REST API.
-// Booking submission now creates a PostgreSQL booking instead of localStorage.
-
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
 import { createBooking } from "../services/booking-service.js";
 import { getCurrentUser } from "../services/auth-service.js";
-import {
-  isFutureOrToday,
-  isValidTravellerCount
-} from "../utils/validation.js";
+import { isFutureOrToday, isValidTravellerCount } from "../utils/validation.js";
+import { resolveAssetPath } from "../utils/assets.js";
 
 await renderNavbar("..");
 renderFooter();
 
-const urlParameters = new URLSearchParams(window.location.search);
-const destinationId = urlParameters.get("id");
-
-const detailsShell = document.getElementById("destination-details-shell");
-const notFoundSection = document.getElementById("destination-not-found");
-const categoryElement = document.getElementById("details-category");
-const regionElement = document.getElementById("details-region");
-const nameElement = document.getElementById("details-name");
-const descriptionElement = document.getElementById("details-description");
-const highlightElement = document.getElementById("details-highlight");
-const daysElement = document.getElementById("details-days");
-const bestForElement = document.getElementById("details-best-for");
-const activitiesElement = document.getElementById("details-activities");
-const travelTipElement = document.getElementById("details-travel-tip");
-
+const params = new URLSearchParams(window.location.search);
+const destinationId = Number(params.get("id"));
 const bookingForm = document.getElementById("booking-form");
-const bookingName = document.getElementById("booking-name");
-const bookingEmail = document.getElementById("booking-email");
 const bookingDate = document.getElementById("booking-date");
 const bookingTravellers = document.getElementById("booking-travellers");
+const bookingName = document.getElementById("booking-name");
+const bookingEmail = document.getElementById("booking-email");
+const bookingSubmit = document.getElementById("booking-submit");
 const bookingMessage = document.getElementById("booking-message");
-const bookingSubmit = bookingForm?.querySelector('button[type="submit"]');
 const bookingLoginNote = document.getElementById("booking-login-note");
-
 let destination = null;
 let currentUser = null;
 
 async function initializePage() {
-  try {
-    destination = await getDestinationById(destinationId);
-  } catch (error) {
-    console.error("Could not load destination:", error);
-    showBookingMessage(error.message, "error");
-  }
-
-  try {
-    currentUser = await getCurrentUser();
-  } catch (error) {
-    // Destination viewing remains available even if the profile check fails.
-    console.error("Could not load booking identity:", error);
-  }
-
-  if (!destination) {
-    if (detailsShell) detailsShell.hidden = true;
-    if (notFoundSection) notFoundSection.hidden = false;
-    return;
-  }
-
-  renderDestinationDetails();
   prepareBookingDateInput();
-  prepareBookingIdentity();
+  try {
+    [destination, currentUser] = await Promise.all([
+      getDestinationById(destinationId),
+      getCurrentUser().catch(() => null)
+    ]);
+
+    if (!destination) {
+      setText("details-name", "Destination not found");
+      setText("details-description", "This destination could not be loaded from the UgoTour API.");
+      bookingForm?.setAttribute("hidden", "");
+      return;
+    }
+
+    renderDestination(destination);
+    prepareBookingIdentity();
+  } catch (error) {
+    console.error(error);
+    setText("details-name", "Could not load destination");
+    setText("details-description", error.message);
+  }
 }
 
-function renderDestinationDetails() {
-  document.title = `${destination.name} | UgoTour`;
+function renderDestination(item) {
+  document.title = `${item.name} | UgoTour`;
+  setText("details-category", item.category);
+  setText("details-region", item.region);
+  setText("details-name", item.name);
+  setText("details-description", item.description);
+  setText("details-highlight", item.highlight || "Explore the destination");
+  setText("details-days", item.suggestedDays ? `${item.suggestedDays} day${item.suggestedDays === 1 ? "" : "s"}` : "Flexible");
+  setText("details-best-for", item.bestFor || "Curious travellers");
+  setText("details-travel-tip", item.travelTip || "Plan ahead and leave room for spontaneous discoveries.");
 
-  if (categoryElement) categoryElement.textContent = destination.category;
-  if (regionElement) regionElement.textContent = destination.region;
-  if (nameElement) nameElement.textContent = destination.name;
-  if (descriptionElement) descriptionElement.textContent = destination.description;
-  if (highlightElement) highlightElement.textContent = destination.highlight;
-
-  const suggestedDays = Number(destination.suggestedDays || 1);
-  if (daysElement) {
-    daysElement.textContent = `${suggestedDays} day${suggestedDays === 1 ? "" : "s"}`;
+  const image = document.getElementById("details-image");
+  if (image) {
+    image.src = resolveAssetPath(item.imageUrl, "..");
+    image.alt = item.name;
   }
 
-  if (bestForElement) {
-    bestForElement.textContent = destination.bestFor || "Uganda explorers";
+  const credit = document.getElementById("details-photo-credit");
+  if (credit) {
+    const isPinterest = String(item.photoSourceUrl || "").includes("pinterest.");
+    const sourceLabel = isPinterest ? "Pinterest" : "Unsplash";
+    credit.textContent = item.photoCredit ? `Photo: ${item.photoCredit} · ${sourceLabel}` : `Photo via ${sourceLabel}`;
+    credit.href = item.photoSourceUrl || "https://unsplash.com";
   }
 
-  if (travelTipElement) {
-    travelTipElement.textContent = destination.travelTip || "Plan travel time and activities before departure.";
-  }
-
-  if (activitiesElement) {
-    activitiesElement.innerHTML = "";
-    const activities = Array.isArray(destination.activities) ? destination.activities : [];
-
-    activities.forEach((activity) => {
-      const listItem = document.createElement("li");
-      listItem.textContent = activity;
-      activitiesElement.appendChild(listItem);
+  const activities = document.getElementById("details-activities");
+  if (activities) {
+    activities.innerHTML = "";
+    (item.activities || []).forEach((activity) => {
+      const li = document.createElement("li");
+      li.textContent = activity;
+      activities.appendChild(li);
     });
   }
 }
 
 function prepareBookingDateInput() {
   if (!bookingDate) return;
-
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-
-  bookingDate.min = `${year}-${month}-${day}`;
+  bookingDate.min = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
 }
 
 function prepareBookingIdentity() {
-  const isLoggedIn = Boolean(currentUser);
-
-  if (bookingName) {
-    bookingName.value = currentUser?.name ?? "";
-    bookingName.disabled = !isLoggedIn;
-  }
-
-  if (bookingEmail) {
-    bookingEmail.value = currentUser?.email ?? "";
-    bookingEmail.disabled = !isLoggedIn;
-  }
-
-  if (bookingDate) bookingDate.disabled = !isLoggedIn;
-  if (bookingTravellers) bookingTravellers.disabled = !isLoggedIn;
-  if (bookingSubmit) bookingSubmit.disabled = !isLoggedIn;
-
-  if (bookingLoginNote) {
-    bookingLoginNote.hidden = isLoggedIn;
-  }
-
-  if (!isLoggedIn) {
-    showBookingMessage("Log in before creating a booking.", "error");
-  }
+  const loggedIn = Boolean(currentUser);
+  if (bookingName) { bookingName.value = currentUser?.name ?? ""; bookingName.disabled = !loggedIn; }
+  if (bookingEmail) { bookingEmail.value = currentUser?.email ?? ""; bookingEmail.disabled = !loggedIn; }
+  if (bookingDate) bookingDate.disabled = !loggedIn;
+  if (bookingTravellers) bookingTravellers.disabled = !loggedIn;
+  if (bookingSubmit) bookingSubmit.disabled = !loggedIn;
+  if (bookingLoginNote) bookingLoginNote.hidden = loggedIn;
+  if (!loggedIn) showBookingMessage("Login before creating a booking.", "error");
 }
 
 bookingForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  if (!destination || !currentUser) {
-    showBookingMessage("Log in before creating a booking.", "error");
-    return;
-  }
+  if (!destination || !currentUser) return showBookingMessage("Login before creating a booking.", "error");
 
   const travelDate = bookingDate?.value ?? "";
   const travellers = Number(bookingTravellers?.value ?? 0);
+  if (!isFutureOrToday(travelDate)) return showBookingMessage("Choose today or a future travel date.", "error");
+  if (!isValidTravellerCount(travellers)) return showBookingMessage("Travellers must be between 1 and 20.", "error");
 
-  if (!isFutureOrToday(travelDate)) {
-    showBookingMessage("Please choose today or a future travel date.", "error");
-    return;
-  }
-
-  if (!isValidTravellerCount(travellers)) {
-    showBookingMessage("Travellers must be between 1 and 20.", "error");
-    return;
-  }
-
-  setBookingBusy(true);
-
+  setBusy(true);
   try {
-    await createBooking({
-      destinationId: destination.id,
-      travelDate,
-      travellers
-    });
-
-    showBookingMessage(
-      `Booking saved to PostgreSQL for ${destination.name}.`,
-      "success"
-    );
-
+    await createBooking({ destinationId: destination.id, travelDate, travellers });
+    showBookingMessage(`Trip to ${destination.name} saved.`, "success");
     if (bookingDate) bookingDate.value = "";
     if (bookingTravellers) bookingTravellers.value = "1";
-    prepareBookingDateInput();
   } catch (error) {
-    console.error("Booking error:", error);
     showBookingMessage(error.message, "error");
   } finally {
-    setBookingBusy(false);
+    setBusy(false);
   }
 });
 
-function setBookingBusy(isBusy) {
-  if (!bookingSubmit) return;
+// A lightweight visual favourite toggle. It is intentionally a device-only
+// preference; account data and bookings still live on the backend.
+document.getElementById("details-favorite")?.addEventListener("click", (event) => {
+  const key = `ugotour_favourite_${destinationId}`;
+  const saved = localStorage.getItem(key) === "1";
+  localStorage.setItem(key, saved ? "0" : "1");
+  event.currentTarget.textContent = saved ? "♡" : "♥";
+});
 
-  bookingSubmit.disabled = isBusy || !currentUser;
-  bookingSubmit.textContent = isBusy ? "Saving booking..." : "Save booking";
-}
-
-function showBookingMessage(message, type) {
-  if (!bookingMessage) return;
-
-  bookingMessage.textContent = message;
-  bookingMessage.classList.remove("is-error", "is-success");
-  bookingMessage.classList.add(type === "success" ? "is-success" : "is-error");
-}
+function setBusy(busy) { if (bookingSubmit) { bookingSubmit.disabled = busy || !currentUser; bookingSubmit.textContent = busy ? "Saving…" : "Save booking"; } }
+function showBookingMessage(message, type) { if (!bookingMessage) return; bookingMessage.textContent = message; bookingMessage.className = `form-message ${type === "success" ? "is-success" : "is-error"}`; }
+function setText(id, value) { const element = document.getElementById(id); if (element) element.textContent = value ?? ""; }
 
 await initializePage();

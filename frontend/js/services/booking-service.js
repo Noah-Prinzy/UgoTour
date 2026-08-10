@@ -1,5 +1,5 @@
 // ============================================================
-// BOOKING API SERVICE - PHASE 7
+// BOOKING API SERVICE - PHASE 8
 // ============================================================
 // Bookings now live in PostgreSQL. localStorage is no longer used to persist
 // booking records; it holds only the current bearer token through api.js.

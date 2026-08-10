@@ -1,19 +1,15 @@
 {
   "name": "ugotour-backend",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
-  "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL and Phase 7 frontend integration",
+  "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL, responsive PWA UI and profile images",
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "check": "node --check src/server.js && node --check src/router.js && node --check src/controllers/auth-controller.js && node --check src/controllers/booking-controller.js && node --check src/controllers/destination-controller.js && node --check src/controllers/health-controller.js && node --check src/controllers/profile-controller.js && node --check src/middleware/auth.js && node --check src/services/auth-service.js && node --check src/services/booking-service.js && node --check src/services/destination-service.js && node --check src/services/user-service.js && node --check src/database/connection.js && node --check src/database/test-connection.js",
     "db:test": "node src/database/test-connection.js"
   },
-  "dependencies": {
-    "pg": "^8.16.3"
-  },
-  "engines": {
-    "node": ">=20"
-  }
+  "dependencies": { "pg": "^8.16.3" },
+  "engines": { "node": ">=20" }
 }

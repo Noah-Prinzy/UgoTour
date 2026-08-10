@@ -1,5 +1,5 @@
 // ============================================================
-// LOGIN PAGE - PHASE 7
+// LOGIN PAGE - PHASE 8
 // ============================================================
 // Credentials are verified by the Node.js backend against PostgreSQL. A
 // successful login saves only the returned bearer token in this browser.
@@ -35,7 +35,7 @@ loginForm?.addEventListener("submit", async (event) => {
   const password = document.getElementById("login-password")?.value ?? "";
 
   setFormBusy(true);
-  const result = await loginUser(email, password);
+  const result = await loginUser({ email, password });
 
   if (!result.success) {
     showMessage(result.message, "error");

@@ -1,12 +1,41 @@
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(14px); }
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.hero-content > *, .hero-panel {
-  animation: riseIn .65s ease both;
+@keyframes image-reveal {
+  from { opacity: 0; transform: scale(1.025); }
+  to { opacity: 1; transform: scale(1); }
 }
-.hero-content > *:nth-child(2) { animation-delay: .08s; }
-.hero-content > *:nth-child(3) { animation-delay: .16s; }
-.hero-content > *:nth-child(4) { animation-delay: .24s; }
-.hero-panel { animation-delay: .22s; }
+
+.home-hero-content > *,
+.catalog-hero > div:first-child > *,
+.profile-hero > div > * {
+  animation: fade-up 620ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.home-hero-content > *:nth-child(2) { animation-delay: 70ms; }
+.home-hero-content > *:nth-child(3) { animation-delay: 130ms; }
+.home-hero-content > *:nth-child(4) { animation-delay: 190ms; }
+.home-hero-content > *:nth-child(5) { animation-delay: 250ms; }
+
+.destination-card,
+.booking-card,
+.profile-settings-card,
+.profile-summary-card {
+  animation: fade-up 520ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+.home-hero-media,
+.details-visual-image {
+  animation: image-reveal 900ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

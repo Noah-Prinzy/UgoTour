@@ -1,5 +1,5 @@
 // ============================================================
-// SIGNUP PAGE - PHASE 7
+// SIGNUP PAGE - PHASE 8
 // ============================================================
 // Signup now POSTs to /api/auth/signup. The backend hashes the password with
 // scrypt, saves the user in PostgreSQL and returns a bearer session token.

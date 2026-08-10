@@ -1,4 +1,4 @@
--- UgoTour destination seed data through Phase 7.
+-- UgoTour destination seed data through Phase 8.
 -- Each INSERT is guarded by name so this file can be re-run safely.
 
 INSERT INTO destinations
@@ -99,3 +99,15 @@ SELECT
   'Hikers and mountain adventure travellers', 4,
   'Longer treks require more preparation, so match the route to your fitness and available time.'
 WHERE NOT EXISTS (SELECT 1 FROM destinations WHERE name = 'Rwenzori Mountains');
+
+
+-- Phase 8 visual metadata. Safe to re-run.
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1663498798455-8ce6d44d4505?auto=format&fit=crop&w=1600&q=82', photo_credit='Ivan Sabayuki', photo_source_url='https://unsplash.com/photos/a-river-with-a-waterfall-8WZRp0H75ao' WHERE name='Murchison Falls';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1736611241659-8bb525369463?auto=format&fit=crop&w=1600&q=82', photo_credit='Nathalie Lays', photo_source_url='https://unsplash.com/photos/a-gorilla-standing-in-the-middle-of-a-forest-Lb65e5jMBMo' WHERE name='Bwindi Impenetrable National Park';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1677480208817-b5ac7c73c5ca?auto=format&fit=crop&w=1600&q=82', photo_credit='Prince Beguin', photo_source_url='https://unsplash.com/photos/a-river-running-through-a-lush-green-forest-Vq2pbzX9YtQ' WHERE name='Jinja';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1742327781369-12f428e46c37?auto=format&fit=crop&w=1600&q=82', photo_credit='Simone Dinoia', photo_source_url='https://unsplash.com/photos/an-elephant-walks-across-the-african-savanna-ewBGsxuMv3Y' WHERE name='Queen Elizabeth National Park';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1701249883320-01f2d6a9f6dc?auto=format&fit=crop&w=1600&q=82', photo_credit='CLINTON MWEBAZE', photo_source_url='https://unsplash.com/photos/a-herd-of-zebra-standing-on-top-of-a-grass-covered-field-1ejHmmazdjI' WHERE name='Kidepo Valley National Park';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1737613657335-d8841edcf57f?auto=format&fit=crop&w=1600&q=82', photo_credit='Wietse Jongsma', photo_source_url='https://unsplash.com/photos/a-scenic-view-of-a-lake-surrounded-by-mountains-xd0k2HB4voA' WHERE name='Lake Bunyonyi';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1707385266857-0429aa0c8a4a?auto=format&fit=crop&w=1600&q=82', photo_credit='Tony Samuel Gachie', photo_source_url='https://unsplash.com/photos/a-waterfall-in-the-middle-of-a-lush-green-forest-BnjZe8tQUXQ' WHERE name='Sipi Falls';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1675345653570-e239fa15bef8?auto=format&fit=crop&w=1600&q=82', photo_credit='Jonathan Ward', photo_source_url='https://unsplash.com/photos/a-small-village-with-a-stream-running-through-it-VmQhLYDuSbk' WHERE name='Kampala';
+UPDATE destinations SET image_url='https://images.unsplash.com/photo-1583140310426-9187b6489be3?auto=format&fit=crop&w=1600&q=82', photo_credit='Itote Rubombora', photo_source_url='https://unsplash.com/photos/green-trees-on-mountain-during-daytime-8PF8fl6e6yE' WHERE name='Rwenzori Mountains';

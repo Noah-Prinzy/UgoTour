@@ -1,46 +1,44 @@
-// ============================================================
-// REUSABLE DESTINATION CARD COMPONENT
-// ============================================================
-// This function creates a destination card with vanilla JavaScript.
-// The optional detailsPagePath lets a page decide whether the card
-// should include a link to the reusable destination-details page.
+import { resolveAssetPath } from "../utils/assets.js";
 
-export function createDestinationCard(
-  destination,
-  { detailsPagePath = null } = {}
-) {
+// Reusable destination card built with vanilla JavaScript.
+export function createDestinationCard(destination, { detailsPagePath = null, assetBasePath = "." } = {}) {
   const article = document.createElement("article");
-  article.className = "experience-card destination-card";
+  article.className = "destination-card";
   article.dataset.destinationId = destination.id;
 
-  const regionMarkup = destination.region
-    ? `<p class="destination-region">${destination.region}</p>`
-    : "";
-
-  // If a details path is supplied, build a URL such as:
-  // ./destination-details.html?id=3
-  const actionMarkup = detailsPagePath
-    ? `
-      <a
-        class="destination-details-button"
-        href="${detailsPagePath}?id=${destination.id}"
-      >
-        View full details
-      </a>
-    `
-    : "";
+  const detailsUrl = detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null;
+  const imageUrl = resolveAssetPath(destination.imageUrl, assetBasePath);
 
   article.innerHTML = `
-    <div class="destination-card-topline">
-      <span class="tag">${destination.category}</span>
-      ${regionMarkup}
+    <div class="destination-card-media">
+      <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(destination.name)}" loading="lazy" />
+      <div class="destination-card-topline">
+        <span class="tag">${escapeHtml(destination.category)}</span>
+        <p class="destination-region">${escapeHtml(destination.region || "Uganda")}</p>
+      </div>
     </div>
-
-    <h3>${destination.name}</h3>
-    <p>${destination.description}</p>
-
-    ${actionMarkup}
+    <div class="destination-card-content">
+      <h3>${escapeHtml(destination.name)}</h3>
+      <p>${escapeHtml(destination.description)}</p>
+      <div class="destination-card-footer">
+        <span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span>
+        ${detailsUrl ? `<a class="destination-details-button" href="${detailsUrl}" aria-label="View ${escapeAttribute(destination.name)}">→</a>` : ""}
+      </div>
+    </div>
   `;
 
   return article;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
 }

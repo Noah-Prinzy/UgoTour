@@ -1,11 +1,16 @@
 // ============================================================
-// CENTRAL FRONTEND API CLIENT - PHASE 7
+// CENTRAL FRONTEND API CLIENT - PHASE 8
 // ============================================================
 // Every frontend service uses this file to talk to the Node.js REST API.
 // Keeping fetch() details here avoids repeating headers, JSON parsing and
 // authentication logic across destination, booking and account services.
 
-export const API_BASE_URL = "http://127.0.0.1:3000/api";
+// Local development default. A deployed build can set window.UGOTOUR_API_BASE_URL
+// before modules load, or a developer can store ugotour_api_base_url locally.
+export const API_BASE_URL =
+  window.UGOTOUR_API_BASE_URL ||
+  localStorage.getItem("ugotour_api_base_url") ||
+  "http://127.0.0.1:3000/api";
 const AUTH_TOKEN_KEY = "ugotour_auth_token";
 
 // A small custom error lets page code distinguish HTTP errors such as 401/404

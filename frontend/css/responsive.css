@@ -1,204 +1,362 @@
-@media (max-width: 900px) {
-  .hero-shell { grid-template-columns: 1fr; padding: 42px 28px; }
-  .experience-grid { grid-template-columns: 1fr 1fr; }
-  .nav-links { display: none; }
-}
-
-@media (max-width: 620px) {
-  .hero-shell { width: min(100% - 18px, 1180px); min-height: auto; margin-top: 10px; padding: 38px 22px; border-radius: 24px; }
-  .hero-content h1 { font-size: clamp(2.7rem, 14vw, 4.6rem); }
-  .experience-grid { grid-template-columns: 1fr; }
-  .section-shell { margin: 60px auto; }
-}
-
-/* ============================================================
-   PHASE 2 - DESTINATIONS RESPONSIVE RULES
-   ============================================================ */
-
-@media (max-width: 900px) {
-  .catalog-hero {
-    grid-template-columns: 1fr;
-    align-items: start;
-    padding: 42px 34px;
+@media (max-width: 980px) {
+  .site-nav {
+    grid-template-columns: auto 1fr;
   }
 
-  .catalog-stat {
-    width: fit-content;
-  }
-}
-
-@media (max-width: 620px) {
-  .catalog-hero {
-    width: min(100% - 18px, 1180px);
-    margin-top: 10px;
-    padding: 34px 22px;
-    border-radius: 24px;
+  .nav-links {
+    display: none;
   }
 
-  .catalog-heading-row {
-    align-items: stretch;
-    flex-direction: column;
+  .nav-account {
+    justify-self: end;
   }
 
-  .catalog-heading-row .secondary-button {
-    align-self: flex-start;
+  .home-hero {
+    min-height: 620px;
+  }
+
+  .home-hero-content {
+    padding: 70px 42px 50px;
+  }
+
+  .hero-location-card {
+    display: none;
+  }
+
+  .home-discovery-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .experience-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .catalog-controls {
-    padding: 18px;
-  }
-
-  .destination-card-topline {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .destination-dialog-content {
-    padding: 24px 20px;
-  }
-}
-
-/* ============================================================
-   PHASE 3 - DETAILS + BOOKINGS RESPONSIVE RULES
-   ============================================================ */
-
-@media (max-width: 980px) {
-  .details-shell {
     grid-template-columns: 1fr;
   }
 
-  .booking-panel {
+  .category-filters {
+    justify-content: flex-start;
+  }
+
+  .details-content-grid {
+    grid-template-columns: 1fr;
+    margin-inline: 20px;
+  }
+
+  .booking-panel,
+  .profile-summary-card {
     position: static;
   }
 
-  .booking-meta-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .bookings-hero {
-    grid-template-columns: 1fr;
-    align-items: start;
-    padding: 42px 34px;
-  }
-
-  .activity-list {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 620px) {
-  .details-shell {
-    width: min(100% - 18px, 1180px);
-    margin-top: 10px;
-  }
-
-  .details-main,
-  .booking-panel {
-    padding: 24px 20px;
-    border-radius: 22px;
-  }
-
-  .details-title {
-    font-size: clamp(2.7rem, 14vw, 4.6rem);
-  }
-
-  .details-topline,
-  .booking-card-heading {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .details-info-grid,
-  .activity-list,
-  .booking-meta-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .bookings-hero {
-    width: min(100% - 18px, 1180px);
-    margin-top: 10px;
-    padding: 34px 22px;
-    border-radius: 24px;
-  }
-
-  .booking-details-link {
-    white-space: normal;
-  }
-}
-
-/* ============================================================
-   PHASE 4 - AUTHENTICATION + PROFILE RESPONSIVE RULES
-   ============================================================ */
-
-@media (max-width: 980px) {
   .auth-page-shell {
     grid-template-columns: 1fr;
   }
 
   .auth-intro-panel {
-    min-height: 420px;
+    min-height: 460px;
+  }
+
+  .profile-layout {
+    grid-template-columns: 300px 1fr;
+  }
+
+  .booking-card {
+    grid-template-columns: 220px 1fr;
+  }
+
+  .booking-meta-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  :root {
+    --radius-xl: 30px;
+  }
+
+  body {
+    padding-bottom: 88px;
+  }
+
+  #site-header {
+    padding: 10px 12px 0;
+  }
+
+  .site-nav {
+    min-height: 58px;
+    grid-template-columns: 1fr auto;
+    padding: 7px 8px 7px 15px;
+  }
+
+  .nav-account .secondary-button,
+  .nav-account .nav-login-link,
+  .nav-signup-button,
+  .nav-user-link span {
+    display: none;
+  }
+
+  .nav-profile-pill {
+    padding: 3px;
+  }
+
+  .nav-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    z-index: 60;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 7px;
+    border: 1px solid rgba(255,255,255,.55);
+    border-radius: 24px;
+    background: rgba(251,250,246,.92);
+    box-shadow: 0 18px 50px rgba(20,30,18,.22);
+    backdrop-filter: blur(18px);
+    pointer-events: auto;
+  }
+
+  .mobile-bottom-nav a {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    border-radius: 18px;
+    color: #778072;
+    font-size: .62rem;
+    font-weight: 800;
+  }
+
+  .mobile-bottom-nav a svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-bottom-nav a.is-active {
+    background: var(--forest-900);
+    color: var(--white);
+  }
+
+  .section-shell,
+  .page-shell,
+  .catalog-hero,
+  .bookings-hero,
+  .details-shell,
+  .site-footer,
+  .home-discovery-strip {
+    width: min(100% - 24px, var(--page-width));
+  }
+
+  .section-shell {
+    padding-block: 48px;
+  }
+
+  .home-hero {
+    width: calc(100% - 18px);
+    min-height: 680px;
+    margin-top: 10px;
+    border-radius: 30px;
+    align-items: end;
+  }
+
+  .home-hero::after {
+    background: linear-gradient(0deg, rgba(12,19,11,.9), rgba(12,19,11,.26) 72%);
+  }
+
+  .home-hero-content {
+    width: 100%;
+    padding: 44px 23px 32px;
+  }
+
+  .home-hero h1 {
+    font-size: clamp(3.3rem, 16vw, 5.2rem);
+  }
+
+  .home-hero .hero-copy {
+    font-size: .9rem;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-actions > * {
+    padding-inline: 12px;
+  }
+
+  .search-box button {
+    min-width: 82px;
+  }
+
+  .home-discovery-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .discovery-intro {
+    grid-column: 1 / -1;
+  }
+
+  .experience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading,
+  .catalog-heading-row {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .catalog-hero,
+  .bookings-hero {
+    min-height: 410px;
+    grid-template-columns: 1fr;
+    align-content: end;
+    padding: 34px 25px;
+    margin-top: 12px;
+  }
+
+  .catalog-stat {
+    width: 100px;
+    position: absolute;
+    top: 24px;
+    right: 24px;
+  }
+
+  .catalog-stat strong {
+    font-size: 2rem;
+  }
+
+  .catalog-hero::after {
+    font-size: 7rem;
+  }
+
+  .category-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+  }
+
+  .category-filters::-webkit-scrollbar { display: none; }
+
+  .category-filter-button { flex: 0 0 auto; }
+
+  .details-shell {
+    margin-top: 12px;
+  }
+
+  .details-visual {
+    min-height: 540px;
+    height: 70vh;
+    border-radius: 30px;
+  }
+
+  .details-visual-copy {
+    left: 24px;
+    right: 24px;
+    bottom: 28px;
+  }
+
+  .details-content-grid {
+    margin: -15px 10px 0;
+  }
+
+  .details-main,
+  .booking-panel {
+    padding: 24px;
+    border-radius: 26px;
+  }
+
+  .activity-list {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-card {
+    grid-template-columns: 1fr;
+  }
+
+  .booking-card-image {
+    min-height: 220px;
+  }
+
+  .booking-card-heading {
+    flex-direction: column;
+  }
+
+  .booking-meta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .auth-page-shell {
+    width: calc(100% - 18px);
+    margin-top: 12px;
+    border-radius: 30px;
+  }
+
+  .auth-intro-panel {
+    min-height: 430px;
+    padding: 34px 24px;
+  }
+
+  .auth-intro-panel h1 {
+    font-size: clamp(2.7rem, 12vw, 4.3rem);
+  }
+
+  .auth-form-panel {
+    padding: 34px 24px 42px;
+  }
+
+  .profile-hero {
+    padding: 30px 24px;
+    align-items: start;
+    flex-direction: column;
   }
 
   .profile-layout {
     grid-template-columns: 1fr;
   }
 
-  .profile-summary-card {
-    position: static;
-  }
-}
-
-@media (max-width: 760px) {
-  .site-nav {
-    flex-wrap: wrap;
-  }
-
-  .nav-account {
-    margin-left: auto;
-  }
-}
-
-@media (max-width: 620px) {
-  .auth-page-shell {
-    width: min(100% - 18px, 1080px);
-    min-height: auto;
-    margin-top: 10px;
-    border-radius: 24px;
-  }
-
-  .auth-intro-panel,
-  .auth-form-panel {
-    padding: 38px 22px;
-  }
-
-  .auth-intro-panel {
-    min-height: auto;
-  }
-
-  .auth-intro-panel h1 {
-    font-size: clamp(2.7rem, 14vw, 4.6rem);
-  }
-
-  .profile-settings-card,
   .profile-summary-card,
-  .profile-logged-out {
-    padding: 24px 20px;
-    border-radius: 22px;
+  .profile-settings-card {
+    border-radius: 26px;
   }
 
-  .profile-empty-actions {
+  .profile-photo-shell {
+    aspect-ratio: 4 / 3;
+  }
+
+  .site-footer {
+    margin-bottom: 102px;
+    align-items: start;
     flex-direction: column;
   }
+}
 
-  .profile-empty-actions a {
-    width: 100%;
+@media (max-width: 440px) {
+  .home-discovery-strip {
+    grid-template-columns: 1fr;
   }
 
-  .nav-account {
-    width: 100%;
-    justify-content: flex-end;
-    padding-bottom: 8px;
+  .discovery-intro {
+    grid-column: auto;
+  }
+
+  .hero-actions,
+  .booking-meta-grid,
+  .details-info-grid,
+  .profile-photo-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: 2.65rem;
   }
 }

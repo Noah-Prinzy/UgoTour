@@ -1,5 +1,5 @@
 // ============================================================
-// DESTINATIONS PAGE CONTROLLER - PHASE 7
+// DESTINATIONS PAGE CONTROLLER - PHASE 8
 // ============================================================
 // Search/filter behavior remains vanilla JavaScript. The destination records
 // now arrive asynchronously from the Node.js REST API and PostgreSQL.
@@ -40,7 +40,7 @@ function renderCategoryFilters() {
   filterOptions.forEach((category) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "filter-button";
+    button.className = "category-filter-button";
     button.dataset.category = category;
     button.textContent = category;
 
@@ -85,7 +85,8 @@ function renderDestinations() {
   filteredDestinations.forEach((destination) => {
     destinationList.appendChild(
       createDestinationCard(destination, {
-        detailsPagePath: "./destination-details.html"
+        detailsPagePath: "./destination-details.html",
+        assetBasePath: ".."
       })
     );
   });

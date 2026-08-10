@@ -1,16 +1,11 @@
-// ============================================================
-// PROFILE PAGE - PHASE 7
-// ============================================================
-// Profile reads and writes now go through authenticated API endpoints. The
-// profile is persisted in PostgreSQL rather than a browser-local user array.
-
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import {
   changeCurrentUserPassword,
   getCurrentUser,
   logoutUser,
-  updateCurrentUserProfile
+  updateCurrentUserProfile,
+  updateCurrentUserProfileImage
 } from "../services/auth-service.js";
 import { passwordsMatch } from "../utils/validation.js";
 
@@ -21,120 +16,114 @@ const loggedOutState = document.getElementById("profile-logged-out");
 const loggedInState = document.getElementById("profile-logged-in");
 const profileForm = document.getElementById("profile-form");
 const passwordForm = document.getElementById("password-form");
-
+const photoInput = document.getElementById("profile-photo-input");
+const photoSave = document.getElementById("profile-photo-save");
+const photoRemove = document.getElementById("profile-photo-remove");
 let currentUser = null;
+let pendingProfileImage = null;
 
 async function renderProfile() {
-  try {
-    currentUser = await getCurrentUser();
-  } catch (error) {
-    console.error("Could not load profile:", error);
-    currentUser = null;
-  }
-
+  try { currentUser = await getCurrentUser(); } catch (error) { console.error(error); currentUser = null; }
   if (!currentUser) {
     loggedOutState?.removeAttribute("hidden");
     loggedInState?.setAttribute("hidden", "");
     return;
   }
-
   loggedOutState?.setAttribute("hidden", "");
   loggedInState?.removeAttribute("hidden");
-
   setText("profile-display-name", currentUser.name);
   setText("profile-display-email", currentUser.email);
   setText("profile-member-since", formatDate(currentUser.createdAt));
+  const name = document.getElementById("profile-name"); const email = document.getElementById("profile-email");
+  if (name) name.value = currentUser.name; if (email) email.value = currentUser.email;
+  renderAvatar(currentUser.profileImage);
+}
 
-  const nameInput = document.getElementById("profile-name");
-  const emailInput = document.getElementById("profile-email");
-
-  if (nameInput) nameInput.value = currentUser.name;
-  if (emailInput) emailInput.value = currentUser.email;
-
-  setText("profile-avatar", makeInitials(currentUser.name));
+function renderAvatar(imageData = null) {
+  const avatar = document.getElementById("profile-avatar");
+  if (!avatar) return;
+  avatar.innerHTML = imageData ? `<img src="${imageData}" alt="Profile picture" />` : escapeHtml(makeInitials(currentUser?.name));
 }
 
 profileForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  const name = document.getElementById("profile-name")?.value ?? "";
-  const email = document.getElementById("profile-email")?.value ?? "";
-  const submitButton = profileForm.querySelector('button[type="submit"]');
-
-  if (submitButton) submitButton.disabled = true;
-
-  const result = await updateCurrentUserProfile({ name, email });
+  const button = profileForm.querySelector('button[type="submit"]'); if (button) button.disabled = true;
+  const result = await updateCurrentUserProfile({ name: document.getElementById("profile-name")?.value ?? "", email: document.getElementById("profile-email")?.value ?? "" });
   showMessage("profile-message", result.message, result.success);
-
-  if (result.success) {
-    currentUser = result.user;
-    await renderProfile();
-    await renderNavbar("..");
-  }
-
-  if (submitButton) submitButton.disabled = false;
+  if (result.success) { currentUser = result.user; await renderProfile(); await renderNavbar(".."); }
+  if (button) button.disabled = false;
 });
 
 passwordForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-
   const currentPassword = document.getElementById("current-password")?.value ?? "";
   const newPassword = document.getElementById("new-password")?.value ?? "";
-  const confirmPassword = document.getElementById("confirm-new-password")?.value ?? "";
-
-  if (!passwordsMatch(newPassword, confirmPassword)) {
-    showMessage("password-message", "New passwords do not match.", false);
-    return;
-  }
-
-  const submitButton = passwordForm.querySelector('button[type="submit"]');
-  if (submitButton) submitButton.disabled = true;
-
+  const confirm = document.getElementById("confirm-new-password")?.value ?? "";
+  if (!passwordsMatch(newPassword, confirm)) return showMessage("password-message", "New passwords do not match.", false);
+  const button = passwordForm.querySelector('button[type="submit"]'); if (button) button.disabled = true;
   const result = await changeCurrentUserPassword(currentPassword, newPassword);
   showMessage("password-message", result.message, result.success);
+  if (result.success) passwordForm.reset();
+  if (button) button.disabled = false;
+});
 
-  if (result.success) {
-    passwordForm.reset();
+document.getElementById("profile-photo-edit")?.addEventListener("click", () => photoInput?.click());
+
+photoInput?.addEventListener("change", async () => {
+  const file = photoInput.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) return showMessage("profile-photo-message", "Choose an image file.", false);
+  if (file.size > 6_000_000) return showMessage("profile-photo-message", "Choose an image smaller than 6 MB.", false);
+  try {
+    pendingProfileImage = await resizeProfileImage(file);
+    renderAvatar(pendingProfileImage);
+    if (photoSave) photoSave.disabled = false;
+    showMessage("profile-photo-message", "Preview ready. Save the photo to your profile.", true);
+  } catch {
+    showMessage("profile-photo-message", "That image could not be prepared.", false);
   }
-
-  if (submitButton) submitButton.disabled = false;
 });
 
-document.getElementById("profile-logout-button")?.addEventListener("click", async () => {
-  await logoutUser();
-  window.location.href = "../index.html";
+photoSave?.addEventListener("click", async () => {
+  if (!pendingProfileImage) return;
+  photoSave.disabled = true;
+  const result = await updateCurrentUserProfileImage(pendingProfileImage);
+  showMessage("profile-photo-message", result.message, result.success);
+  if (result.success) { currentUser = result.user; pendingProfileImage = null; await renderNavbar(".."); }
+  else photoSave.disabled = false;
 });
 
-function setText(id, value) {
-  const element = document.getElementById(id);
-  if (element) element.textContent = value;
+photoRemove?.addEventListener("click", async () => {
+  const result = await updateCurrentUserProfileImage(null);
+  showMessage("profile-photo-message", result.message, result.success);
+  if (result.success) { currentUser = result.user; pendingProfileImage = null; renderAvatar(null); if (photoSave) photoSave.disabled = true; await renderNavbar(".."); }
+});
+
+document.getElementById("profile-logout-button")?.addEventListener("click", async () => { await logoutUser(); window.location.href = "../index.html"; });
+
+function resizeProfileImage(file) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    image.onload = () => {
+      const maxSide = 512;
+      const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const width = Math.max(1, Math.round(image.width * scale));
+      const height = Math.max(1, Math.round(image.height * scale));
+      const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+      const context = canvas.getContext("2d"); context.drawImage(image, 0, 0, width, height);
+      URL.revokeObjectURL(objectUrl);
+      resolve(canvas.toDataURL("image/jpeg", 0.82));
+    };
+    image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Invalid image")); };
+    image.src = objectUrl;
+  });
 }
 
-function showMessage(id, message, success) {
-  const element = document.getElementById(id);
-  if (!element) return;
-
-  element.textContent = message;
-  element.className = `form-message ${success ? "form-message-success" : "form-message-error"}`;
-}
-
-function makeInitials(name) {
-  return String(name)
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("") || "UG";
-}
-
-function formatDate(isoDate) {
-  if (!isoDate) return "Unknown";
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  }).format(new Date(isoDate));
-}
+function showMessage(id, message, success) { const element = document.getElementById(id); if (!element) return; element.textContent = message; element.className = `form-message ${success ? "form-message-success" : "form-message-error"}`; }
+function setText(id, value) { const element = document.getElementById(id); if (element) element.textContent = value ?? ""; }
+function makeInitials(name) { return String(name ?? "UG").trim().split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase() ?? "").join("") || "UG"; }
+function formatDate(value) { return value ? new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" }).format(new Date(value)) : "Unknown"; }
+function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 
 await renderProfile();

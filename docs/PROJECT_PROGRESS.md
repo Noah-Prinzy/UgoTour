@@ -81,7 +81,8 @@ UgoTour/
 │   │   ├── pages/
 │   │   ├── services/
 │   │   └── utils/
-│   └── assets/
+│   ├── images/              -> local destination/profile-ready image assets
+│   └── assets/icons/        -> PWA icons
 │
 ├── backend/
 │   ├── package.json
@@ -653,28 +654,103 @@ This keeps network behavior visible instead of hiding it behind a framework.
 
 ---
 
-## 12. Running the current application
+## 12. Phase 8 — Visual redesign, profile pictures, local images and PWA support
 
-### 12.1 Apply the Phase 7 migration once
+Completed work:
 
-For an existing Phase 6 local database, from `UgoTour/backend` run:
+- Reworked the complete frontend around a deep forest-green / warm cream tourism design system inspired by the two mobile travel references supplied for this phase.
+- Changed the main typeface to **Manrope** for a modern travel/editorial feel.
+- Added large photographic heroes, image-led destination cards, refined search/filter controls, modern booking cards and an immersive destination-details layout.
+- Added desktop navigation plus a compact mobile bottom navigation bar so the same project adapts to PC and phone layouts.
+- Added a dedicated **`frontend/images/`** folder and changed the UI to load destination photography from local project files rather than hotlinking image URLs during normal use.
+- Added `image_url`, `photo_credit` and `photo_source_url` fields to PostgreSQL through migration `004_phase8_visuals_and_profile_photo.sql`. The database stores local relative image paths plus source/credit metadata.
+- Added `scripts/download-images.js` and the root command **`npm run assets:download`**. On a normal internet-connected development machine, this downloads the selected source photos into `frontend/images/`, replacing the bundled fallback files while keeping the same filenames used by the app.
+- The selected source set uses eight Unsplash photographs and one Pinterest/Viator Jinja pin requested for this phase. Source pages and credits are documented in `frontend/images/SOURCE_NOTES.txt`.
+- Added a real profile-picture workflow: choose an image, resize/compress it in vanilla JavaScript, preview it, save/remove it through the REST API, and persist it in the `users.profile_image` column.
+- Added `profileImage` to authenticated user responses so the navbar and profile page can display the saved avatar.
+- Added a Web App Manifest, service worker, install prompt support, theme colors and PWA icons.
+- UgoTour is now a **responsive Progressive Web App (PWA)**: it still works as a normal website in a browser and can also be installed on supported mobile/desktop browsers when served from HTTPS or localhost.
+- Core application behavior remains vanilla JavaScript. Tailwind remains only a visual helper; the Phase 8 design relies primarily on the project's own CSS.
 
-```powershell
-psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\003_add_destination_details.sql
-```
+### 12.1 Local image workflow
 
-Expected output includes one `ALTER TABLE` followed by destination `UPDATE`
-results.
-
-### 12.2 Start the backend
-
-From:
+Normal application rendering uses local paths such as:
 
 ```text
-UgoTour/backend
+frontend/images/murchison-falls.jpg
+frontend/images/bwindi.jpg
+frontend/images/jinja-pinterest.jpg
+frontend/images/queen-elizabeth.jpg
+frontend/images/kidepo.jpg
+frontend/images/lake-bunyonyi.jpg
+frontend/images/sipi-falls.jpg
+frontend/images/kampala.jpg
+frontend/images/rwenzori.jpg
 ```
 
-run:
+The Phase 8 ZIP contains working local fallback images so the interface does not break without internet access. The build environment used to prepare the ZIP cannot fetch the third-party image binaries directly, so the project includes a downloader that performs that final replacement on the developer's own internet-connected machine:
+
+```powershell
+cd "C:\Users\Noah\Desktop\JavaScript Projects\UgoTour"
+npm run assets:download
+```
+
+The script downloads into **`frontend/images/`** and leaves the bundled fallback in place if any individual web download fails.
+
+### 12.2 Selected source-image pages
+
+Unsplash selections:
+
+- Murchison Falls — Ivan Sabayuki — `https://unsplash.com/photos/a-river-with-a-waterfall-8WZRp0H75ao`
+- Bwindi Impenetrable National Park — Nathalie Lays — `https://unsplash.com/photos/a-gorilla-standing-in-the-middle-of-a-forest-Lb65e5jMBMo`
+- Queen Elizabeth National Park — Simone Dinoia — `https://unsplash.com/photos/an-elephant-walks-across-the-african-savanna-ewBGsxuMv3Y`
+- Kidepo Valley National Park — CLINTON MWEBAZE — `https://unsplash.com/photos/a-herd-of-zebra-standing-on-top-of-a-grass-covered-field-1ejHmmazdjI`
+- Lake Bunyonyi — Wietse Jongsma — `https://unsplash.com/photos/a-scenic-view-of-a-lake-surrounded-by-mountains-xd0k2HB4voA`
+- Sipi Falls — Tony Samuel Gachie — `https://unsplash.com/photos/a-waterfall-in-the-middle-of-a-lush-green-forest-BnjZe8tQUXQ`
+- Kampala — Robin Kutesa — `https://unsplash.com/photos/city-skyline-bathed-in-warm-sunset-light-Q3ymlvOJGFs`
+- Rwenzori Mountains — Itote Rubombora — `https://unsplash.com/photos/green-trees-on-mountain-during-daytime-8PF8fl6e6yE`
+
+Pinterest selection requested for this phase:
+
+- Jinja / Source of the Nile — Pinterest pin linking to Viator imagery — `https://www.pinterest.com/pin/explore-the-source-of-the-nile-ssezibwa-falls-and-mabira-forest--424886546113650179/`
+
+For a public/commercial release, Pinterest image rights should be checked with the original image owner because Pinterest is a discovery platform rather than the copyright owner of every pin. The Jinja image can be replaced later without changing application code because UgoTour references the stable local filename.
+
+### 12.3 Profile-picture API addition
+
+Phase 8 adds:
+
+```text
+PATCH /api/profile/photo
+```
+
+The browser validates and resizes JPEG/PNG/WebP input before sending the image. The backend stores the resulting profile image against the authenticated user and supports removing it again. This is suitable for the current learning/local prototype; a large public deployment would normally move user-uploaded binaries to dedicated file/object storage and keep only their URL in PostgreSQL.
+
+## 13. Running the current application
+
+### 13.1 Download the selected source images
+
+From the **UgoTour project root**, run this while connected to the internet:
+
+```powershell
+npm run assets:download
+```
+
+This writes/replaces the selected destination photos directly inside `frontend/images/`. The app can still run if a source download is temporarily unavailable because local fallbacks are bundled.
+
+### 13.2 Apply the migration
+
+For an existing Phase 7 local database, the earlier migrations should already be applied. Apply the new Phase 8 migration once from `UgoTour/backend`:
+
+```powershell
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\004_phase8_visuals_and_profile_photo.sql
+```
+
+This adds profile-image storage and destination photo metadata.
+
+### 13.3 Start the backend
+
+From `UgoTour/backend`:
 
 ```powershell
 npm install
@@ -689,24 +765,18 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-Health check:
-
-```text
-http://127.0.0.1:3000/health
-```
-
-A healthy Phase 7 response reports:
+A healthy Phase 8 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": 7,
+  "phase": 8,
   "database": "connected"
 }
 ```
 
-### 12.3 Start the frontend
+### 13.4 Start the frontend
 
 Use VS Code Live Server to serve:
 
@@ -715,61 +785,63 @@ frontend/index.html
 ```
 
 Keep `npm start` running in the backend terminal while browsing the frontend.
-The frontend is now dependent on the API for its application data.
+
+### 13.5 PWA installation
+
+When the frontend is served from **localhost** or a deployed **HTTPS** address, supported browsers can offer installation. UgoTour includes `manifest.webmanifest`, `service-worker.js`, app icons, theme colors and an install button that appears when the browser exposes the install prompt.
+
+For local testing from another device on the same network, the backend can be started with a LAN-accessible host and the frontend API base URL can be overridden. Production deployment configuration will be finalized in the next phase.
 
 ---
 
-## 13. Current persistence and integration status
+## 14. Current persistence and integration status
 
 ```text
 Destinations          -> PostgreSQL ✅
 Destination details   -> PostgreSQL ✅
+Destination photos    -> local frontend/images + PostgreSQL source metadata ✅
 Users                 -> PostgreSQL ✅
 Password hashes       -> PostgreSQL ✅
+Profile pictures      -> PostgreSQL ✅
 Sessions              -> PostgreSQL ✅
 Profile changes       -> PostgreSQL ✅
 Bookings              -> PostgreSQL ✅
 Frontend API calls    -> fetch() ✅
 Bearer authentication -> API headers ✅
+Responsive mobile UI  -> CSS + vanilla JS ✅
+PWA shell/install     -> manifest + service worker ✅
 ```
 
-Current browser-local data:
+Current browser-local data is intentionally limited to:
 
 ```text
-ugotour_auth_token -> bearer token only
+ugotour_auth_token          -> bearer token
+ugotour_favourite_<id>      -> optional device-only favourite UI state
+ugotour_api_base_url        -> optional development/deployment API override
 ```
 
-The earlier frontend-only user arrays, destination arrays and booking
-localStorage records are no longer the live application path.
+---
+
+## 15. Next phase — Phase 9
+
+The application is now functionally connected and visually polished. Phase 9 should focus on **production readiness and deployment**, including:
+
+- environment-based backend database credentials;
+- production API base URL configuration;
+- production CORS rules;
+- hosting the Node.js backend and PostgreSQL database;
+- serving/deploying the PWA over HTTPS;
+- mobile/desktop device testing;
+- accessibility and final integration testing;
+- final deployment/presentation checklist.
 
 ---
 
-## 14. Next phase — Phase 8
+## 16. Documentation rule going forward
 
-The main application architecture is now connected end-to-end. Phase 8 can
-focus on production readiness and presentation rather than replacing another
-major data layer.
+Do not create separate `PHASE_X_*.md` documents inside `docs/`.
 
-Likely Phase 8 work:
-
-- final UI/UX polish and real destination imagery;
-- accessibility review;
-- responsive/device testing;
-- frontend/backend integration testing;
-- move development database credentials fully into environment configuration;
-- production CORS configuration;
-- deployment configuration;
-- deployment of frontend, Node.js backend and PostgreSQL;
-- final documentation cleanup and demonstration checklist.
-
----
-
-## 15. Documentation rule going forward
-
-Do not create separate `PHASE_X_*.md` documents.
-
-All future architecture changes, completed features, setup steps and phase notes
-must be appended to or updated inside:
+All future architecture changes, completed features, setup steps and phase notes must be appended to or updated inside:
 
 ```text
 docs/PROJECT_PROGRESS.md

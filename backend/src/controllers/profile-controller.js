@@ -1,69 +1,44 @@
 import { getAuthenticatedUser } from "../middleware/auth.js";
-import { updateProfile, changePassword } from "../services/user-service.js";
+import { updateProfile, changePassword, updateProfileImage } from "../services/user-service.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
 
 export async function getProfile(request, response) {
   const user = await getAuthenticatedUser(request);
-
-  if (!user) {
-    sendJson(response, 401, { error: "Authentication required." });
-    return;
-  }
-
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
   sendJson(response, 200, { data: user });
 }
 
 export async function patchProfile(request, response) {
   const user = await getAuthenticatedUser(request);
-
-  if (!user) {
-    sendJson(response, 401, { error: "Authentication required." });
-    return;
-  }
-
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
   const body = await readJsonBody(request);
+  if (body.name !== undefined && !isNonEmptyString(body.name)) return sendJson(response, 400, { error: "Name cannot be empty." });
+  if (body.email !== undefined && !isEmail(body.email)) return sendJson(response, 400, { error: "A valid email is required." });
+  const updated = await updateProfile(user.id, body);
+  if (!updated) return sendJson(response, 404, { error: "User not found." });
+  sendJson(response, 200, { data: updated });
+}
 
-  if (body.name !== undefined && !isNonEmptyString(body.name)) {
-    sendJson(response, 400, { error: "Name cannot be empty." });
-    return;
+export async function patchProfilePhoto(request, response) {
+  const user = await getAuthenticatedUser(request);
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
+  const body = await readJsonBody(request);
+  const imageData = body.imageData ?? null;
+  if (imageData !== null) {
+    if (typeof imageData !== "string" || !/^data:image\/(jpeg|png|webp);base64,/i.test(imageData)) return sendJson(response, 400, { error: "Profile photo must be a JPEG, PNG or WebP image." });
+    if (imageData.length > 850_000) return sendJson(response, 413, { error: "Profile photo is too large after processing." });
   }
-
-  if (body.email !== undefined && !isEmail(body.email)) {
-    sendJson(response, 400, { error: "A valid email is required." });
-    return;
-  }
-
-  const updatedUser = await updateProfile(user.id, body);
-
-  if (!updatedUser) {
-    sendJson(response, 404, { error: "User not found." });
-    return;
-  }
-
-  sendJson(response, 200, { data: updatedUser });
+  const updated = await updateProfileImage(user.id, imageData);
+  sendJson(response, 200, { data: updated });
 }
 
 export async function patchPassword(request, response) {
   const user = await getAuthenticatedUser(request);
-
-  if (!user) {
-    sendJson(response, 401, { error: "Authentication required." });
-    return;
-  }
-
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
   const body = await readJsonBody(request);
-
-  if (!isNonEmptyString(body.currentPassword)) {
-    sendJson(response, 400, { error: "Current password is required." });
-    return;
-  }
-
-  if (!isNonEmptyString(body.newPassword) || body.newPassword.length < 8) {
-    sendJson(response, 400, { error: "New password must contain at least 8 characters." });
-    return;
-  }
-
+  if (!isNonEmptyString(body.currentPassword)) return sendJson(response, 400, { error: "Current password is required." });
+  if (!isNonEmptyString(body.newPassword) || body.newPassword.length < 8) return sendJson(response, 400, { error: "New password must contain at least 8 characters." });
   await changePassword(user.id, body.currentPassword, body.newPassword);
   sendJson(response, 200, { message: "Password changed successfully." });
 }

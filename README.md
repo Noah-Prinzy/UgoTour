@@ -1,70 +1,63 @@
 # UgoTour
 
-UgoTour is a JavaScript-first tourism application for discovering destinations,
-experiences and travel opportunities in Uganda.
+UgoTour is a JavaScript-first Uganda tourism **Progressive Web App (PWA)**. It is responsive, so the same project works in desktop and mobile browsers, and supported browsers can install it like an app when it is served from localhost or HTTPS.
 
-## Technology architecture
+## Stack
 
-### Frontend
-- HTML for page structure
-- CSS + Tailwind CSS for visual design
-- Vanilla JavaScript for functionality
-- `fetch()` for REST API communication
-
-### Backend
-- JavaScript
+- HTML
+- CSS + Tailwind as a visual helper
+- Vanilla JavaScript for frontend functionality
 - Node.js built-in HTTP server
-- custom REST routing/controllers/services/middleware
-
-### Database
-- PostgreSQL
+- REST API
 - `pg` / node-postgres
-- SQL
+- PostgreSQL
 
-## Current status
+## Phase 8 highlights
 
-Phases 1–7 are complete. The vanilla JavaScript frontend is now connected to the
-Node.js REST API, and the API persists destinations, users, sessions, profiles
-and bookings in PostgreSQL.
+- Forest-green / cream travel UI inspired by the supplied mobile design references
+- Manrope typography
+- Responsive desktop navigation and mobile bottom navigation
+- Local destination photography in `frontend/images/`
+- Image source downloader for selected Unsplash and Pinterest sources
+- PostgreSQL-backed destinations, users, sessions and bookings
+- Profile picture upload, resize, preview, remove and persistence
+- PWA manifest, service worker, icons and install support
+- One cumulative guide: `docs/PROJECT_PROGRESS.md`
 
-The browser no longer keeps duplicate destination/user/booking business data.
-It stores only the bearer token needed for the current authenticated session.
+## 1. Download the selected destination images
 
-## Phase 7 database migration
-
-If your database already contains the Phase 6 schema, run this once from the
-`backend` folder:
+The ZIP includes local fallback images so the interface works immediately. To replace those fallbacks with the selected web-source photos on your internet-connected PC, run from the project root:
 
 ```powershell
-psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\003_add_destination_details.sql
+npm run assets:download
 ```
 
-## Running UgoTour locally
+The files are saved directly into:
 
-First start the backend from `UgoTour/backend`:
+```text
+frontend/images/
+```
+
+Image source pages and attribution notes are in `frontend/images/SOURCE_NOTES.txt`.
+
+## 2. Upgrade an existing Phase 7 database
+
+From `backend` run:
 
 ```powershell
-npm install
-npm run db:test
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\004_phase8_visuals_and_profile_photo.sql
+```
+
+Then:
+
+```powershell
 npm run check
+npm run db:test
 npm start
 ```
 
-Default backend URL:
+## 3. Run the frontend
 
-```text
-http://127.0.0.1:3000
-```
+Open `frontend/index.html` with VS Code Live Server during local development. Keep the backend terminal running.
 
-Then serve `frontend/index.html` with VS Code Live Server. Keep the Node.js
-backend running while using the frontend because the browser now loads its data
-through the REST API.
-
-## Documentation
-
-All project architecture, completed phases, database setup and future progress
-are maintained in one cumulative document:
-
-```text
-docs/PROJECT_PROGRESS.md
-```
+For the complete architecture, phase history, API details, PWA notes and image-source information, see `docs/PROJECT_PROGRESS.md`.

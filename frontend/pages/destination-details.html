@@ -3,134 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="View a UgoTour destination and create a database-backed booking."
-  />
-  <title>Destination Details | UgoTour</title>
-
-  <!-- Tailwind is available only as a visual/design helper. -->
+  <meta name="theme-color" content="#172114" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/components.css" />
   <link rel="stylesheet" href="../css/animations.css" />
   <link rel="stylesheet" href="../css/responsive.css" />
+  <meta name="description" content="Explore a UgoTour destination and create a booking." />
+  <title>Destination Details | UgoTour</title>
 </head>
-
-<body class="bg-stone-50 text-slate-900">
+<body>
   <header id="site-header"></header>
-
   <main>
-    <!-- ======================================================
-         DESTINATION DETAILS
-         ======================================================
-         destination-details.js fills these placeholders using the
-         id in the URL, e.g. destination-details.html?id=3.
-    -->
     <section id="destination-details-shell" class="details-shell">
-      <div class="details-main">
-        <a class="back-link" href="./destinations.html">← Back to destinations</a>
-
-        <div class="details-topline">
+      <div class="details-visual">
+        <img id="details-image" class="details-visual-image" src="" alt="" />
+        <a class="details-back-button" href="./destinations.html" aria-label="Back to destinations">←</a>
+        <button id="details-favorite" class="details-favorite-button" type="button" aria-label="Save destination">♡</button>
+        <div class="details-visual-copy">
           <span id="details-category" class="tag"></span>
-          <span id="details-region" class="destination-region"></span>
+          <h1 id="details-name" class="details-title">Loading destination…</h1>
+          <p id="details-region" class="details-visual-region"></p>
         </div>
-
-        <h1 id="details-name" class="details-title">Loading destination...</h1>
-        <p id="details-description" class="details-description"></p>
-
-        <div class="details-highlight">
-          <span>Experience highlight</span>
-          <strong id="details-highlight"></strong>
-        </div>
-
-        <div class="details-info-grid">
-          <article class="details-info-card">
-            <span>Suggested stay</span>
-            <strong id="details-days"></strong>
-          </article>
-
-          <article class="details-info-card">
-            <span>Best for</span>
-            <strong id="details-best-for"></strong>
-          </article>
-        </div>
-
-        <section class="details-subsection" aria-labelledby="activities-heading">
-          <p class="section-kicker">Things to experience</p>
-          <h2 id="activities-heading">Activities</h2>
-          <ul id="details-activities" class="activity-list"></ul>
-        </section>
-
-        <section class="travel-tip">
-          <span>UgoTour planning note</span>
-          <p id="details-travel-tip"></p>
-        </section>
+        <a id="details-photo-credit" class="photo-credit" href="#" target="_blank" rel="noreferrer">Photo via Unsplash</a>
       </div>
 
-      <!-- ====================================================
-           DATABASE-BACKED BOOKING FORM
-           ====================================================
-           JavaScript validates the input, then POSTs it to the Node.js API.
-           The backend associates the booking with the logged-in user.
-      -->
-      <aside class="booking-panel" aria-labelledby="booking-heading">
-        <p class="section-kicker">Plan your visit</p>
-        <h2 id="booking-heading">Create a booking</h2>
-        <p class="booking-panel-copy">
-          Phase 7 sends bookings through the Node.js REST API and stores them
-          permanently in PostgreSQL for your logged-in account.
-        </p>
+      <div class="details-content-grid">
+        <div class="details-main">
+          <p id="details-description" class="details-description"></p>
+          <div class="details-highlight"><span>Experience highlight</span><strong id="details-highlight"></strong></div>
+          <div class="details-info-grid">
+            <article class="details-info-card"><span>Suggested stay</span><strong id="details-days"></strong></article>
+            <article class="details-info-card"><span>Best for</span><strong id="details-best-for"></strong></article>
+          </div>
+          <section class="details-subsection" aria-labelledby="activities-heading">
+            <p class="section-kicker">Things to experience</p><h2 id="activities-heading">Activities</h2>
+            <ul id="details-activities" class="activity-list"></ul>
+          </section>
+          <section class="travel-tip"><span>UgoTour planning note</span><p id="details-travel-tip"></p></section>
+        </div>
 
-        <p id="booking-login-note" class="form-message form-message-error" hidden>
-          You need an account session before making a booking.
-          <a href="./login.html">Login here</a>.
-        </p>
-
-        <form id="booking-form" class="booking-form" novalidate>
-          <label>
-            <span>Full name</span>
-            <input id="booking-name" name="name" type="text" autocomplete="name" readonly />
-          </label>
-
-          <label>
-            <span>Email address</span>
-            <input id="booking-email" name="email" type="email" autocomplete="email" readonly />
-          </label>
-
-          <label>
-            <span>Travel date</span>
-            <input id="booking-date" name="date" type="date" />
-          </label>
-
-          <label>
-            <span>Number of travellers</span>
-            <input id="booking-travellers" name="travellers" type="number" min="1" max="20" value="1" />
-          </label>
-
-          <button class="primary-button booking-submit" type="submit">
-            Save booking
-          </button>
-
-          <!-- aria-live lets assistive technologies announce validation feedback. -->
-          <p id="booking-message" class="form-message" aria-live="polite"></p>
-        </form>
-
-        <a class="booking-view-link" href="./bookings.html">View my database bookings →</a>
-      </aside>
-    </section>
-
-    <!-- Shown only if an invalid/missing destination id is supplied. -->
-    <section id="destination-not-found" class="section-shell empty-state" hidden>
-      <h2>Destination not found.</h2>
-      <p>The destination link may be missing or invalid.</p>
-      <a class="primary-button inline-button" href="./destinations.html">Return to destinations</a>
+        <aside class="booking-panel" aria-labelledby="booking-heading">
+          <p class="section-kicker">Plan your visit</p><h2 id="booking-heading">Book this escape</h2>
+          <p class="booking-panel-copy">Choose a travel date and group size. Your booking is attached to your logged-in UgoTour account.</p>
+          <p id="booking-login-note" class="form-message form-message-error" hidden>You need to <a href="./login.html"><strong>login</strong></a> before booking.</p>
+          <form id="booking-form" class="booking-form" novalidate>
+            <label><span>Full name</span><input id="booking-name" name="name" type="text" autocomplete="name" /></label>
+            <label><span>Email</span><input id="booking-email" name="email" type="email" autocomplete="email" /></label>
+            <label><span>Travel date</span><input id="booking-date" name="travelDate" type="date" /></label>
+            <label><span>Travellers</span><input id="booking-travellers" name="travellers" type="number" min="1" max="20" value="1" /></label>
+            <button id="booking-submit" class="primary-button" type="submit">Save booking</button>
+            <p id="booking-message" class="form-message" aria-live="polite"></p>
+          </form>
+        </aside>
+      </div>
     </section>
   </main>
-
   <footer id="site-footer"></footer>
-
   <script type="module" src="../js/pages/destination-details.js"></script>
 </body>
 </html>

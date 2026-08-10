@@ -1,14 +1,15 @@
 -- ================================================================
--- UgoTour PostgreSQL schema - through Phase 7
+-- UgoTour PostgreSQL schema - through Phase 8
 -- ================================================================
--- Fresh database setup. Existing Phase 6 databases should apply migrations
--- 002 and 003 instead of recreating tables.
+-- Fresh database setup. Existing databases should apply their missing numbered migrations through 004
+-- instead of recreating tables.
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
+    profile_image TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -24,6 +25,9 @@ CREATE TABLE IF NOT EXISTS destinations (
     best_for VARCHAR(255),
     suggested_days INTEGER CHECK (suggested_days > 0),
     travel_tip TEXT,
+    image_url TEXT,
+    photo_credit VARCHAR(180),
+    photo_source_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

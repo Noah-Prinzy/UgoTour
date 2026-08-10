@@ -3,75 +3,89 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="UgoTour — explore Uganda through destinations, culture and experiences." />
+  <meta name="description" content="UgoTour — discover Uganda through immersive destinations, culture and adventures." />
+  <meta name="theme-color" content="#172114" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>UgoTour | Explore Uganda</title>
 
-  <!-- Tailwind is used only as a UI/design helper. -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-  <!-- Our own CSS remains available for custom design and animations. -->
   <link rel="stylesheet" href="./css/main.css" />
   <link rel="stylesheet" href="./css/components.css" />
   <link rel="stylesheet" href="./css/animations.css" />
   <link rel="stylesheet" href="./css/responsive.css" />
 </head>
-<body class="bg-stone-50 text-slate-900">
+<body class="page-home">
   <header id="site-header"></header>
 
   <main>
-    <section class="hero-shell">
-      <div class="hero-content">
+    <section class="home-hero" aria-labelledby="home-title">
+      <img
+        id="home-hero-image"
+        class="home-hero-media"
+        src="./images/murchison-falls.jpg"
+        alt="Murchison Falls in Uganda"
+      />
+
+      <div class="home-hero-content">
         <p class="hero-kicker">Discover the Pearl of Africa</p>
-        <h1>Explore Uganda with UgoTour.</h1>
+        <h1 id="home-title">Choose your <span>Ugandan adventure.</span></h1>
         <p class="hero-copy">
-          Find destinations, experiences, culture and travel ideas in one simple tourism platform.
+          Forests, waterfalls, wildlife, lakes and city culture — plan a trip through Uganda from one clean travel experience.
         </p>
 
-        <div class="hero-actions">
-          <button id="explore-button" class="primary-button">Explore destinations</button>
-          <button id="about-button" class="secondary-button">How UgoTour works</button>
-        </div>
-
-        <!-- Phase 7: JavaScript search over destinations loaded from the REST API. -->
         <div class="hero-search">
-          <label for="destination-search">Search destinations</label>
-
+          <label for="destination-search">Where do you want to go?</label>
           <div class="search-box">
-            <input
-              type="text"
-              id="destination-search"
-              placeholder="Try Jinja, Bwindi or Murchison Falls..."
-              autocomplete="off"
-            />
-
+            <input id="destination-search" type="search" placeholder="Search Jinja, Bwindi, Sipi…" autocomplete="off" />
             <button id="search-button" type="button">Search</button>
           </div>
-
           <p id="search-message" aria-live="polite"></p>
+        </div>
+
+        <div class="hero-actions">
+          <button id="explore-button" class="primary-button" type="button">Explore places</button>
+          <button id="about-button" class="secondary-button" type="button">How it works</button>
         </div>
       </div>
 
-      <div class="hero-panel" aria-label="Featured destination placeholder">
-        <span class="hero-panel-label">Featured</span>
-        <h2>Murchison Falls</h2>
-        <p>Destination content below now loads from the live UgoTour REST API.</p>
+      <div class="hero-location-card" aria-label="Featured destination">
+        <span>Featured escape</span>
+        <strong id="hero-featured-name">Murchison Falls</strong>
+        <p id="hero-featured-region">Northern Uganda</p>
       </div>
+    </section>
+
+    <section class="home-discovery-strip" aria-label="Travel themes">
+      <div class="discovery-intro">
+        <strong>Travel your way</strong>
+        <p>Pick the mood, then discover a destination that fits it.</p>
+      </div>
+      <a class="discovery-chip" href="./pages/destinations.html">
+        <strong>Wildlife</strong><p>Safari & gorillas</p>
+      </a>
+      <a class="discovery-chip" href="./pages/destinations.html">
+        <strong>Adventure</strong><p>Nile & mountains</p>
+      </a>
+      <a class="discovery-chip" href="./pages/destinations.html">
+        <strong>Nature</strong><p>Waterfalls & lakes</p>
+      </a>
     </section>
 
     <section class="section-shell">
       <div class="section-heading">
-        <p class="section-kicker">Database-backed content</p>
-        <h2>Popular experiences</h2>
+        <div>
+          <p class="section-kicker">Popular now</p>
+          <h2>Start with these escapes.</h2>
+        </div>
+        <a class="secondary-button" href="./pages/destinations.html">View all destinations</a>
       </div>
-
-      <!-- JavaScript dynamically places destination cards in this grid. -->
       <div id="experience-grid" class="experience-grid"></div>
     </section>
   </main>
 
   <footer id="site-footer"></footer>
-
-  <!-- All interactive behavior is handled by our own JavaScript modules. -->
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>

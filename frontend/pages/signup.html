@@ -3,73 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Create your UgoTour account." />
-  <title>Sign Up | UgoTour</title>
-
-  <!-- Tailwind is used only as a visual/design helper. -->
+  <meta name="theme-color" content="#172114" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/components.css" />
   <link rel="stylesheet" href="../css/animations.css" />
   <link rel="stylesheet" href="../css/responsive.css" />
+  <meta name="description" content="Create your UgoTour account." />
+  <title>Sign Up | UgoTour</title>
 </head>
-<body class="bg-stone-50 text-slate-900">
+<body>
   <header id="site-header"></header>
-
   <main class="auth-page-shell">
-    <!-- The left panel explains the purpose of the account. -->
     <section class="auth-intro-panel">
       <p class="section-kicker">Join UgoTour</p>
-      <h1>Create your travel account.</h1>
-      <p>
-        Create a real UgoTour account through the Node.js REST API. Your account,
-        password hash and future bookings are persisted in PostgreSQL.
-      </p>
-
-      <div class="auth-feature-list">
-        <span>✓ JavaScript form validation</span>
-        <span>✓ PostgreSQL account persistence</span>
-        <span>✓ Bearer-token login session</span>
-      </div>
+      <h1>Make Uganda your next story.</h1>
+      <p>Create an account to keep bookings and profile details attached to you, wherever you open UgoTour.</p>
+      <div class="auth-feature-list"><span>JavaScript validation</span><span>PostgreSQL persistence</span><span>Secure server-side hashing</span></div>
     </section>
-
     <section class="auth-form-panel" aria-labelledby="signup-title">
-      <p class="section-kicker">Create account</p>
-      <h2 id="signup-title">Sign up</h2>
-      <p class="auth-form-copy">Use an email and a password of at least 8 characters.</p>
-
+      <p class="section-kicker">Create account</p><h2 id="signup-title">Sign up</h2><p class="auth-form-copy">Use a valid email and a password with at least 8 characters.</p>
       <form id="signup-form" class="starter-form auth-form">
-        <label>
-          Full name
-          <input id="signup-name" type="text" autocomplete="name" required />
-        </label>
-
-        <label>
-          Email
-          <input id="signup-email" type="email" autocomplete="email" required />
-        </label>
-
-        <label>
-          Password
-          <input id="signup-password" type="password" minlength="8" autocomplete="new-password" required />
-        </label>
-
-        <label>
-          Confirm password
-          <input id="signup-confirm-password" type="password" minlength="8" autocomplete="new-password" required />
-        </label>
-
-        <button class="primary-button auth-submit-button" type="submit">Create account</button>
-        <p id="signup-message" class="form-message" aria-live="polite"></p>
+        <label>Full name<input id="signup-name" type="text" autocomplete="name" required /></label>
+        <label>Email<input id="signup-email" type="email" autocomplete="email" required /></label>
+        <label>Password<input id="signup-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+        <label>Confirm password<input id="signup-confirm-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+        <button class="primary-button auth-submit-button" type="submit">Create account</button><p id="signup-message" class="form-message" aria-live="polite"></p>
       </form>
-
-      <p class="auth-switch-copy">
-        Already have an account? <a href="./login.html">Login here</a>.
-      </p>
+      <p class="auth-switch-copy">Already have an account? <a href="./login.html">Login here</a>.</p>
     </section>
   </main>
-
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/signup.js"></script>
 </body>
