@@ -858,6 +858,86 @@ UI usage of the gallery data now includes:
 - **database seed/migration:** local image paths and their credits are persisted
   so the gallery remains API-driven.
 
+### 12.5 Phase 8.2 — full-viewport Home hero and transition repair
+
+Phase 8.2 is a focused UI correction based on a screen recording of the live
+Phase 8.1 Home page. The recording revealed two issues in the cinematic hero:
+
+1. the temporary card-to-background image clone used a higher stacking layer
+   than the hero UI, so the expanding photograph briefly covered the title,
+   description, destination cards and dark readability gradient; and
+2. `scrollIntoView()` was being used to center the active horizontal card,
+   which could also move the document vertically and make the whole hero jump.
+
+The Home experience was therefore changed without altering the PostgreSQL
+schema, destination galleries, authentication, bookings or profile system.
+
+#### Full-screen opening surface
+
+The Home hero now occupies the complete opening viewport:
+
+```text
+Desktop / mobile viewport
+┌──────────────────────────────────────────┐
+│ floating navigation                      │
+│                                          │
+│ destination background                   │
+│ title + description                      │
+│ destination card rail + controls         │
+│                              scroll cue ↓ │
+└──────────────────────────────────────────┘
+                    ↓ scroll
+┌──────────────────────────────────────────┐
+│ destination search                       │
+│ travel themes                            │
+│ more destination information/cards       │
+└──────────────────────────────────────────┘
+```
+
+The hero uses `100vh` with a `100svh` override for modern mobile browsers. On
+the Home page only, the existing navigation floats over the hero instead of
+occupying layout height above it. Other pages retain their normal sticky
+navigation behavior.
+
+#### Background-only destination transition
+
+The card morph overlay has been removed from the Home transition. Two full-hero
+image layers (`journey-bg-a` and `journey-bg-b`) now alternate. The inactive
+layer preloads/decodes the next destination image and then crossfades beneath
+the permanent readability gradient and UI. The stacking order is now:
+
+```text
+TOP
+hero title / cards / controls / progress
+readability gradient
+crossfading destination image layers
+BOTTOM
+```
+
+As a result, the changing photograph can no longer cover the interface. Cards
+still lift/scale subtly when selected so the interaction retains the reference
+video's tactile feeling without using the unstable full-screen card expansion.
+The destination copy continues to fade/slide between scenes.
+
+#### Horizontal card scrolling fix
+
+The active destination is now centered by calling `scrollTo()` on
+`#journey-cards` and calculating a horizontal offset. This changes only the card
+rail's `scrollLeft`; it does not ask the browser to bring an element into the
+document viewport. This removes the unwanted vertical page movement observed in
+the Phase 8.1 recording.
+
+#### Scroll handoff
+
+A small animated **Scroll to explore** cue is placed at the bottom of the hero.
+The destination search has a stable `#home-search` anchor immediately after the
+full-screen opening. Scrolling naturally hands the user from the cinematic
+intro into search, travel themes and the existing destination content. Reduced
+motion preferences disable the cue animation and background transition timing.
+
+No new database migration is required for Phase 8.2. If migrations 004 and 005
+were already applied, the database is ready.
+
 ## 13. Running the current application
 
 ### 13.1 Download and verify the final high-resolution destination images
@@ -920,13 +1000,13 @@ Default backend address:
 http://127.0.0.1:3000
 ```
 
-A healthy Phase 8.1 response from `/health` reports:
+A healthy Phase 8.2 response from `/health` reports:
 
 ```json
 {
   "status": "ok",
   "message": "UgoTour API is running",
-  "phase": "8.1",
+  "phase": "8.2",
   "database": "connected"
 }
 ```
@@ -971,7 +1051,7 @@ Profile changes       -> PostgreSQL ✅
 Bookings              -> PostgreSQL ✅
 Frontend API calls    -> fetch() ✅
 Bearer authentication -> API headers ✅
-Cinematic Home motion -> vanilla JavaScript ✅
+Cinematic Home motion -> full-viewport background crossfade + vanilla JavaScript ✅
 Shared page reveals   -> IntersectionObserver / MutationObserver ✅
 Responsive mobile UI  -> CSS + vanilla JS ✅
 PWA shell/install     -> manifest + service worker ✅
@@ -989,7 +1069,7 @@ ugotour_api_base_url        -> optional development/deployment API override
 
 ## 15. Next phase — Phase 9
 
-The application is now functionally connected and has the Phase 8 / 8.1 visual
+The application is now functionally connected and has the Phase 8 / 8.1 / 8.2 visual
 and motion system. Phase 9 should focus on **production readiness and
 deployment**, including:
 

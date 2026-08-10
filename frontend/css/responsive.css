@@ -387,10 +387,11 @@
 
 @media (max-width: 820px) {
   .journey-slider {
-    width: calc(100% - 18px);
-    min-height: 760px;
-    height: min(840px, calc(100vh - 92px));
-    border-radius: 30px;
+    width: 100%;
+    min-height: 700px;
+    height: 100vh;
+    height: 100svh;
+    border-radius: 0;
   }
 
   .journey-shade {
@@ -461,13 +462,14 @@
 
 @media (max-width: 560px) {
   .journey-slider {
-    min-height: 720px;
-    height: calc(100svh - 86px);
-    max-height: 790px;
+    min-height: 680px;
+    height: 100vh;
+    height: 100svh;
+    max-height: none;
   }
 
   .journey-stage {
-    padding: 64px 18px 20px;
+    padding: 64px 18px 34px;
   }
 
   .journey-kicker {
@@ -559,4 +561,15 @@
   .details-gallery-thumb.is-active {
     transform: translateY(-4px) scale(1.04);
   }
+}
+
+@media (max-width: 560px) {
+  .journey-scroll-cue {
+    bottom: 8px;
+    font-size: .54rem;
+  }
+}
+
+@media (max-height: 720px) and (max-width: 820px) {
+  .journey-scroll-cue { display: none; }
 }

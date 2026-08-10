@@ -51,6 +51,11 @@
   to { transform: scale(1.055) translate3d(-.6%, -.35%, 0); }
 }
 
+
+@keyframes journey-scroll-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
 @keyframes editorial-reveal {
   from { opacity: 0; transform: translateY(24px); clip-path: inset(0 0 100% 0); }
   to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
@@ -117,6 +122,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .journey-bg { animation: none !important; transform: none !important; }
+  .journey-bg { animation: none !important; transform: none !important; transition: none !important; }
+  .journey-scroll-arrow { animation: none !important; }
   .journey-progress span { animation: none !important; }
 }

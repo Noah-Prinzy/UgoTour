@@ -11,6 +11,15 @@
   pointer-events: none;
 }
 
+/* Phase 8.2: on Home, the nav floats above the full-viewport hero rather
+   than occupying document height above it. Other pages keep sticky nav. */
+.page-home #site-header {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
 .site-nav {
   width: min(var(--page-width), 100%);
   min-height: 68px;
@@ -1165,34 +1174,44 @@
 .journey-slider {
   position: relative;
   isolation: isolate;
-  width: min(1440px, calc(100% - 24px));
-  min-height: clamp(640px, 78vh, 820px);
-  margin: 12px auto 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  min-height: 660px;
+  margin: 0;
   overflow: hidden;
-  border-radius: 38px;
+  border-radius: 0;
   background: var(--forest-950);
   color: var(--white);
-  box-shadow: 0 28px 80px rgba(15, 24, 13, .22);
 }
 
 .journey-bg,
-.journey-shade,
-.journey-morph-layer {
+.journey-shade {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
 
+/* Two full-screen background layers crossfade beneath every UI layer.
+   This fixes the Phase 8.1 bug where a temporary expanding image covered
+   the title, card rail and gradient during destination changes. */
 .journey-bg {
-  z-index: -3;
+  z-index: 0;
   object-fit: cover;
-  transform: scale(1.015);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.02);
+  transition: opacity 900ms cubic-bezier(.22,.61,.36,1);
+}
+
+.journey-bg.is-active {
+  opacity: 1;
   animation: journey-ken-burns 6.5s ease-in-out infinite alternate;
 }
 
 .journey-shade {
-  z-index: -2;
+  z-index: 1;
   background:
     linear-gradient(90deg, rgba(8, 13, 7, .82) 0%, rgba(8, 13, 7, .56) 37%, rgba(8, 13, 7, .17) 70%, rgba(8, 13, 7, .34) 100%),
     linear-gradient(0deg, rgba(8, 13, 7, .62), transparent 44%);
@@ -1218,8 +1237,11 @@
 
 .journey-stage {
   position: relative;
-  z-index: 2;
+  z-index: 3;
+  width: min(1440px, 100%);
+  height: 100%;
   min-height: inherit;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, .92fr) minmax(520px, 1.3fr);
   align-items: end;
@@ -1456,16 +1478,43 @@
 
 .journey-photo-credit:hover { color: var(--white); }
 
-.journey-morph-layer {
+.journey-card.is-transition-source {
+  transform: translateY(-17px) scale(1.045);
+  border-color: rgba(255,255,255,.9);
+  box-shadow: 0 30px 68px rgba(0,0,0,.38);
+}
+
+.journey-scroll-cue {
+  position: absolute;
   z-index: 5;
-  object-fit: cover;
-  pointer-events: none;
-  box-shadow: 0 28px 70px rgba(0,0,0,.28);
+  left: 50%;
+  bottom: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,.72);
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.journey-scroll-cue:hover {
+  color: var(--white);
+  transform: translateX(-50%) translateY(2px);
+}
+
+.journey-scroll-arrow {
+  display: inline-block;
+  font-size: .9rem;
+  animation: journey-scroll-bob 1.6s ease-in-out infinite;
 }
 
 .home-search-band {
   width: min(var(--page-width), calc(100% - 40px));
-  margin: 28px auto 0;
+  margin: 42px auto 0;
   display: grid;
   grid-template-columns: minmax(0, .8fr) minmax(360px, 1.2fr);
   align-items: center;

@@ -9,7 +9,10 @@ await renderNavbar(".");
 renderFooter();
 
 const slider = document.getElementById("journey-slider");
-const background = document.getElementById("journey-bg");
+const backgroundLayers = [
+  document.getElementById("journey-bg-a"),
+  document.getElementById("journey-bg-b")
+].filter(Boolean);
 const cardRail = document.getElementById("journey-cards");
 const copyBlock = document.getElementById("journey-copy");
 const counter = document.getElementById("journey-counter");
@@ -28,6 +31,7 @@ let activeIndex = 0;
 let transitionLocked = false;
 let autoplayTimer = null;
 let autoplayPaused = false;
+let activeBackgroundIndex = 0;
 
 function primaryImage(destination) {
   return destination.galleryImages?.[0]?.url || destination.imageUrl;
@@ -84,11 +88,15 @@ function refreshCardState(scroll = true) {
     card.setAttribute("aria-selected", String(isActive));
   });
 
-  if (scroll && cards[activeIndex]) {
-    cards[activeIndex].scrollIntoView({
-      behavior: reduceMotion ? "auto" : "smooth",
-      inline: "center",
-      block: "nearest"
+  if (scroll && cards[activeIndex] && cardRail) {
+    // Move only the horizontal card rail. `scrollIntoView()` could also move the
+    // whole document vertically, which caused the Home hero to jump on load/change.
+    const activeCard = cards[activeIndex];
+    const targetLeft = activeCard.offsetLeft - ((cardRail.clientWidth - activeCard.offsetWidth) / 2);
+
+    cardRail.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior: reduceMotion ? "auto" : "smooth"
     });
   }
 }
@@ -130,70 +138,55 @@ async function animateCopyChange(destination) {
 
   updateHeroContent(destination);
 
-  copyBlock.animate(
+  await copyBlock.animate(
     [
       { opacity: 0, transform: "translateY(24px)" },
       { opacity: 1, transform: "translateY(0)" }
     ],
     { duration: 470, easing: "cubic-bezier(.18,.82,.2,1)", fill: "forwards" }
-  );
+  ).finished;
 }
 
-async function morphCardIntoBackground(sourceCard, destination) {
+async function crossfadeBackground(destination) {
   const nextSrc = resolveAssetPath(primaryImage(destination), ".");
 
-  if (!slider || !background || !sourceCard || reduceMotion || !sourceCard.animate) {
-    if (background) background.src = nextSrc;
+  if (!backgroundLayers.length) return;
+
+  const currentLayer = backgroundLayers[activeBackgroundIndex];
+  const nextIndex = backgroundLayers.length > 1
+    ? (activeBackgroundIndex + 1) % backgroundLayers.length
+    : activeBackgroundIndex;
+  const nextLayer = backgroundLayers[nextIndex];
+
+  if (!nextLayer) return;
+
+  // Load/decode the destination image before making it visible. This prevents a
+  // white/empty flash if a large 2400px photo has not entered the browser cache yet.
+  if (nextLayer.src !== new URL(nextSrc, window.location.href).href) {
+    nextLayer.src = nextSrc;
+  }
+
+  try {
+    await nextLayer.decode?.();
+  } catch {
+    // A failed decode does not stop the browser from attempting to display it.
+  }
+
+  if (reduceMotion || backgroundLayers.length === 1) {
+    currentLayer?.classList.remove("is-active");
+    nextLayer.classList.add("is-active");
+    activeBackgroundIndex = nextIndex;
     return;
   }
 
-  const heroRect = slider.getBoundingClientRect();
-  const cardRect = sourceCard.getBoundingClientRect();
-  const clone = document.createElement("img");
+  // The actual animation is CSS opacity on two full-hero layers. Both layers
+  // stay underneath the shade and UI, so destination photography can never
+  // cover the title, card rail, navigation or controls.
+  nextLayer.classList.add("is-active");
+  currentLayer?.classList.remove("is-active");
 
-  clone.className = "journey-morph-layer";
-  clone.src = nextSrc;
-  clone.alt = "";
-  clone.style.left = `${cardRect.left - heroRect.left}px`;
-  clone.style.top = `${cardRect.top - heroRect.top}px`;
-  clone.style.width = `${cardRect.width}px`;
-  clone.style.height = `${cardRect.height}px`;
-  slider.appendChild(clone);
-
-  // Put the final image behind the expanding clone. This gives the same visual
-  // continuity as the supplied reference: the chosen card appears to become
-  // the next full-screen destination instead of cutting abruptly.
-  background.src = nextSrc;
-
-  try {
-    await clone.animate(
-      [
-        {
-          left: `${cardRect.left - heroRect.left}px`,
-          top: `${cardRect.top - heroRect.top}px`,
-          width: `${cardRect.width}px`,
-          height: `${cardRect.height}px`,
-          borderRadius: "24px",
-          filter: "brightness(.92)"
-        },
-        {
-          left: "0px",
-          top: "0px",
-          width: `${heroRect.width}px`,
-          height: `${heroRect.height}px`,
-          borderRadius: "0px",
-          filter: "brightness(1)"
-        }
-      ],
-      {
-        duration: 900,
-        easing: "cubic-bezier(.68,0,.18,1)",
-        fill: "forwards"
-      }
-    ).finished;
-  } finally {
-    clone.remove();
-  }
+  await new Promise((resolve) => window.setTimeout(resolve, 920));
+  activeBackgroundIndex = nextIndex;
 }
 
 async function changeDestination(nextIndex, sourceCard = null) {
@@ -207,18 +200,24 @@ async function changeDestination(nextIndex, sourceCard = null) {
 
   transitionLocked = true;
   const destination = destinations[normalized];
+  // Keep a subtle selected-card response, but the card no longer becomes an
+  // overlay image. Destination photography changes only in the hero background.
   const targetCard = sourceCard || cardRail?.querySelector(`[data-index="${normalized}"]`);
+  targetCard?.classList.add("is-transition-source");
 
   activeIndex = normalized;
   refreshCardState(true);
   restartAutoplay();
 
-  await Promise.all([
-    morphCardIntoBackground(targetCard, destination),
-    animateCopyChange(destination)
-  ]);
-
-  transitionLocked = false;
+  try {
+    await Promise.all([
+      crossfadeBackground(destination),
+      animateCopyChange(destination)
+    ]);
+  } finally {
+    targetCard?.classList.remove("is-transition-source");
+    transitionLocked = false;
+  }
 }
 
 function restartProgressAnimation() {
@@ -271,7 +270,12 @@ async function initialize() {
     }
 
     const first = destinations[0];
-    if (background) background.src = resolveAssetPath(primaryImage(first), ".");
+    const firstSrc = resolveAssetPath(primaryImage(first), ".");
+    backgroundLayers.forEach((layer, index) => {
+      layer.src = firstSrc;
+      layer.classList.toggle("is-active", index === 0);
+    });
+    activeBackgroundIndex = 0;
     updateHeroContent(first);
     renderEditorialCards();
 

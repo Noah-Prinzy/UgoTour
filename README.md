@@ -12,7 +12,7 @@ UgoTour is a JavaScript-first Uganda tourism **Progressive Web App (PWA)**. It i
 - `pg` / node-postgres
 - PostgreSQL
 
-## Phase 8.1 highlights
+## Phase 8.2 highlights
 
 - Phase 8 visual system retained, with a new motion/layout sub-phase based on the supplied travel-carousel video
 - Cinematic Home destination slider with card-to-background morph transitions
