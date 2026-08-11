@@ -19,31 +19,46 @@
 </head>
 <body class="dashboard-page profile-page">
   <header id="site-header"></header>
+
   <main id="main-content" class="dashboard-main">
     <div id="profile-account-content" class="profile-dashboard">
       <section id="profile-logged-out" hidden></section>
+
       <section id="profile-logged-in">
         <header class="profile-identity-card">
           <div class="profile-banner" aria-hidden="true"></div>
           <div class="profile-identity-content">
             <div class="profile-photo-shell">
               <div id="profile-avatar" class="profile-avatar">UG</div>
-              <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Choose profile picture">+</button>
-              <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+              <button
+                id="profile-photo-edit"
+                class="profile-photo-edit"
+                type="button"
+                aria-label="Edit profile picture"
+                aria-haspopup="dialog"
+                aria-controls="profile-photo-dialog"
+              >+</button>
             </div>
+
             <div class="profile-identity-copy">
               <p class="section-kicker">Your UgoTour account</p>
               <h1 id="profile-display-name">UgoTour User</h1>
               <p id="profile-display-email">user@example.com</p>
               <span>Member since <strong id="profile-member-since">—</strong></span>
             </div>
+
             <button id="profile-edit-shortcut" class="secondary-button" type="button">Edit profile</button>
           </div>
         </header>
 
-        <div class="profile-dashboard-grid">
+        <div class="profile-dashboard-grid profile-dashboard-grid-simplified">
           <section id="profile-details-card" class="profile-settings-card profile-details-card">
-            <div class="profile-card-heading"><div><p class="section-kicker">Profile details</p><h2>Name and email</h2></div></div>
+            <div class="profile-card-heading">
+              <div>
+                <p class="section-kicker">Profile details</p>
+                <h2>Name and email</h2>
+              </div>
+            </div>
             <form id="profile-form" class="starter-form profile-form profile-form-inline">
               <label>Full name<input id="profile-name" type="text" autocomplete="name" required /></label>
               <label>Email<input id="profile-email" type="email" autocomplete="email" required /></label>
@@ -52,18 +67,13 @@
             </form>
           </section>
 
-          <section class="profile-settings-card profile-photo-card">
-            <div class="profile-card-heading"><div><p class="section-kicker">Profile photo</p><h2>Account image</h2></div></div>
-            <p>Choose a JPEG, PNG or WebP image. Preview it above, then save.</p>
-            <div class="profile-photo-controls">
-              <button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button>
-              <button id="profile-photo-remove" class="secondary-button" type="button">Remove photo</button>
-            </div>
-            <p id="profile-photo-message" class="form-message" aria-live="polite"></p>
-          </section>
-
           <section class="profile-settings-card profile-security-card">
-            <div class="profile-card-heading"><div><p class="section-kicker">Security</p><h2>Change password</h2></div></div>
+            <div class="profile-card-heading">
+              <div>
+                <p class="section-kicker">Security</p>
+                <h2>Change password</h2>
+              </div>
+            </div>
             <form id="password-form" class="starter-form profile-form profile-form-password">
               <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
               <label>New password<input id="new-password" type="password" minlength="10" autocomplete="new-password" required /></label>
@@ -72,15 +82,49 @@
               <p id="password-message" class="form-message" aria-live="polite"></p>
             </form>
           </section>
+        </div>
 
-          <section class="profile-settings-card profile-actions-card">
-            <div><p class="section-kicker">Account actions</p><h2>Session</h2><p>Your secure session is stored in an HttpOnly cookie. Logging out ends it on this device.</p></div>
-            <div class="profile-action-links"><a class="secondary-button" href="./saved.html">Saved places</a><a id="profile-admin-link" class="secondary-button" href="./admin.html" hidden>Admin dashboard</a><button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button></div>
-          </section>
+        <div class="profile-quick-actions" aria-label="Profile actions">
+          <a class="secondary-button profile-saved-button" href="./saved.html">Saved places</a>
+          <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
         </div>
       </section>
     </div>
+
+    <dialog id="profile-photo-dialog" class="profile-photo-dialog" aria-labelledby="profile-photo-dialog-title">
+      <section class="profile-photo-editor">
+        <header class="profile-photo-editor-header">
+          <div>
+            <p class="section-kicker">Profile picture</p>
+            <h2 id="profile-photo-dialog-title">Edit your photo</h2>
+          </div>
+          <button id="profile-photo-dialog-close" class="profile-photo-dialog-close" type="button" aria-label="Close profile picture editor">×</button>
+        </header>
+
+        <div class="profile-photo-preview-wrap">
+          <div id="profile-photo-preview" class="profile-photo-preview" aria-live="polite">UG</div>
+          <span class="profile-photo-preview-label">Preview</span>
+        </div>
+
+        <p class="profile-photo-editor-copy">Choose a JPEG, PNG or WebP image up to 6 MB. Your photo is previewed here before anything is saved.</p>
+
+        <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+
+        <div class="profile-photo-editor-tools">
+          <button id="profile-photo-choose" class="secondary-button" type="button">Choose / change photo</button>
+          <button id="profile-photo-remove" class="secondary-button profile-photo-remove" type="button">Remove photo</button>
+        </div>
+
+        <p id="profile-photo-message" class="form-message profile-photo-editor-message" aria-live="polite"></p>
+
+        <footer class="profile-photo-editor-footer">
+          <button id="profile-photo-cancel" class="secondary-button" type="button">Cancel</button>
+          <button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button>
+        </footer>
+      </section>
+    </dialog>
   </main>
+
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/profile.js"></script>
 </body>
