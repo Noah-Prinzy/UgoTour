@@ -9,7 +9,13 @@ import { deleteBooking, listBookings, postBooking } from "./controllers/booking-
 import { postContactMessage } from "./controllers/contact-controller.js";
 import { getDestination, listDestinations } from "./controllers/destination-controller.js";
 import { getHealth } from "./controllers/health-controller.js";
-import { listMapLocations } from "./controllers/map-controller.js";
+import {
+  getMapCapabilities,
+  listMapLocations,
+  nearbyMapPlaces,
+  routeMap,
+  searchMapPlaces
+} from "./controllers/map-controller.js";
 import { confirmReset, requestReset } from "./controllers/password-reset-controller.js";
 import { getProfile, patchPassword, patchProfile, patchProfilePhoto } from "./controllers/profile-controller.js";
 import { createSaved, deleteSaved, getSavedStatus, listSaved } from "./controllers/saved-controller.js";
@@ -26,6 +32,11 @@ const routes = [
   { method:"GET", pattern:/^\/api\/attractions$/, handler:listAttractions },
   { method:"GET", pattern:/^\/api\/attractions\/(?<id>\d+)$/, handler:getAttraction },
   { method:"GET", pattern:/^\/api\/map\/locations$/, handler:listMapLocations },
+  { method:"GET", pattern:/^\/api\/map\/capabilities$/, handler:getMapCapabilities },
+  { method:"GET", pattern:/^\/api\/map\/search$/, handler:searchMapPlaces },
+  { method:"GET", pattern:/^\/api\/map\/nearby$/, handler:nearbyMapPlaces },
+  { method:"GET", pattern:/^\/api\/map\/route$/, handler:routeMap },
+  { method:"POST", pattern:/^\/api\/map\/route$/, handler:routeMap },
 
   { method:"POST", pattern:/^\/api\/auth\/signup$/, handler:signup },
   { method:"POST", pattern:/^\/api\/auth\/login$/, handler:loginUser },

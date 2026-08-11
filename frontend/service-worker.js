@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-v1-6-0";
+const CACHE_NAME = "ugotour-v1-9-0";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest",

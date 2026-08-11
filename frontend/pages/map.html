@@ -25,17 +25,33 @@
     <section class="map-stage" aria-label="Interactive map of Uganda tourism locations">
       <div id="uganda-map" class="uganda-map" role="region" aria-label="Uganda tourism map"></div>
 
-      <div class="map-search-dock">
-        <label class="map-search" for="map-search-input">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m20 20-4-4" />
-          </svg>
-          <input id="map-search-input" type="search" placeholder="Search a destination or attraction…" autocomplete="off" />
-          <button id="map-search-clear" type="button" aria-label="Clear map search" hidden>×</button>
-        </label>
-        <div id="map-search-suggestions" class="map-search-suggestions" hidden aria-label="Search suggestions"></div>
-      </div>
+      <section class="map-command-panel" aria-label="Map search and discovery controls">
+        <div class="map-search-dock">
+          <label class="map-search" for="map-search-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <input id="map-search-input" type="search" placeholder="Search Kampala, Jinja, museums…" autocomplete="off" />
+            <button id="map-search-clear" type="button" aria-label="Clear map search" hidden>×</button>
+          </label>
+          <div id="map-search-suggestions" class="map-search-suggestions" hidden aria-label="Search suggestions"></div>
+        </div>
+
+        <div class="map-nearby-dock" aria-label="Location and nearby discovery">
+          <button id="map-locate-me" class="map-nearby-button map-locate-me" type="button">
+            <span aria-hidden="true">◎</span> My location
+          </button>
+          <span id="map-discovery-context" class="map-nearby-label">Explore near Uganda</span>
+          <button class="map-nearby-button" type="button" data-nearby-category="attractions" aria-pressed="false">Attractions</button>
+          <button class="map-nearby-button" type="button" data-nearby-category="hotels" aria-pressed="false">Hotels</button>
+          <button class="map-nearby-button" type="button" data-nearby-category="restaurants" aria-pressed="false">Food</button>
+          <button class="map-nearby-button" type="button" data-nearby-category="fuel" aria-pressed="false">Fuel</button>
+          <button class="map-nearby-button" type="button" data-nearby-category="hospitals" aria-pressed="false">Health</button>
+        </div>
+
+        <div id="map-status-toast" class="map-status-toast" hidden aria-live="polite"></div>
+      </section>
 
       <button id="map-fit-uganda" class="map-fit-button" type="button" title="Fit Uganda in view">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -47,6 +63,7 @@
       <div class="map-pin-key" aria-label="Map pin legend">
         <span><i class="pin-key-dot is-destination"></i>Destination</span>
         <span><i class="pin-key-dot is-attraction"></i>Attraction</span>
+        <span><i class="pin-key-dot is-discovered"></i>Discovered</span>
       </div>
 
       <p id="map-loading-state" class="map-loading-state">Loading Uganda tourism map…</p>
@@ -70,13 +87,38 @@
           <div class="map-place-meta">
             <span id="map-place-type"></span>
             <span id="map-place-category"></span>
+            <span id="map-place-source" class="map-place-source"></span>
           </div>
           <h2 id="map-place-name"></h2>
           <p id="map-place-location" class="map-place-location"></p>
           <p id="map-place-description"></p>
-          <div class="map-callout-actions"><button id="map-place-save" class="map-place-save" type="button" aria-pressed="false">♡ Save</button><a id="map-place-details" class="map-details-link" href="#">View details <span aria-hidden="true">→</span></a></div>
+          <div class="map-callout-actions">
+            <button id="map-place-route" class="map-route-button" type="button">Directions</button>
+            <button id="map-place-save" class="map-place-save" type="button" aria-pressed="false">♡ Save</button>
+            <a id="map-place-details" class="map-details-link" href="#">View details <span aria-hidden="true">→</span></a>
+          </div>
         </div>
       </article>
+
+      <aside id="map-route-panel" class="map-route-panel" hidden aria-live="polite">
+        <div class="map-route-heading">
+          <div>
+            <span class="map-route-kicker">Route</span>
+            <strong id="map-route-destination">Selected place</strong>
+          </div>
+          <button id="map-route-clear" type="button" aria-label="Clear route">×</button>
+        </div>
+        <div class="map-route-stats">
+          <div><strong id="map-route-distance">—</strong><span>distance</span></div>
+          <div><strong id="map-route-duration">—</strong><span>estimated time</span></div>
+        </div>
+        <div class="map-route-modes" aria-label="Travel mode">
+          <button type="button" data-route-mode="driving" class="is-active">Drive</button>
+          <button type="button" data-route-mode="walking">Walk</button>
+          <button type="button" data-route-mode="cycling">Cycle</button>
+        </div>
+        <p id="map-route-note" class="map-route-note"></p>
+      </aside>
     </section>
   </main>
 

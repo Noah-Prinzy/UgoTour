@@ -1,5 +1,11 @@
 import { renderNavbar } from "../components/navbar.js";
-import { getMapLocations } from "../services/map-service.js";
+import {
+  getMapCapabilities,
+  getMapLocations,
+  getMapRoute,
+  getNearbyMapPlaces,
+  searchMapPlaces
+} from "../services/map-service.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
 import { resolveAssetPath } from "../utils/assets.js";
 import { getSavedPlaces, toggleSavedPlace } from "../services/saved-service.js";
@@ -15,11 +21,15 @@ const TILE_ATTRIBUTION = window.UGOTOUR_TILE_ATTRIBUTION || '&copy; <a href="htt
 const searchInput = document.getElementById("map-search-input");
 const searchClear = document.getElementById("map-search-clear");
 const suggestions = document.getElementById("map-search-suggestions");
-const searchEmpty = document.getElementById("map-search-empty");
+const statusToast = document.getElementById("map-status-toast");
 const loadingState = document.getElementById("map-loading-state");
 const offlineState = document.getElementById("map-offline-state");
 const retryButton = document.getElementById("map-retry-button");
 const fitButton = document.getElementById("map-fit-uganda");
+const locateButton = document.getElementById("map-locate-me");
+const nearbyButtons = [...document.querySelectorAll("[data-nearby-category]")];
+const discoveryContextLabel = document.getElementById("map-discovery-context");
+const commandPanel = document.querySelector(".map-command-panel");
 const callout = document.getElementById("map-place-callout");
 const calloutClose = document.getElementById("map-place-panel-close");
 const connector = document.getElementById("map-callout-connector");
@@ -28,11 +38,20 @@ const connectorEnd = document.getElementById("map-callout-end");
 const placeImage = document.getElementById("map-place-image");
 const placeType = document.getElementById("map-place-type");
 const placeCategory = document.getElementById("map-place-category");
+const placeSource = document.getElementById("map-place-source");
 const placeName = document.getElementById("map-place-name");
 const placeLocation = document.getElementById("map-place-location");
 const placeDescription = document.getElementById("map-place-description");
 const placeDetails = document.getElementById("map-place-details");
 const placeSave = document.getElementById("map-place-save");
+const placeRoute = document.getElementById("map-place-route");
+const routePanel = document.getElementById("map-route-panel");
+const routeDestination = document.getElementById("map-route-destination");
+const routeDistance = document.getElementById("map-route-distance");
+const routeDuration = document.getElementById("map-route-duration");
+const routeClear = document.getElementById("map-route-clear");
+const routeModeButtons = [...document.querySelectorAll("[data-route-mode]")];
+const routeNote = document.getElementById("map-route-note");
 
 let map = null;
 let boundaryLayer = null;
@@ -40,11 +59,25 @@ let features = [];
 let selectedFeature = null;
 let selectedKey = null;
 let positionFrame = null;
+let destinationLayer = null;
+let attractionLayer = null;
+let discoveryLayer = null;
+let routeLayer = null;
+let userLocationMarker = null;
+let userAccuracyCircle = null;
+let userLocation = null;
+let routeTargetFeature = null;
+let selectedRouteMode = "driving";
+let discoveryContext = null;
+let capabilities = { smartSearch: true, nearbyDiscovery: true, currentLocation: true, routing: false };
 const markerByKey = new Map();
+const discoveryKeys = new Set();
 let savedKeys = new Set();
 
 function featureKey(feature) {
-  return `${feature.properties.placeType}:${Number(feature.properties.id)}`;
+  const p = feature?.properties || {};
+  if (p.externalId) return String(p.externalId);
+  return `${p.placeType}:${Number(p.id)}`;
 }
 
 function searchableText(feature) {
@@ -55,11 +88,16 @@ function searchableText(feature) {
     .toLowerCase();
 }
 
+function isExternal(feature) {
+  return feature?.properties?.placeType === "external" || feature?.properties?.source === "openstreetmap";
+}
+
 function createMarkerIcon(feature, isActive = false) {
+  const external = isExternal(feature);
   const isDestination = feature.properties.placeType === "destination";
-  const size = isDestination ? [34, 44] : [29, 38];
+  const size = external ? [28, 37] : (isDestination ? [34, 44] : [29, 38]);
   const activeClass = isActive ? " is-active" : "";
-  const typeClass = isDestination ? "is-destination" : "is-attraction";
+  const typeClass = external ? "is-discovered" : (isDestination ? "is-destination" : "is-attraction");
 
   return window.L.divIcon({
     className: "ugotour-marker-shell",
@@ -97,6 +135,9 @@ async function initializeMap() {
   }).setView(UGANDA_CENTER, 7);
 
   window.L.control.zoom({ position: "bottomright" }).addTo(map);
+  destinationLayer = window.L.layerGroup().addTo(map);
+  attractionLayer = window.L.layerGroup();
+  discoveryLayer = window.L.layerGroup().addTo(map);
 
   const tileLayer = window.L.tileLayer(TILE_URL, {
     maxZoom: 19,
@@ -114,34 +155,22 @@ async function initializeMap() {
   });
   tileLayer.addTo(map);
 
-  try {
-    const response = await fetch("../data/uganda-boundary.geojson");
-    if (response.ok) {
-      const boundary = await response.json();
-      boundaryLayer = window.L.geoJSON(boundary, {
-        interactive: false,
-        style: {
-          color: "#355c35",
-          weight: 1.7,
-          opacity: 0.75,
-          fillColor: "#76936f",
-          fillOpacity: 0.035
-        }
-      }).addTo(map);
-    }
-  } catch (error) {
-    console.warn("Uganda boundary could not load:", error);
-  }
+  // The earlier boundary overlay used a heavily simplified polygon that read as
+  // an accidental geometric box at country scale. The professional map keeps
+  // the OSM administrative labels clean and uses UGANDA_BOUNDS only for fitting.
+  boundaryLayer = null;
 
   buildMarkers();
   fitUganda();
 
   map.on("move zoom resize", scheduleCalloutPosition);
+  map.on("zoomend", syncCuratedMarkerVisibility);
   map.on("click", (event) => {
     if (event.originalEvent?.target?.closest?.(".leaflet-marker-icon")) return;
     closeCallout();
   });
 
+  requestAnimationFrame(() => map?.invalidateSize({ pan: false }));
   return true;
 }
 
@@ -152,34 +181,65 @@ function showMapUnavailable(recreate = false) {
     map.remove();
     map = null;
     boundaryLayer = null;
+    destinationLayer = null;
+    attractionLayer = null;
+    discoveryLayer = null;
+    routeLayer = null;
+    userLocationMarker = null;
+    userAccuracyCircle = null;
     markerByKey.clear();
+    discoveryKeys.clear();
   }
 }
 
 function buildMarkers() {
   if (!map) return;
   markerByKey.clear();
+  destinationLayer?.clearLayers();
+  attractionLayer?.clearLayers();
 
   features.forEach((feature) => {
-    const [longitude, latitude] = feature.geometry.coordinates;
-    const marker = window.L.marker([latitude, longitude], {
-      icon: createMarkerIcon(feature),
-      title: feature.properties.name,
-      keyboard: true,
-      riseOnHover: true
-    });
-
-    marker.feature = feature;
-    marker.bindTooltip(feature.properties.name, {
-      className: "ugotour-marker-tooltip",
-      direction: "top",
-      opacity: 0.96,
-      offset: [0, -4]
-    });
-    marker.on("click", () => selectFeature(feature, { focusMap: false }));
-    marker.addTo(map);
-    markerByKey.set(featureKey(feature), marker);
+    const layer = feature.properties?.placeType === "destination" ? destinationLayer : attractionLayer;
+    addFeatureMarker(feature, layer || map);
   });
+  syncCuratedMarkerVisibility();
+}
+
+function syncCuratedMarkerVisibility() {
+  if (!map || !attractionLayer || !destinationLayer) return;
+  if (!map.hasLayer(destinationLayer)) destinationLayer.addTo(map);
+
+  // Country-scale view stays calm and destination-led. Attractions reveal as
+  // the user zooms into a region or starts an area discovery search.
+  const revealAttractions = map.getZoom() >= 8 || Boolean(discoveryContext);
+  if (revealAttractions && !map.hasLayer(attractionLayer)) attractionLayer.addTo(map);
+  if (!revealAttractions && map.hasLayer(attractionLayer)) map.removeLayer(attractionLayer);
+}
+
+function addFeatureMarker(feature, layer, { discovered = false } = {}) {
+  if (!map || !feature?.geometry?.coordinates) return null;
+  const [longitude, latitude] = feature.geometry.coordinates;
+  const marker = window.L.marker([latitude, longitude], {
+    icon: createMarkerIcon(feature),
+    title: feature.properties.name,
+    keyboard: true,
+    riseOnHover: true
+  });
+
+  marker.feature = feature;
+  marker.bindTooltip(feature.properties.name, {
+    className: "ugotour-marker-tooltip",
+    direction: "top",
+    opacity: 0.96,
+    offset: [0, -4]
+  });
+  marker.on("click", () => selectFeature(feature, { focusMap: false }));
+  marker.addTo(layer);
+
+  const key = featureKey(feature);
+  markerByKey.set(key, marker);
+  if (discovered) discoveryKeys.add(key);
+  return marker;
 }
 
 function setMarkerActive(key, active) {
@@ -187,21 +247,15 @@ function setMarkerActive(key, active) {
   const marker = markerByKey.get(key);
   if (!marker?.feature) return;
   marker.setIcon(createMarkerIcon(marker.feature, active));
-  if (active) marker.setZIndexOffset(1000);
-  else marker.setZIndexOffset(0);
+  marker.setZIndexOffset(active ? 1000 : 0);
 }
 
 function detailsHref(feature) {
   const p = feature.properties;
-  if (p.placeType === "destination") {
-    return `./destination-details.html?id=${Number(p.id)}`;
-  }
-  if (p.destinationId) {
-    return `./destination-details.html?id=${Number(p.destinationId)}`;
-  }
-  // Independent attractions do not have a parent destination, so the same
-  // Destination Details page renders them in a standalone attraction mode.
-  return `./destination-details.html?attraction=${Number(p.id)}`;
+  if (p.placeType === "destination") return `./destination-details.html?id=${Number(p.id)}`;
+  if (p.placeType === "attraction" && p.destinationId) return `./destination-details.html?id=${Number(p.destinationId)}`;
+  if (p.placeType === "attraction" && p.id) return `./destination-details.html?attraction=${Number(p.id)}`;
+  return null;
 }
 
 function selectFeature(feature, { focusMap = false } = {}) {
@@ -214,13 +268,29 @@ function selectFeature(feature, { focusMap = false } = {}) {
 
   const p = feature.properties;
   const [longitude, latitude] = feature.geometry.coordinates;
+  const external = isExternal(feature);
 
-  placeImage.src = resolveAssetPath(p.imageUrl, "..");
-  placeImage.alt = `${p.name} tourism image`;
-  placeType.textContent = p.placeType === "destination" ? "Destination" : "Attraction";
+  if (p.imageUrl) {
+    placeImage.hidden = false;
+    placeImage.src = resolveAssetPath(p.imageUrl, "..");
+    placeImage.alt = `${p.name} tourism image`;
+    callout.classList.remove("is-no-image");
+  } else {
+    placeImage.hidden = true;
+    placeImage.removeAttribute("src");
+    placeImage.alt = "";
+    callout.classList.add("is-no-image");
+  }
+
+  placeType.textContent = external ? "Discovered place" : (p.placeType === "destination" ? "Destination" : "Attraction");
   placeCategory.textContent = p.category || "Tourism";
+  placeSource.textContent = p.sourceLabel || (external ? "OpenStreetMap" : "UgoTour Verified");
   placeName.textContent = p.name;
-  placeLocation.textContent = [p.district, p.region].filter(Boolean).join(" · ") || "Uganda";
+  const locationBits = [];
+  const namedLocation = p.address || [p.district, p.region].filter(Boolean).join(" · ");
+  if (namedLocation) locationBits.push(namedLocation);
+  if (Number.isFinite(Number(p.distanceKm))) locationBits.push(`${p.distanceKm} km away`);
+  placeLocation.textContent = locationBits.join(" · ") || "Uganda";
   placeDescription.textContent = p.description || p.highlight || "Explore this tourism location in Uganda.";
 
   const href = detailsHref(feature);
@@ -230,18 +300,23 @@ function selectFeature(feature, { focusMap = false } = {}) {
     placeDetails.textContent = "View details →";
   }
 
-  if (placeSave) {
+  placeSave.hidden = external;
+  if (!external) {
     const saved = savedKeys.has(key);
     placeSave.textContent = saved ? "♥ Saved" : "♡ Save";
     placeSave.setAttribute("aria-pressed", String(saved));
     placeSave.setAttribute("aria-label", `${saved ? "Remove" : "Save"} ${p.name}`);
   }
 
+  placeRoute.hidden = false;
+  placeRoute.textContent = "Directions";
+  placeRoute.title = `Route from your current location to ${p.name}`;
+
   callout.hidden = false;
-  connector.classList.add("is-visible");
+  connector.classList.toggle("is-visible", !external || window.innerWidth > 720);
 
   if (focusMap && map) {
-    const targetZoom = p.placeType === "destination" ? 10 : 12;
+    const targetZoom = external ? 13 : (p.placeType === "destination" ? 10 : 12);
     map.flyTo([latitude, longitude], targetZoom, { duration: 0.72 });
     map.once("moveend", scheduleCalloutPosition);
   } else {
@@ -265,6 +340,12 @@ function positionCallout() {
   const cardWidth = callout.offsetWidth;
   const cardHeight = callout.offsetHeight;
   const compact = mapSize.x <= 720;
+  // Keep the selected-place card below the unified command panel even while
+  // its transient status row expands/collapses. Suggestions are absolutely
+  // positioned and intentionally do not change this safe zone.
+  const commandSafeTop = commandPanel
+    ? commandPanel.offsetTop + commandPanel.offsetHeight + 12
+    : (compact ? 198 : 218);
 
   let left;
   let top;
@@ -272,16 +353,19 @@ function positionCallout() {
   let endY;
 
   if (compact) {
-    left = Math.max(12, (mapSize.x - cardWidth) / 2);
-    top = Math.max(112, mapSize.y - cardHeight - 84);
+    left = Math.max(10, (mapSize.x - cardWidth) / 2);
+    const preferredTop = mapSize.y - cardHeight - 14;
+    top = Math.max(commandSafeTop, preferredTop);
     endX = clamp(markerPoint.x, left + 24, left + cardWidth - 24);
     endY = top;
   } else {
-    const gap = 48;
+    const gap = 44;
     const rightFits = markerPoint.x + gap + cardWidth <= mapSize.x - 24;
     left = rightFits ? markerPoint.x + gap : markerPoint.x - gap - cardWidth;
-    left = clamp(left, 24, mapSize.x - cardWidth - 24);
-    top = clamp(markerPoint.y - cardHeight / 2, 174, mapSize.y - cardHeight - 34);
+    left = clamp(left, 24, Math.max(24, mapSize.x - cardWidth - 24));
+    const minTop = commandSafeTop;
+    const maxTop = Math.max(minTop, mapSize.y - cardHeight - 28);
+    top = clamp(markerPoint.y - cardHeight / 2, minTop, maxTop);
     endX = rightFits ? left : left + cardWidth;
     endY = clamp(markerPoint.y, top + 26, top + cardHeight - 26);
   }
@@ -318,12 +402,25 @@ function closeCallout() {
 function fitUganda() {
   if (!map) return;
   closeSuggestions();
-  if (boundaryLayer) {
-    map.fitBounds(boundaryLayer.getBounds(), { paddingTopLeft: [38, 110], paddingBottomRight: [38, 46] });
-  } else {
-    map.fitBounds(UGANDA_BOUNDS, { paddingTopLeft: [38, 110], paddingBottomRight: [38, 46] });
-  }
+  clearRoute(false);
+  map.fitBounds(UGANDA_BOUNDS, { paddingTopLeft: [38, 168], paddingBottomRight: [38, 46] });
   scheduleCalloutPosition();
+}
+
+function setDiscoveryContext(context) {
+  discoveryContext = context && Number.isFinite(Number(context.lat)) && Number.isFinite(Number(context.lng))
+    ? { lat: Number(context.lat), lng: Number(context.lng), label: String(context.label || "this area"), source: context.source || "area" }
+    : null;
+
+  if (discoveryContextLabel) {
+    discoveryContextLabel.textContent = discoveryContext
+      ? `Explore near ${shortAreaName(discoveryContext.label)}`
+      : "Explore near Uganda";
+    discoveryContextLabel.title = discoveryContext?.label || "Uganda";
+  }
+  locateButton?.classList.toggle("is-active", discoveryContext?.source === "location");
+  locateButton?.setAttribute("aria-pressed", String(discoveryContext?.source === "location"));
+  syncCuratedMarkerVisibility();
 }
 
 function getSearchMatches(query) {
@@ -345,36 +442,42 @@ function getSearchMatches(query) {
 }
 
 function renderSuggestions(query) {
-  const matches = getSearchMatches(query).slice(0, 6);
+  const matches = getSearchMatches(query).slice(0, 5);
   suggestions.innerHTML = "";
-  searchEmpty.hidden = true;
 
   if (!query.trim()) {
     closeSuggestions();
     return;
   }
 
-  if (matches.length === 0) {
-    suggestions.hidden = true;
-    searchEmpty.hidden = false;
-    window.setTimeout(() => { searchEmpty.hidden = true; }, 1800);
-    return;
-  }
+  matches.forEach((feature) => suggestions.appendChild(createSuggestionButton(feature)));
 
-  matches.forEach((feature) => {
-    const p = feature.properties;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "map-suggestion";
-    button.innerHTML = `
-      <span class="map-suggestion-pin ${p.placeType === "destination" ? "is-destination" : "is-attraction"}"></span>
-      <span><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml([p.category, p.district || p.region].filter(Boolean).join(" · "))}</small></span>
-    `;
-    button.addEventListener("click", () => chooseSearchResult(feature));
-    suggestions.appendChild(button);
-  });
-
+  const areaButton = document.createElement("button");
+  areaButton.type = "button";
+  areaButton.className = "map-suggestion map-suggestion-area";
+  areaButton.innerHTML = `
+    <span class="map-suggestion-pin is-discovered"></span>
+    <span><strong>Search ${escapeHtml(query)} as an area</strong><small>Find UgoTour places + live tourism sites nearby</small></span>
+  `;
+  areaButton.addEventListener("click", () => performSmartSearch(query));
+  suggestions.appendChild(areaButton);
   suggestions.hidden = false;
+}
+
+function createSuggestionButton(feature, secondaryText = null) {
+  const p = feature.properties;
+  const external = isExternal(feature);
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "map-suggestion";
+  button.innerHTML = `
+    <span class="map-suggestion-pin ${external ? "is-discovered" : (p.placeType === "destination" ? "is-destination" : "is-attraction")}"></span>
+    <span><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(
+      secondaryText || [p.sourceLabel, p.category, p.district || p.region].filter(Boolean).join(" · ")
+    )}</small></span>
+  `;
+  button.addEventListener("click", () => chooseSearchResult(feature));
+  return button;
 }
 
 function chooseSearchResult(feature) {
@@ -387,6 +490,294 @@ function chooseSearchResult(feature) {
 function closeSuggestions() {
   suggestions.hidden = true;
   suggestions.innerHTML = "";
+}
+
+async function performSmartSearch(query) {
+  const term = String(query || "").trim();
+  if (term.length < 2) return;
+  closeSuggestions();
+  searchClear.hidden = false;
+  nearbyButtons.forEach((button) => { button.classList.remove("is-active"); button.setAttribute("aria-pressed", "false"); });
+  showStatus(`Searching ${term} and nearby tourism sites…`, { persistent: true });
+
+  try {
+    const result = await searchMapPlaces(term);
+    renderDiscoveryCollection(result.collection);
+    if (result.area) {
+      setDiscoveryContext({
+        lat: result.area.latitude,
+        lng: result.area.longitude,
+        label: result.area.name || term,
+        source: "area"
+      });
+    }
+    renderRemoteSuggestions(result.collection?.features || [], result.area);
+    focusDiscoveryArea(result);
+    const total = result.collection?.meta?.total ?? result.collection?.features?.length ?? 0;
+    const verified = result.collection?.meta?.verified ?? 0;
+    const discovered = result.collection?.meta?.discovered ?? 0;
+    showStatus(`${total} places found · ${verified} UgoTour verified · ${discovered} discovered`);
+  } catch (error) {
+    console.error("Smart map search failed:", error);
+    showStatus(error.message || "Could not search this area.", { error: true });
+  }
+}
+
+function renderRemoteSuggestions(resultFeatures, area) {
+  suggestions.innerHTML = "";
+  if (!resultFeatures.length) {
+    suggestions.hidden = true;
+    return;
+  }
+
+  const heading = document.createElement("div");
+  heading.className = "map-suggestion-heading";
+  heading.textContent = area?.name ? `Places around ${shortAreaName(area.name)}` : "Search results";
+  suggestions.appendChild(heading);
+
+  resultFeatures.slice(0, 8).forEach((feature) => suggestions.appendChild(createSuggestionButton(feature)));
+  suggestions.hidden = false;
+}
+
+function renderDiscoveryCollection(collection) {
+  clearDiscoveryMarkers();
+  const resultFeatures = Array.isArray(collection?.features) ? collection.features : [];
+  for (const feature of resultFeatures) {
+    if (!isExternal(feature)) continue;
+    addFeatureMarker(feature, discoveryLayer, { discovered: true });
+  }
+}
+
+function clearDiscoveryMarkers() {
+  discoveryLayer?.clearLayers();
+  discoveryKeys.forEach((key) => markerByKey.delete(key));
+  discoveryKeys.clear();
+}
+
+function focusDiscoveryArea(result) {
+  if (!map) return;
+  const box = result?.area?.boundingBox;
+  if (box) {
+    map.fitBounds([[box.south, box.west], [box.north, box.east]], {
+      paddingTopLeft: [24, 190],
+      paddingBottomRight: [24, 40],
+      maxZoom: 13
+    });
+    return;
+  }
+
+  const lat = Number(result?.area?.latitude);
+  const lng = Number(result?.area?.longitude);
+  if (Number.isFinite(lat) && Number.isFinite(lng)) map.flyTo([lat, lng], 11, { duration: 0.7 });
+}
+
+async function acquireCurrentLocation({ focus = true, useAsDiscoveryContext = false } = {}) {
+  if (userLocation) {
+    if (useAsDiscoveryContext) {
+      setDiscoveryContext({ ...userLocation, label: "your location", source: "location" });
+    }
+    if (focus) map?.flyTo([userLocation.lat, userLocation.lng], Math.max(map.getZoom(), 13), { duration: 0.6 });
+    return userLocation;
+  }
+
+  if (!navigator.geolocation) throw new Error("This browser does not provide location access.");
+
+  showStatus("Waiting for your location permission…", { persistent: true });
+  const position = await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      resolve,
+      (error) => {
+        const messages = {
+          1: "Location permission was denied.",
+          2: "Your current location could not be determined.",
+          3: "Location lookup timed out."
+        };
+        reject(new Error(messages[error.code] || "Could not access your location."));
+      },
+      { enableHighAccuracy: true, timeout: 12_000, maximumAge: 60_000 }
+    );
+  });
+
+  userLocation = {
+    lat: position.coords.latitude,
+    lng: position.coords.longitude,
+    accuracy: position.coords.accuracy
+  };
+  renderUserLocation();
+  if (useAsDiscoveryContext) {
+    setDiscoveryContext({ ...userLocation, label: "your location", source: "location" });
+  }
+  if (focus) map?.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 0.7 });
+  showStatus(`Your location is ready${Number.isFinite(userLocation.accuracy) ? ` · ±${Math.round(userLocation.accuracy)} m` : ""}.`);
+  return userLocation;
+}
+
+function renderUserLocation() {
+  if (!map || !userLocation) return;
+  userLocationMarker?.remove();
+  userAccuracyCircle?.remove();
+
+  userAccuracyCircle = window.L.circle([userLocation.lat, userLocation.lng], {
+    radius: Math.min(Math.max(userLocation.accuracy || 30, 15), 1000),
+    color: "#365f8e",
+    fillColor: "#5f8fbe",
+    fillOpacity: 0.10,
+    weight: 1.5
+  }).addTo(map);
+
+  userLocationMarker = window.L.circleMarker([userLocation.lat, userLocation.lng], {
+    radius: 8,
+    color: "#ffffff",
+    fillColor: "#2f6faa",
+    fillOpacity: 1,
+    weight: 3
+  }).addTo(map).bindTooltip("You are here", { direction: "top", className: "ugotour-marker-tooltip" });
+}
+
+async function getNearbyOrigin() {
+  if (discoveryContext) return discoveryContext;
+  if (userLocation) {
+    const origin = { ...userLocation, label: "your location", source: "location" };
+    setDiscoveryContext(origin);
+    return origin;
+  }
+  const location = await acquireCurrentLocation({ focus: false, useAsDiscoveryContext: true });
+  return { ...location, label: "your location", source: "location" };
+}
+
+async function showNearby(category) {
+  nearbyButtons.forEach((button) => {
+    const active = button.dataset.nearbyCategory === category;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  try {
+    const origin = await getNearbyOrigin();
+    showStatus(`Finding ${friendlyNearby(category)} near ${shortAreaName(origin.label)}…`, { persistent: true });
+    const result = await getNearbyMapPlaces({
+      lat: origin.lat,
+      lng: origin.lng,
+      category,
+      radiusKm: 8,
+      context: origin.label
+    });
+
+    renderDiscoveryCollection(result.collection);
+    const resultFeatures = result.collection?.features || [];
+    renderRemoteSuggestions(resultFeatures, { name: origin.label });
+    fitFeaturesWithOrigin(resultFeatures, origin);
+    showStatus(`${resultFeatures.length} ${friendlyNearby(category)} found near ${shortAreaName(origin.label)}.`);
+  } catch (error) {
+    console.error("Nearby search failed:", error);
+    showStatus(error.message || "Could not find nearby places.", { error: true });
+  }
+}
+
+function fitFeaturesWithOrigin(resultFeatures, origin) {
+  if (!map || !origin) return;
+  const points = [[origin.lat, origin.lng]];
+  for (const feature of resultFeatures.slice(0, 40)) {
+    const [lng, lat] = feature.geometry?.coordinates || [];
+    if (Number.isFinite(lat) && Number.isFinite(lng)) points.push([lat, lng]);
+  }
+  if (points.length > 1) {
+    map.fitBounds(points, { paddingTopLeft: [24, 205], paddingBottomRight: [24, 96], maxZoom: 14 });
+  } else {
+    map.flyTo(points[0], 14, { duration: 0.6 });
+  }
+}
+
+async function routeToFeature(feature = selectedFeature, mode = selectedRouteMode) {
+  if (!feature || placeRoute?.disabled) return;
+  const originalLabel = placeRoute?.textContent || "Directions";
+  try {
+    routeTargetFeature = feature;
+    selectedRouteMode = mode;
+    routeModeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.routeMode === mode));
+    if (placeRoute) {
+      placeRoute.disabled = true;
+      placeRoute.textContent = "Routing…";
+    }
+
+    const location = await acquireCurrentLocation({ focus: false });
+    const [lng, lat] = feature.geometry.coordinates;
+    showStatus(`Building ${mode} route to ${feature.properties.name}…`, { persistent: true });
+
+    const result = await getMapRoute({
+      from: { lat: location.lat, lng: location.lng },
+      to: { lat, lng },
+      mode
+    });
+    drawRoute(result, feature);
+    showStatus(result?.approximate ? "Route ready · estimate mode" : "Road route ready.");
+  } catch (error) {
+    console.error("Route request failed:", error);
+    showStatus(error.message || "Could not build this route.", { error: true, persistent: true });
+  } finally {
+    if (placeRoute) {
+      placeRoute.disabled = false;
+      placeRoute.textContent = originalLabel;
+    }
+  }
+}
+
+function drawRoute(result, feature) {
+  if (!map || !result?.geojson) return;
+  routeLayer?.remove();
+  const directEstimate = result.provider === "direct-estimate";
+  routeLayer = window.L.geoJSON(result.geojson, {
+    style: {
+      color: directEstimate ? "#b78335" : "#315d3b",
+      weight: directEstimate ? 4 : 6,
+      opacity: 0.94,
+      dashArray: directEstimate ? "10 9" : null,
+      lineCap: "round",
+      lineJoin: "round"
+    }
+  }).addTo(map);
+
+  const bounds = routeLayer.getBounds();
+  if (bounds?.isValid()) {
+    map.fitBounds(bounds, { paddingTopLeft: [28, 205], paddingBottomRight: [28, 170] });
+  }
+
+  routeDestination.textContent = feature.properties.name;
+  routeDistance.textContent = formatDistance(result.distanceMeters);
+  routeDuration.textContent = formatDuration(result.durationSeconds);
+  if (routeNote) {
+    routeNote.textContent = result.warning || (result.approximate
+      ? "This is an approximate route estimate."
+      : `Road route via ${result.providerLabel || result.provider || "routing provider"}.`);
+    routeNote.classList.toggle("is-warning", Boolean(result.approximate || result.warning));
+  }
+  routePanel.hidden = false;
+  closeCallout();
+}
+
+function clearRoute(resetView = false) {
+  routeLayer?.remove();
+  routeLayer = null;
+  routeTargetFeature = null;
+  routePanel.hidden = true;
+  if (routeNote) { routeNote.textContent = ""; routeNote.classList.remove("is-warning"); }
+  if (resetView) fitUganda();
+}
+
+function showStatus(message, { error = false, persistent = false } = {}) {
+  if (!statusToast) return;
+  statusToast.textContent = message;
+  statusToast.classList.toggle("is-error", error);
+  statusToast.hidden = false;
+  scheduleCalloutPosition();
+  clearTimeout(showStatus.timer);
+  if (!persistent) {
+    showStatus.timer = setTimeout(() => {
+      statusToast.hidden = true;
+      statusToast.classList.remove("is-error");
+      scheduleCalloutPosition();
+    }, 3600);
+  }
 }
 
 function parseFocus() {
@@ -417,32 +808,41 @@ searchInput?.addEventListener("keydown", (event) => {
     searchInput.blur();
     return;
   }
-
   if (event.key !== "Enter") return;
   event.preventDefault();
-  const match = getSearchMatches(searchInput.value)[0];
-  if (match) chooseSearchResult(match);
-  else {
-    closeSuggestions();
-    searchEmpty.hidden = false;
-    window.setTimeout(() => { searchEmpty.hidden = true; }, 1800);
-  }
+  performSmartSearch(searchInput.value);
 });
 
 searchClear?.addEventListener("click", () => {
   searchInput.value = "";
   searchClear.hidden = true;
-  searchEmpty.hidden = true;
   closeSuggestions();
   closeCallout();
+  clearDiscoveryMarkers();
+  setDiscoveryContext(null);
+  nearbyButtons.forEach((button) => { button.classList.remove("is-active"); button.setAttribute("aria-pressed", "false"); });
   fitUganda();
   searchInput.focus();
 });
 
 fitButton?.addEventListener("click", fitUganda);
 
+locateButton?.addEventListener("click", async () => {
+  try {
+    await acquireCurrentLocation({ focus: true, useAsDiscoveryContext: true });
+  } catch (error) {
+    showStatus(error.message || "Could not access your location.", { error: true });
+  }
+});
+
+nearbyButtons.forEach((button) => {
+  button.addEventListener("click", () => showNearby(button.dataset.nearbyCategory));
+});
+
+placeRoute?.addEventListener("click", () => routeToFeature(selectedFeature, selectedRouteMode));
+
 placeSave?.addEventListener("click", async () => {
-  if (!selectedFeature || placeSave.disabled) return;
+  if (!selectedFeature || placeSave.disabled || isExternal(selectedFeature)) return;
   const key = featureKey(selectedFeature);
   const p = selectedFeature.properties;
   const currentSaved = savedKeys.has(key);
@@ -452,9 +852,22 @@ placeSave?.addEventListener("click", async () => {
     if (next) savedKeys.add(key); else savedKeys.delete(key);
     placeSave.textContent = next ? "♥ Saved" : "♡ Save";
     placeSave.setAttribute("aria-pressed", String(next));
-  } catch (error) { console.error("Could not update saved place:", error); }
-  finally { placeSave.disabled = false; }
+  } catch (error) {
+    console.error("Could not update saved place:", error);
+    showStatus("Could not update your saved places.", { error: true });
+  } finally {
+    placeSave.disabled = false;
+  }
 });
+
+routeModeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (!routeTargetFeature) return;
+    routeToFeature(routeTargetFeature, button.dataset.routeMode);
+  });
+});
+
+routeClear?.addEventListener("click", () => clearRoute(false));
 calloutClose?.addEventListener("click", closeCallout);
 retryButton?.addEventListener("click", async () => {
   if (!window.L) {
@@ -466,18 +879,49 @@ retryButton?.addEventListener("click", async () => {
 });
 
 document.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest(".map-search-dock")) closeSuggestions();
+  if (!event.target.closest(".map-command-panel")) closeSuggestions();
 });
 
-window.addEventListener("resize", scheduleCalloutPosition);
+let resizeFrame = null;
+function handleViewportResize() {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(() => {
+    map?.invalidateSize({ pan: false });
+    scheduleCalloutPosition();
+  });
+}
+window.addEventListener("resize", handleViewportResize);
+window.visualViewport?.addEventListener("resize", handleViewportResize);
 
 try {
-  const geojson = await getMapLocations();
-  features = Array.isArray(geojson?.features) ? geojson.features : [];
-  const saved = await getSavedPlaces().catch(() => []);
+  const [geojson, saved, capabilityData] = await Promise.all([
+    getMapLocations(),
+    getSavedPlaces().catch(() => []),
+    getMapCapabilities().catch(() => null)
+  ]);
+
+  features = Array.isArray(geojson?.features)
+    ? geojson.features.map((feature) => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          source: "ugotour",
+          sourceLabel: "UgoTour Verified",
+          verified: true
+        }
+      }))
+    : [];
   savedKeys = new Set(saved.map((place) => `${place.placeType}:${Number(place.id)}`));
+  if (capabilityData) capabilities = capabilityData;
+
   const mapReady = await initializeMap();
-  if (mapReady) focusFromUrl();
+  setDiscoveryContext(null);
+  if (mapReady) {
+    focusFromUrl();
+    if (capabilities.routingFallback) {
+      showStatus("Map discovery and directions are ready. Add OPENROUTESERVICE_API_KEY later for production-grade mode-specific routing.");
+    }
+  }
 } catch (error) {
   console.error("Could not load UgoTour map locations:", error);
   loadingState.textContent = error.message || "Could not load tourism locations.";
@@ -486,6 +930,35 @@ try {
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function shortAreaName(value) {
+  return String(value || "").split(",").slice(0, 2).join(",").trim();
+}
+
+function friendlyNearby(category) {
+  return {
+    attractions: "attractions",
+    hotels: "places to stay",
+    restaurants: "food spots",
+    fuel: "fuel stations",
+    hospitals: "health services",
+    all: "places"
+  }[category] || "places";
+}
+
+function formatDistance(meters) {
+  const value = Number(meters || 0);
+  if (value < 1000) return `${Math.round(value)} m`;
+  return `${(value / 1000).toFixed(value >= 100_000 ? 0 : 1)} km`;
+}
+
+function formatDuration(seconds) {
+  const minutes = Math.max(1, Math.round(Number(seconds || 0) / 60));
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remaining = minutes % 60;
+  return remaining ? `${hours} h ${remaining} min` : `${hours} h`;
 }
 
 function escapeHtml(value) {

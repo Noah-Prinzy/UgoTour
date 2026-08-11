@@ -2953,3 +2953,905 @@ body:not(.page-home) .static-shell {
 }
 
 /* UgoTour visual revision: 10.6.0 */
+
+/* ============================================================
+   PHASE 1.11 — SMART MAP DISCOVERY + ROUTING UX
+   Broad searches can now resolve an Uganda area, mix UgoTour-verified
+   locations with live discovered POIs, expose current location and render
+   backend-proxied directions without exposing provider keys in the browser.
+   ============================================================ */
+
+.map-page .map-nearby-dock {
+  position: absolute;
+  z-index: 655;
+  top: 166px;
+  left: 50%;
+  width: min(760px, calc(100% - 170px));
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 5px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 999px;
+  color: rgba(248,245,237,.78);
+  background: rgba(10,18,10,.84);
+  box-shadow: 0 14px 38px rgba(0,0,0,.20);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  transform: translateX(-50%);
+  scrollbar-width: none;
+}
+.map-page .map-nearby-dock::-webkit-scrollbar { display: none; }
+
+.map-page .map-nearby-label {
+  flex: 0 0 auto;
+  padding-inline: 6px 2px;
+  color: rgba(248,245,237,.48);
+  font-size: .56rem;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.map-page .map-nearby-button {
+  min-height: 32px;
+  flex: 0 0 auto;
+  padding: 0 11px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  color: rgba(248,245,237,.82);
+  background: rgba(255,255,255,.06);
+  font-size: .62rem;
+  font-weight: 800;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+}
+.map-page .map-nearby-button:hover,
+.map-page .map-nearby-button:focus-visible,
+.map-page .map-nearby-button.is-active {
+  color: #172114;
+  background: #dce6bf;
+  transform: translateY(-1px);
+}
+.map-page .map-locate-me {
+  color: #e9f1d4;
+  border-color: rgba(196,219,133,.22);
+  background: rgba(196,219,133,.10);
+}
+
+.map-page .map-status-toast {
+  position: absolute;
+  z-index: 690;
+  top: 218px;
+  left: 50%;
+  max-width: min(620px, calc(100% - 40px));
+  margin: 0;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  color: rgba(248,245,237,.88);
+  background: rgba(10,18,10,.88);
+  box-shadow: 0 14px 34px rgba(0,0,0,.20);
+  backdrop-filter: blur(14px);
+  transform: translateX(-50%);
+  font-size: .64rem;
+  font-weight: 700;
+  text-align: center;
+}
+.map-page .map-status-toast.is-error {
+  color: #ffe5df;
+  background: rgba(78,25,21,.93);
+}
+
+.map-page .map-suggestion-heading {
+  padding: 9px 12px 6px;
+  color: rgba(248,245,237,.52);
+  font-size: .55rem;
+  font-weight: 800;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+.map-page .map-suggestion-area {
+  margin-top: 4px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  border-radius: 0 0 14px 14px;
+}
+.map-page .map-suggestion-pin.is-discovered,
+.map-page .pin-key-dot.is-discovered { background: #b8953e !important; }
+.map-page .ugotour-map-pin.is-discovered { color: #b8953e !important; }
+
+.map-page .map-place-source {
+  color: #f4e7b7 !important;
+  background: rgba(184,149,62,.18) !important;
+}
+.map-page .map-place-callout.is-no-image {
+  grid-template-columns: minmax(0,1fr) !important;
+  width: min(360px, calc(100% - 32px)) !important;
+}
+.map-page .map-place-callout.is-no-image > img { display: none !important; }
+
+.map-page .map-route-button {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid rgba(196,219,133,.22);
+  border-radius: 999px;
+  color: #e5f0c8;
+  background: rgba(196,219,133,.10);
+  font: inherit;
+  font-size: .66rem;
+  font-weight: 800;
+}
+.map-page .map-route-button:hover,
+.map-page .map-route-button:focus-visible {
+  color: #172114;
+  background: #dce6bf;
+}
+
+.map-page .map-route-panel {
+  position: absolute;
+  z-index: 675;
+  right: 18px;
+  bottom: 70px;
+  width: min(330px, calc(100% - 36px));
+  padding: 17px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 22px;
+  color: #f7f4ec;
+  background: rgba(10,18,10,.92);
+  box-shadow: 0 22px 58px rgba(0,0,0,.30);
+  backdrop-filter: blur(18px) saturate(115%);
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+}
+.map-page .map-route-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.map-page .map-route-heading > div { min-width: 0; }
+.map-page .map-route-kicker {
+  display: block;
+  color: rgba(248,245,237,.48);
+  font-size: .53rem;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.map-page .map-route-heading strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .88rem;
+}
+.map-page #map-route-clear {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 50%;
+  color: white;
+  background: rgba(255,255,255,.07);
+}
+.map-page .map-route-stats {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.map-page .map-route-stats > div {
+  padding: 11px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.06);
+}
+.map-page .map-route-stats strong,
+.map-page .map-route-stats span { display: block; }
+.map-page .map-route-stats strong { font-size: 1.05rem; }
+.map-page .map-route-stats span {
+  margin-top: 3px;
+  color: rgba(248,245,237,.48);
+  font-size: .52rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.map-page .map-route-modes {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.map-page .map-route-modes button {
+  min-height: 34px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  color: rgba(248,245,237,.72);
+  background: rgba(255,255,255,.05);
+  font-size: .60rem;
+  font-weight: 800;
+}
+.map-page .map-route-modes button.is-active {
+  color: #172114;
+  background: #dce6bf;
+}
+
+@media (max-width: 980px) {
+  .map-page .map-nearby-dock {
+    top: 154px;
+    width: calc(100% - 36px);
+  }
+  .map-page .map-status-toast { top: 206px; }
+  .map-page .map-route-panel { bottom: 62px; right: 14px; }
+}
+
+@media (max-width: 720px) {
+  .map-page .map-nearby-dock {
+    top: calc(max(8px, env(safe-area-inset-top)) + 136px);
+    left: 12px;
+    width: calc(100% - 72px);
+    min-height: 40px;
+    padding: 4px;
+    transform: none;
+  }
+  .map-page .map-nearby-label { display: none; }
+  .map-page .map-nearby-button {
+    min-height: 31px;
+    padding-inline: 10px;
+    font-size: .59rem;
+  }
+  .map-page .map-status-toast {
+    top: calc(max(8px, env(safe-area-inset-top)) + 184px);
+    max-width: calc(100% - 24px);
+    font-size: .59rem;
+  }
+  .map-page .map-route-panel {
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: auto;
+    padding: 14px;
+    border-radius: 19px;
+  }
+  .map-page .map-place-callout.is-no-image {
+    width: calc(100% - 20px) !important;
+  }
+  .map-page .map-pin-key { display: none !important; }
+  .map-page .map-place-source { display: none; }
+}
+
+@media (max-width: 430px) {
+  .map-page .map-nearby-dock { width: calc(100% - 68px); }
+  .map-page .map-route-stats strong { font-size: .95rem; }
+}
+
+/* UgoTour visual revision: 10.7.0 */
+
+/* ============================================================
+   PHASE 1.12 — PROFESSIONAL MAP + FUNCTIONAL DISCOVERY REPAIR
+   - calm country-scale marker density
+   - readable active navigation state
+   - context-aware nearby controls
+   - content-sized map information panel
+   - high-contrast attraction catalogue cards
+   ============================================================ */
+
+/* ---------- Desktop navbar: the current page must stay readable ---------- */
+body:not(.page-home) .site-nav .nav-links a.is-active,
+body:not(.page-home) .site-nav .nav-links a[aria-current="page"] {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 16px;
+  border-radius: 999px;
+  color: #172114 !important;
+  background: #f3f0e7 !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.12), inset 0 0 0 1px rgba(23,33,20,.06);
+  text-shadow: none !important;
+}
+body:not(.page-home) .site-nav .nav-links a.is-active::after,
+body:not(.page-home) .site-nav .nav-links a[aria-current="page"]::after {
+  display: none !important;
+}
+
+/* ---------- Destination page: attraction/site card readability ---------- */
+.destinations-page .attraction-discovery-card {
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 24px !important;
+  background: #f2efe6 !important;
+  box-shadow: 0 18px 46px rgba(0,0,0,.22) !important;
+}
+.destinations-page .attraction-discovery-anchor {
+  color: #172114 !important;
+  background: #f2efe6 !important;
+}
+.destinations-page .attraction-discovery-media {
+  background: #172114 !important;
+}
+.destinations-page .attraction-discovery-copy {
+  min-height: 190px;
+  display: flex !important;
+  flex-direction: column;
+  padding: 20px 20px 18px !important;
+  color: #172114 !important;
+  background: #f2efe6 !important;
+}
+.destinations-page .attraction-discovery-copy > p {
+  margin: 0 0 8px !important;
+  color: #6b7d45 !important;
+  opacity: 1 !important;
+  font-size: .67rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+.destinations-page .attraction-discovery-copy h3 {
+  margin: 0 !important;
+  color: #172114 !important;
+  opacity: 1 !important;
+  font-size: clamp(1.18rem, 1.5vw, 1.5rem) !important;
+  line-height: 1.08 !important;
+}
+.destinations-page .attraction-discovery-copy > span {
+  display: -webkit-box;
+  margin-top: 10px !important;
+  overflow: hidden;
+  color: #4e584a !important;
+  opacity: 1 !important;
+  font-size: .78rem !important;
+  line-height: 1.55 !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.destinations-page .attraction-discovery-copy > strong {
+  margin-top: auto !important;
+  padding-top: 16px;
+  color: #1d3520 !important;
+  opacity: 1 !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+}
+.destinations-page .attraction-discovery-type {
+  color: #f7f4ec !important;
+  background: rgba(20,33,20,.82) !important;
+}
+.destinations-page .attraction-discovery-card .place-save-button {
+  color: #fff !important;
+  background: rgba(23,33,20,.78) !important;
+  border-color: rgba(255,255,255,.34) !important;
+  backdrop-filter: blur(10px);
+}
+
+/* ---------- Map surface / command centre ---------- */
+.map-page {
+  background: #d8ded3 !important;
+}
+.map-page .site-nav {
+  border: 1px solid rgba(255,255,255,.15) !important;
+  background: rgba(18,29,17,.92) !important;
+  box-shadow: 0 18px 52px rgba(13,24,12,.22) !important;
+}
+.map-page .map-search-dock {
+  top: 105px !important;
+  width: min(620px, calc(100% - 220px)) !important;
+}
+.map-page .map-search {
+  min-height: 58px !important;
+  border: 1px solid rgba(23,33,20,.10) !important;
+  color: #172114 !important;
+  background: rgba(249,247,241,.96) !important;
+  box-shadow: 0 18px 52px rgba(13,24,12,.18) !important;
+  backdrop-filter: blur(18px) saturate(115%);
+}
+.map-page .map-search svg { color: #5f773a !important; }
+.map-page .map-search input {
+  color: #172114 !important;
+  font-size: .86rem !important;
+  font-weight: 650;
+}
+.map-page .map-search input::placeholder { color: #747d70 !important; }
+.map-page #map-search-clear {
+  color: #29402a !important;
+  background: #e8e7df !important;
+}
+.map-page .map-search-suggestions {
+  max-height: min(440px, calc(100dvh - 250px));
+  overflow-y: auto;
+  border: 1px solid rgba(23,33,20,.10) !important;
+  color: #172114 !important;
+  background: rgba(249,247,241,.985) !important;
+  box-shadow: 0 24px 62px rgba(13,24,12,.22) !important;
+}
+.map-page .map-suggestion { color: #172114 !important; }
+.map-page .map-suggestion strong { color: #172114 !important; }
+.map-page .map-suggestion small { color: #65705f !important; }
+.map-page .map-suggestion:hover,
+.map-page .map-suggestion:focus-visible { background: #ecebe4 !important; }
+.map-page .map-suggestion-heading { color: #6b775f !important; }
+.map-page .map-suggestion-area { border-top-color: rgba(23,33,20,.08) !important; }
+
+.map-page .map-nearby-dock {
+  top: 173px !important;
+  width: min(820px, calc(100% - 190px)) !important;
+  min-height: 46px;
+  padding: 6px 7px !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(18,29,17,.91) !important;
+  box-shadow: 0 16px 42px rgba(13,24,12,.20) !important;
+}
+.map-page .map-nearby-label {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(247,244,235,.58) !important;
+}
+.map-page .map-nearby-button {
+  min-height: 34px !important;
+  padding-inline: 13px !important;
+  color: rgba(249,247,240,.88) !important;
+  border-color: rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.055) !important;
+}
+.map-page .map-nearby-button:hover,
+.map-page .map-nearby-button:focus-visible,
+.map-page .map-nearby-button.is-active,
+.map-page .map-nearby-button[aria-pressed="true"] {
+  color: #172114 !important;
+  border-color: rgba(219,228,190,.75) !important;
+  background: #dce6bf !important;
+  box-shadow: 0 7px 18px rgba(0,0,0,.12);
+}
+.map-page .map-locate-me {
+  color: #eaf1d8 !important;
+  border-color: rgba(196,219,133,.24) !important;
+  background: rgba(196,219,133,.11) !important;
+}
+.map-page .map-locate-me.is-active,
+.map-page .map-locate-me[aria-pressed="true"] {
+  color: #172114 !important;
+  background: #dce6bf !important;
+}
+
+.map-page .map-fit-button {
+  top: 109px !important;
+  min-height: 50px !important;
+  border: 1px solid rgba(23,33,20,.10) !important;
+  color: #172114 !important;
+  background: rgba(249,247,241,.96) !important;
+  box-shadow: 0 15px 40px rgba(13,24,12,.17) !important;
+}
+.map-page .map-fit-button svg { color: #55733b !important; }
+.map-page .map-status-toast { top: 229px !important; }
+
+/* Leaflet furniture stays quiet and crisp. */
+.map-page .uganda-map .leaflet-control-zoom {
+  overflow: hidden;
+  border: 1px solid rgba(23,33,20,.10) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 34px rgba(13,24,12,.16) !important;
+}
+.map-page .uganda-map .leaflet-control-zoom a {
+  color: #172114 !important;
+  background: rgba(249,247,241,.96) !important;
+}
+.map-page .uganda-map .leaflet-control-attribution {
+  border-radius: 9px !important;
+  color: #556052 !important;
+  background: rgba(249,247,241,.84) !important;
+}
+.map-page .uganda-map .leaflet-tile-pane {
+  /* Deliberately no blur/filter: street labels remain crisp. */
+  opacity: 1;
+}
+
+/* Cleaner, smaller map pins reduce visual noise. JS also hides attractions at
+   country scale and reveals them as the user zooms into a region. */
+.map-page .ugotour-map-pin {
+  filter: drop-shadow(0 5px 7px rgba(13,24,12,.28)) !important;
+}
+.map-page .ugotour-map-pin.is-destination { color: #18331f !important; }
+.map-page .ugotour-map-pin.is-attraction { color: #a9682d !important; }
+.map-page .ugotour-map-pin.is-discovered { color: #ca9630 !important; }
+.map-page .ugotour-map-pin svg path { stroke: rgba(255,255,255,.88); stroke-width: 1; }
+.map-page .ugotour-marker-tooltip {
+  color: #172114 !important;
+  background: rgba(249,247,241,.98) !important;
+  border-color: rgba(23,33,20,.10) !important;
+}
+.map-page .map-pin-key {
+  color: rgba(247,244,235,.82) !important;
+  background: rgba(18,29,17,.90) !important;
+}
+
+/* ---------- Place callout: content determines height; no inner scrolling ---------- */
+.map-page .map-place-callout,
+.map-page .map-place-callout.is-no-image {
+  width: min(500px, calc(100% - 42px)) !important;
+  height: auto !important;
+  max-height: none !important;
+  grid-template-columns: 148px minmax(0,1fr) !important;
+  align-items: stretch;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: 24px !important;
+  background: rgba(17,29,17,.965) !important;
+  box-shadow: 0 28px 74px rgba(0,0,0,.32) !important;
+}
+.map-page .map-place-callout.is-no-image {
+  width: min(410px, calc(100% - 42px)) !important;
+  grid-template-columns: minmax(0,1fr) !important;
+}
+.map-page .map-place-callout > img {
+  width: 148px !important;
+  height: 100% !important;
+  min-height: 220px !important;
+  max-height: none !important;
+  align-self: stretch;
+  object-fit: cover !important;
+}
+.map-page .map-place-copy {
+  min-width: 0;
+  padding: 19px 43px 18px 19px !important;
+}
+.map-page .map-place-copy h2 {
+  margin-top: 10px !important;
+  color: #fff !important;
+  font-size: clamp(1.3rem, 2vw, 1.68rem) !important;
+  line-height: 1.04 !important;
+}
+.map-page .map-place-location {
+  margin-top: 6px !important;
+  color: #b6c5a3 !important;
+  font-size: .68rem !important;
+  line-height: 1.45 !important;
+}
+.map-page .map-place-copy > p:not(.map-place-location) {
+  display: block !important;
+  margin: 11px 0 14px !important;
+  overflow: visible !important;
+  color: rgba(247,244,235,.76) !important;
+  font-size: .72rem !important;
+  line-height: 1.58 !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: initial !important;
+}
+.map-page .map-callout-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px !important;
+}
+.map-page .map-route-button,
+.map-page .map-place-save,
+.map-page .map-details-link {
+  min-height: 36px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 11px !important;
+  border-radius: 999px !important;
+  font-size: .64rem !important;
+  white-space: nowrap;
+}
+.map-page .map-route-button:disabled { opacity: .62; cursor: progress; }
+
+/* ---------- Route summary ---------- */
+.map-page .map-route-panel {
+  width: min(355px, calc(100% - 36px)) !important;
+  border-radius: 24px !important;
+  background: rgba(17,29,17,.96) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,.30) !important;
+}
+.map-page .map-route-note {
+  margin: 11px 2px 0;
+  color: rgba(247,244,235,.62);
+  font-size: .59rem;
+  line-height: 1.45;
+}
+.map-page .map-route-note.is-warning { color: #e8d39b; }
+.map-page .map-route-modes button.is-active {
+  color: #172114 !important;
+  background: #dce6bf !important;
+}
+
+@media (max-width: 1100px) {
+  .map-page .map-search-dock { width: min(560px, calc(100% - 160px)) !important; }
+  .map-page .map-nearby-dock { width: calc(100% - 48px) !important; }
+}
+
+@media (max-width: 980px) {
+  .map-page .map-search-dock {
+    top: 92px !important;
+    width: min(540px, calc(100% - 126px)) !important;
+  }
+  .map-page .map-nearby-dock { top: 154px !important; }
+  .map-page .map-status-toast { top: 207px !important; }
+  .map-page .map-fit-button { top: 96px !important; }
+  .map-page .map-place-callout,
+  .map-page .map-place-callout.is-no-image {
+    width: min(440px, calc(100% - 28px)) !important;
+    grid-template-columns: 124px minmax(0,1fr) !important;
+  }
+  .map-page .map-place-callout.is-no-image { grid-template-columns: minmax(0,1fr) !important; }
+  .map-page .map-place-callout > img {
+    width: 124px !important;
+    min-height: 205px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .map-page .map-search-dock {
+    top: calc(max(8px, env(safe-area-inset-top)) + 76px) !important;
+    width: calc(100% - 24px) !important;
+  }
+  .map-page .map-search { min-height: 51px !important; }
+  .map-page .map-nearby-dock {
+    top: calc(max(8px, env(safe-area-inset-top)) + 134px) !important;
+    left: 12px !important;
+    width: calc(100% - 70px) !important;
+  }
+  .map-page .map-nearby-label { display: none !important; }
+  .map-page .map-status-toast {
+    top: calc(max(8px, env(safe-area-inset-top)) + 184px) !important;
+  }
+  .map-page .map-fit-button {
+    top: calc(max(8px, env(safe-area-inset-top)) + 134px) !important;
+  }
+
+  .map-page .map-place-callout,
+  .map-page .map-place-callout.is-no-image {
+    width: calc(100% - 20px) !important;
+    height: auto !important;
+    max-height: none !important;
+    grid-template-columns: 104px minmax(0,1fr) !important;
+    overflow: hidden !important;
+  }
+  .map-page .map-place-callout.is-no-image { grid-template-columns: minmax(0,1fr) !important; }
+  .map-page .map-place-callout > img {
+    width: 104px !important;
+    height: 100% !important;
+    min-height: 184px !important;
+    max-height: none !important;
+  }
+  .map-page .map-place-copy { padding: 15px 36px 14px 14px !important; }
+  .map-page .map-place-copy h2 { font-size: 1.08rem !important; }
+  .map-page .map-place-copy > p:not(.map-place-location) {
+    display: block !important;
+    margin: 8px 0 10px !important;
+    overflow: visible !important;
+    font-size: .64rem !important;
+    line-height: 1.48 !important;
+    -webkit-line-clamp: unset !important;
+  }
+  .map-page .map-route-button,
+  .map-page .map-place-save,
+  .map-page .map-details-link {
+    min-height: 32px !important;
+    padding-inline: 9px !important;
+    font-size: .59rem !important;
+  }
+  .map-page .map-route-panel {
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .destinations-page .attraction-discovery-copy {
+    min-height: 170px;
+    padding: 17px !important;
+  }
+  .map-page .map-nearby-button { padding-inline: 10px !important; }
+  .map-page .map-place-callout,
+  .map-page .map-place-callout.is-no-image {
+    grid-template-columns: 92px minmax(0,1fr) !important;
+  }
+  .map-page .map-place-callout.is-no-image { grid-template-columns: minmax(0,1fr) !important; }
+  .map-page .map-place-callout > img { width: 92px !important; }
+}
+
+/* UgoTour visual revision: 10.8.0 */
+
+/* ============================================================
+   PHASE 1.13 — UNIFIED MAP COMMAND PANEL
+   Search, nearby discovery and transient status now share one responsive
+   surface so map callouts never compete with stacked floating toolbars.
+   Existing IDs and JavaScript listeners are deliberately preserved.
+   ============================================================ */
+
+.map-page .map-command-panel {
+  position: absolute;
+  z-index: 665;
+  top: 105px;
+  left: 50%;
+  width: min(760px, calc(100% - 250px));
+  display: grid;
+  gap: 0;
+  overflow: visible;
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 28px;
+  background: rgba(18,29,17,.94);
+  box-shadow: 0 22px 58px rgba(13,24,12,.26);
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  transform: translateX(-50%);
+}
+
+/* The search dock is now part of the command panel rather than independently
+   positioned on the map canvas. */
+.map-page .map-command-panel .map-search-dock {
+  position: relative !important;
+  z-index: 4;
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  transform: none !important;
+}
+
+.map-page .map-command-panel .map-search {
+  min-height: 58px !important;
+  border: 0 !important;
+  border-radius: 27px 27px 0 0 !important;
+  background: rgba(249,247,241,.985) !important;
+  box-shadow: none !important;
+}
+
+.map-page .map-command-panel .map-search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 8;
+  margin-top: 0 !important;
+}
+
+/* Nearby actions become the second row of the same component. */
+.map-page .map-command-panel .map-nearby-dock {
+  position: relative !important;
+  z-index: 3;
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 7px 9px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 0 0 27px 27px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  scrollbar-width: none;
+}
+.map-page .map-command-panel .map-nearby-dock::-webkit-scrollbar { display: none; }
+
+.map-page .map-command-panel .map-nearby-label {
+  max-width: 165px;
+  color: rgba(247,244,235,.52) !important;
+}
+
+/* Status becomes a compact third row only while it has something to say.
+   It participates in document flow inside the command panel instead of
+   floating over a selected-place card. */
+.map-page .map-command-panel .map-status-toast {
+  position: relative !important;
+  z-index: 2;
+  top: auto !important;
+  left: auto !important;
+  width: auto;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px 14px 10px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 0 0 27px 27px !important;
+  color: rgba(248,245,237,.80) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-size: .61rem !important;
+  line-height: 1.35;
+  text-align: left !important;
+}
+.map-page .map-command-panel .map-status-toast[hidden] { display: none !important; }
+.map-page .map-command-panel .map-status-toast.is-error {
+  color: #ffd9d0 !important;
+  background: rgba(104,37,30,.34) !important;
+}
+
+/* When the status row is visible, it owns the lower rounding. */
+.map-page .map-command-panel:has(.map-status-toast:not([hidden])) .map-nearby-dock {
+  border-radius: 0 !important;
+}
+
+/* Keep independent controls visually separate from the main command surface. */
+.map-page .map-fit-button {
+  top: 109px !important;
+}
+
+/* Give map cards a safe vertical zone below the unified panel. The JS still
+   positions callouts relative to their markers; this minimum top prevents a
+   tall callout from being clamped into the command surface. */
+@media (min-width: 721px) {
+  .map-page .map-place-callout {
+    --map-command-safe-top: 226px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .map-page .map-command-panel {
+    width: min(690px, calc(100% - 170px));
+  }
+}
+
+@media (max-width: 980px) {
+  .map-page .map-command-panel {
+    top: 92px;
+    width: min(650px, calc(100% - 132px));
+  }
+  .map-page .map-command-panel .map-search { min-height: 55px !important; }
+  .map-page .map-fit-button { top: 96px !important; }
+}
+
+@media (max-width: 720px) {
+  .map-page .map-command-panel {
+    top: calc(max(8px, env(safe-area-inset-top)) + 76px);
+    left: 12px;
+    width: calc(100% - 24px);
+    border-radius: 23px;
+    transform: none;
+  }
+  .map-page .map-command-panel .map-search {
+    min-height: 51px !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+  .map-page .map-command-panel .map-nearby-dock {
+    min-height: 46px !important;
+    padding: 6px 7px !important;
+    border-radius: 0 0 22px 22px !important;
+  }
+  .map-page .map-command-panel .map-nearby-label { display: none !important; }
+  .map-page .map-command-panel .map-status-toast {
+    padding: 7px 11px 9px !important;
+    border-radius: 0 0 22px 22px !important;
+    font-size: .58rem !important;
+  }
+  .map-page .map-command-panel:has(.map-status-toast:not([hidden])) .map-nearby-dock {
+    border-radius: 0 !important;
+  }
+
+  /* Fit Uganda moves below the header but stays outside the command panel so
+     the horizontal chip rail can use the full phone width. */
+  .map-page .map-fit-button {
+    top: calc(max(8px, env(safe-area-inset-top)) + 181px) !important;
+    right: 12px !important;
+    min-height: 40px !important;
+    padding-inline: 11px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .map-page .map-command-panel .map-nearby-button {
+    min-height: 33px !important;
+    padding-inline: 10px !important;
+  }
+  .map-page .map-command-panel .map-search input {
+    font-size: .80rem !important;
+  }
+}
+
+/* Phase 1.13 phone furniture correction: keep Fit Uganda away from the
+   variable-height command panel/status row. */
+@media (max-width: 720px) {
+  .map-page .map-fit-button {
+    top: auto !important;
+    right: 12px !important;
+    bottom: 92px !important;
+  }
+}

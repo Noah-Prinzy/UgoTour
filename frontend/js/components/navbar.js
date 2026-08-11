@@ -133,7 +133,7 @@ function ensureMobilePhaseOneStyles() {
 
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = new URL("../../css/mobile-phase1.css?v=10.5.0", import.meta.url).href;
+  link.href = new URL("../../css/mobile-phase1.css?v=10.8.0", import.meta.url).href;
   link.dataset.ugotourMobilePhase = "1";
 
   const ready = new Promise((resolve) => {
@@ -271,7 +271,8 @@ function currentFile() {
 }
 
 function navLink(label, href, file) {
-  return `<a class="${currentFile() === file ? "is-active" : ""}" href="${href}">${label}</a>`;
+  const active = currentFile() === file;
+  return `<a class="${active ? "is-active" : ""}" href="${href}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
 }
 
 function drawerLink(label, href, file) {
