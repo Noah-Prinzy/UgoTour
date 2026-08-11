@@ -19,7 +19,7 @@ const database = process.env.DATABASE_URL
       port: Number(process.env.DB_PORT || 5432),
       database: process.env.DB_NAME || "ugotour_db",
       user: process.env.DB_USER || "ugotour_user",
-      password: process.env.DB_PASSWORD || "UgoTour_dev_2026!",
+      password: process.env.DB_PASSWORD || "",
       ...common
     });
 

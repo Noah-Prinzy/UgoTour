@@ -13,7 +13,8 @@
     "predeploy:check": "node scripts/predeploy-check.js",
     "backend:check": "npm --prefix backend run check",
     "admin:grant": "npm --prefix backend run admin:grant --",
-    "security:smoke": "node scripts/security-smoke.js"
+    "security:smoke": "node scripts/security-smoke.js",
+    "db:bootstrap:production": "npm --prefix backend run db:bootstrap:production"
   },
   "type": "module"
 }
