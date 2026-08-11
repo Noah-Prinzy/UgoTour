@@ -1,21 +1,45 @@
 // ============================================================
-// PWA REGISTRATION + INSTALL PROMPT
+// PWA REGISTRATION, INSTALL PROMPT + UPDATE NOTIFICATION
 // ============================================================
-// A service worker and manifest make UgoTour installable when it is served
-// from HTTPS (or localhost). The app still remains a normal responsive website.
-
 let deferredInstallPrompt = null;
-const listeners = new Set();
+const installListeners = new Set();
+let waitingWorker = null;
+const updateListeners = new Set();
 
 function notifyInstallState() {
-  listeners.forEach((listener) => listener(Boolean(deferredInstallPrompt)));
+  installListeners.forEach((listener) => listener(Boolean(deferredInstallPrompt)));
+}
+function notifyUpdateState() {
+  updateListeners.forEach((listener) => listener(Boolean(waitingWorker)));
 }
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
       const workerUrl = new URL("../service-worker.js", import.meta.url);
-      await navigator.serviceWorker.register(workerUrl);
+      const registration = await navigator.serviceWorker.register(workerUrl);
+
+      if (registration.waiting) {
+        waitingWorker = registration.waiting;
+        notifyUpdateState();
+      }
+
+      registration.addEventListener("updatefound", () => {
+        const installing = registration.installing;
+        installing?.addEventListener("statechange", () => {
+          if (installing.state === "installed" && navigator.serviceWorker.controller) {
+            waitingWorker = registration.waiting || installing;
+            notifyUpdateState();
+          }
+        });
+      });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
     } catch (error) {
       console.error("UgoTour service worker registration failed:", error);
     }
@@ -27,24 +51,30 @@ window.addEventListener("beforeinstallprompt", (event) => {
   deferredInstallPrompt = event;
   notifyInstallState();
 });
-
 window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
   notifyInstallState();
 });
 
 export function onInstallAvailability(listener) {
-  listeners.add(listener);
+  installListeners.add(listener);
   listener(Boolean(deferredInstallPrompt));
-  return () => listeners.delete(listener);
+  return () => installListeners.delete(listener);
 }
-
 export async function requestInstall() {
   if (!deferredInstallPrompt) return false;
-
   await deferredInstallPrompt.prompt();
   const result = await deferredInstallPrompt.userChoice;
   deferredInstallPrompt = null;
   notifyInstallState();
   return result.outcome === "accepted";
+}
+
+export function onUpdateAvailability(listener) {
+  updateListeners.add(listener);
+  listener(Boolean(waitingWorker));
+  return () => updateListeners.delete(listener);
+}
+export function applyUpdate() {
+  waitingWorker?.postMessage({ type: "SKIP_WAITING" });
 }

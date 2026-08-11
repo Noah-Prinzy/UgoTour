@@ -3,7 +3,8 @@ import "../ui-motion.js";
 // LOGIN PAGE - PHASE 8
 // ============================================================
 // Credentials are verified by the Node.js backend against PostgreSQL. A
-// successful login saves only the returned bearer token in this browser.
+// successful login receives an HttpOnly session cookie from the API; JavaScript
+// never receives or stores the session token.
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";

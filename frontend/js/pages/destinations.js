@@ -17,6 +17,7 @@ import { getAllAttractions } from "../services/attraction-service.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
 import { getBookings } from "../services/booking-service.js";
 import { resolveAssetPath } from "../utils/assets.js";
+import { getSavedPlaces, toggleSavedPlace } from "../services/saved-service.js";
 
 const currentUser = await requireAuthenticatedUser("..");
 await renderNavbar("..", currentUser);
@@ -38,6 +39,7 @@ const pageQuery = new URLSearchParams(window.location.search).get("q")?.trim() ?
 let destinations = [];
 let attractions = [];
 let categories = [];
+let savedKeys = new Set();
 
 const catalogState = {
   searchTerm: pageQuery,
@@ -101,9 +103,17 @@ function renderDestinations() {
   destinationList.innerHTML = "";
 
   filteredDestinations.forEach((destination, index) => {
+    const key = `destination:${Number(destination.id)}`;
     const card = createDestinationCard(destination, {
       linkUrl: `./map.html?focus=destination:${Number(destination.id)}`,
-      assetBasePath: ".."
+      assetBasePath: "..",
+      showSaveButton: true,
+      saved: savedKeys.has(key),
+      onToggleSave: async (_item, currentSaved) => {
+        const next = await toggleSavedPlace("destination", destination.id, currentSaved);
+        if (next) savedKeys.add(key); else savedKeys.delete(key);
+        return next;
+      }
     });
     card.style.setProperty("--card-order", String(index));
     card.setAttribute("aria-label", `Find ${destination.name} on the Uganda map`);
@@ -118,32 +128,37 @@ function renderDestinations() {
 }
 
 function createAttractionDiscoveryCard(attraction, index) {
-  const card = document.createElement("a");
-  card.className = "attraction-discovery-card";
-  card.href = `./map.html?focus=attraction:${Number(attraction.id)}`;
-  card.style.setProperty("--card-order", String(index));
-  card.dataset.attractionId = attraction.id;
-  card.setAttribute("aria-label", `Find ${attraction.name} on the Uganda map`);
+  const shell = document.createElement("article");
+  shell.className = "attraction-discovery-card attraction-discovery-card-saveable";
+  shell.style.setProperty("--card-order", String(index));
+  shell.dataset.attractionId = attraction.id;
 
   const imageUrl = resolveAssetPath(attraction.imageUrl, "..");
-  const parentLabel = attraction.destinationName
-    ? `Near ${attraction.destinationName}`
-    : (attraction.district || attraction.region || "Uganda");
+  const parentLabel = attraction.destinationName ? `Near ${attraction.destinationName}` : (attraction.district || attraction.region || "Uganda");
+  const key = `attraction:${Number(attraction.id)}`;
+  const isSaved = savedKeys.has(key);
 
-  card.innerHTML = `
-    <div class="attraction-discovery-media">
-      <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(attraction.name)}" loading="lazy" />
-      <span class="attraction-discovery-type">${escapeHtml(attraction.category || "Attraction")}</span>
-    </div>
-    <div class="attraction-discovery-copy">
-      <p>${escapeHtml(parentLabel)}</p>
-      <h3>${escapeHtml(attraction.name)}</h3>
-      <span>${escapeHtml(attraction.description || attraction.highlight || "Explore this place in Uganda.")}</span>
-      <strong>Find on map <span aria-hidden="true">→</span></strong>
-    </div>
-  `;
+  shell.innerHTML = `
+    <a class="attraction-discovery-anchor" href="./map.html?focus=attraction:${Number(attraction.id)}" aria-label="Find ${escapeAttribute(attraction.name)} on the Uganda map">
+      <div class="attraction-discovery-media"><img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(attraction.name)}" loading="lazy" decoding="async" /><span class="attraction-discovery-type">${escapeHtml(attraction.category || "Attraction")}</span></div>
+      <div class="attraction-discovery-copy"><p>${escapeHtml(parentLabel)}</p><h3>${escapeHtml(attraction.name)}</h3><span>${escapeHtml(attraction.description || attraction.highlight || "Explore this place in Uganda.")}</span><strong>Find on map <span aria-hidden="true">→</span></strong></div>
+    </a>
+    <button class="place-save-button" type="button" aria-pressed="${isSaved}" aria-label="${isSaved ? "Remove" : "Save"} ${escapeAttribute(attraction.name)}">${isSaved ? "♥" : "♡"}</button>`;
 
-  return card;
+  const button = shell.querySelector(".place-save-button");
+  button?.addEventListener("click", async () => {
+    if (button.disabled) return;
+    button.disabled = true;
+    try {
+      const currentSaved = button.getAttribute("aria-pressed") === "true";
+      const next = await toggleSavedPlace("attraction", attraction.id, currentSaved);
+      if (next) savedKeys.add(key); else savedKeys.delete(key);
+      button.textContent = next ? "♥" : "♡";
+      button.setAttribute("aria-pressed", String(next));
+      button.setAttribute("aria-label", `${next ? "Remove" : "Save"} ${attraction.name}`);
+    } finally { button.disabled = false; }
+  });
+  return shell;
 }
 
 function renderAttractions() {
@@ -200,10 +215,14 @@ async function loadCatalog() {
   if (attractionSummary) attractionSummary.textContent = "Loading attractions...";
 
   try {
-    [destinations, attractions] = await Promise.all([
+    const [destinationData, attractionData, savedData] = await Promise.all([
       getAllDestinations(),
-      getAllAttractions()
+      getAllAttractions(),
+      getSavedPlaces().catch(() => [])
     ]);
+    destinations = destinationData;
+    attractions = attractionData;
+    savedKeys = new Set(savedData.map((place) => `${place.placeType}:${Number(place.id)}`));
 
     // Keep existing destination categories and add attraction-only categories
     // without duplicates so one filter controls both discovery sections.

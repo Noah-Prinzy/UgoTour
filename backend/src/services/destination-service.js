@@ -35,7 +35,9 @@ function mapDestination(row) {
     galleryImages,
     latitude: row.latitude === null ? null : Number(row.latitude),
     longitude: row.longitude === null ? null : Number(row.longitude),
-    createdAt: row.created_at
+    isActive: row.is_active ?? true,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at ?? null
   };
 }
 
@@ -57,17 +59,19 @@ const destinationColumns = `
   gallery_images,
   latitude,
   longitude,
-  created_at
+  is_active,
+  created_at,
+  updated_at
 `;
 
 export async function getAllDestinations() {
-  const result = await database.query(`SELECT ${destinationColumns} FROM destinations ORDER BY id`);
+  const result = await database.query(`SELECT ${destinationColumns} FROM destinations WHERE is_active=TRUE ORDER BY id`);
   return result.rows.map(mapDestination);
 }
 
 export async function getDestinationById(destinationId) {
   const result = await database.query(
-    `SELECT ${destinationColumns} FROM destinations WHERE id = $1`,
+    `SELECT ${destinationColumns} FROM destinations WHERE id = $1 AND is_active=TRUE`,
     [Number(destinationId)]
   );
 

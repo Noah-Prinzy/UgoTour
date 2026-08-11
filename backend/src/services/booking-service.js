@@ -8,7 +8,7 @@ function mapBooking(row) {
     destinationName: row.destination_name, destinationCategory: row.destination_category,
     destinationRegion: row.destination_region, destinationImageUrl: row.destination_image_url,
     travelDate: row.travel_date instanceof Date ? row.travel_date.toISOString().slice(0,10) : String(row.travel_date).slice(0,10),
-    travellers: Number(row.travellers), status: "confirmed", createdAt: row.created_at
+    travellers: Number(row.travellers), status: "planned", createdAt: row.created_at
   };
 }
 

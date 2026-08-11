@@ -2,6 +2,7 @@ import { renderNavbar } from "../components/navbar.js";
 import { getMapLocations } from "../services/map-service.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
 import { resolveAssetPath } from "../utils/assets.js";
+import { getSavedPlaces, toggleSavedPlace } from "../services/saved-service.js";
 
 const currentUser = await requireAuthenticatedUser("..");
 await renderNavbar("..", currentUser);
@@ -31,6 +32,7 @@ const placeName = document.getElementById("map-place-name");
 const placeLocation = document.getElementById("map-place-location");
 const placeDescription = document.getElementById("map-place-description");
 const placeDetails = document.getElementById("map-place-details");
+const placeSave = document.getElementById("map-place-save");
 
 let map = null;
 let boundaryLayer = null;
@@ -39,6 +41,7 @@ let selectedFeature = null;
 let selectedKey = null;
 let positionFrame = null;
 const markerByKey = new Map();
+let savedKeys = new Set();
 
 function featureKey(feature) {
   return `${feature.properties.placeType}:${Number(feature.properties.id)}`;
@@ -225,6 +228,13 @@ function selectFeature(feature, { focusMap = false } = {}) {
   if (href) {
     placeDetails.href = href;
     placeDetails.textContent = "View details →";
+  }
+
+  if (placeSave) {
+    const saved = savedKeys.has(key);
+    placeSave.textContent = saved ? "♥ Saved" : "♡ Save";
+    placeSave.setAttribute("aria-pressed", String(saved));
+    placeSave.setAttribute("aria-label", `${saved ? "Remove" : "Save"} ${p.name}`);
   }
 
   callout.hidden = false;
@@ -430,6 +440,21 @@ searchClear?.addEventListener("click", () => {
 });
 
 fitButton?.addEventListener("click", fitUganda);
+
+placeSave?.addEventListener("click", async () => {
+  if (!selectedFeature || placeSave.disabled) return;
+  const key = featureKey(selectedFeature);
+  const p = selectedFeature.properties;
+  const currentSaved = savedKeys.has(key);
+  placeSave.disabled = true;
+  try {
+    const next = await toggleSavedPlace(p.placeType, p.id, currentSaved);
+    if (next) savedKeys.add(key); else savedKeys.delete(key);
+    placeSave.textContent = next ? "♥ Saved" : "♡ Save";
+    placeSave.setAttribute("aria-pressed", String(next));
+  } catch (error) { console.error("Could not update saved place:", error); }
+  finally { placeSave.disabled = false; }
+});
 calloutClose?.addEventListener("click", closeCallout);
 retryButton?.addEventListener("click", async () => {
   if (!window.L) {
@@ -449,6 +474,8 @@ window.addEventListener("resize", scheduleCalloutPosition);
 try {
   const geojson = await getMapLocations();
   features = Array.isArray(geojson?.features) ? geojson.features : [];
+  const saved = await getSavedPlaces().catch(() => []);
+  savedKeys = new Set(saved.map((place) => `${place.placeType}:${Number(place.id)}`));
   const mapReady = await initializeMap();
   if (mapReady) focusFromUrl();
 } catch (error) {

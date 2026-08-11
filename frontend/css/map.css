@@ -537,3 +537,8 @@
   .map-place-copy > p:not(.map-place-location) { -webkit-line-clamp: 3; font-size: .69rem; }
   .map-details-link { min-height: 34px; padding-inline: 11px; font-size: .66rem; }
 }
+
+/* Phase 9 saved-place action inside the connected map callout. */
+.map-callout-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.map-place-save { cursor:pointer; }
+@media (max-width:720px){.map-callout-actions{gap:6px}.map-place-save,.map-details-link{font-size:.63rem;min-height:34px;padding-inline:10px}}

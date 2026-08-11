@@ -3,23 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Create your UgoTour account." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/main.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/components.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.8.3" />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <title>Sign Up | UgoTour</title>
+  <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="auth-visual-page signup-page">
   <header id="site-header"></header>
-  <main class="auth-entry-main">
+  <main id="main-content" class="auth-entry-main">
     <section class="auth-entry" aria-labelledby="signup-title">
       <div class="auth-photo-panel">
-        <img src="../images/destinations/sipi-falls/sipi-falls-01.jpg" alt="Sipi Falls landscape" />
+        <img src="../images/optimized/destinations/sipi-falls/sipi-falls-01.webp" alt="Sipi Falls landscape" />
         <div class="auth-photo-shade" aria-hidden="true"></div>
         <div class="auth-photo-copy"><p>Travel deeper</p><h1>Create your Uganda story.</h1><span>Sipi Falls · Eastern Uganda</span></div>
       </div>
@@ -27,12 +30,12 @@
         <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
         <p class="section-kicker">Create account</p>
         <h2 id="signup-title">Join UgoTour</h2>
-        <p class="auth-form-copy">Create one secure travel identity for your profile and bookings.</p>
+        <p class="auth-form-copy">Create one secure travel identity for your profile, saved places and trip plans.</p>
         <form id="signup-form" class="starter-form auth-form">
           <label>Full name<input id="signup-name" type="text" autocomplete="name" required /></label>
           <label>Email<input id="signup-email" type="email" autocomplete="email" required /></label>
-          <label>Password<input id="signup-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-          <label>Confirm password<input id="signup-confirm-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+          <label>Password<input id="signup-password" type="password" minlength="10" autocomplete="new-password" required /></label>
+          <label>Confirm password<input id="signup-confirm-password" type="password" minlength="10" autocomplete="new-password" required /></label>
           <button class="primary-button auth-submit-button" type="submit">Create account</button>
           <p id="signup-message" class="form-message" aria-live="polite"></p>
         </form>

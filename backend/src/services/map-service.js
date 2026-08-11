@@ -48,7 +48,8 @@ export async function getMapLocations() {
       d.longitude,
       d.image_url
     FROM destinations AS d
-    WHERE d.latitude IS NOT NULL
+    WHERE d.is_active=TRUE
+      AND d.latitude IS NOT NULL
       AND d.longitude IS NOT NULL
 
     UNION ALL
@@ -70,7 +71,8 @@ export async function getMapLocations() {
     FROM attractions AS a
     LEFT JOIN destinations AS d
       ON d.id = a.destination_id
-    WHERE a.latitude IS NOT NULL
+    WHERE a.is_active=TRUE
+      AND a.latitude IS NOT NULL
       AND a.longitude IS NOT NULL
 
     ORDER BY place_type DESC, name ASC

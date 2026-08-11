@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /pages/admin.html
+Disallow: /pages/profile.html
+Disallow: /pages/saved.html
+Disallow: /pages/bookings.html
+Disallow: /pages/login.html
+Disallow: /pages/signup.html
+# Run `npm run seo:build -- https://YOUR-DOMAIN` before deployment to add the Sitemap URL.

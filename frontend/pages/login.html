@@ -3,23 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Login to your UgoTour account." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/main.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/components.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.8.3" />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <title>Login | UgoTour</title>
+  <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="auth-visual-page login-page">
   <header id="site-header"></header>
-  <main class="auth-entry-main">
+  <main id="main-content" class="auth-entry-main">
     <section class="auth-entry" aria-labelledby="login-title">
       <div class="auth-photo-panel">
-        <img src="../images/destinations/rwenzori/rwenzori-01.jpg" alt="Rwenzori Mountains landscape" />
+        <img src="../images/optimized/destinations/rwenzori/rwenzori-01.webp" alt="Rwenzori Mountains landscape" />
         <div class="auth-photo-shade" aria-hidden="true"></div>
         <div class="auth-photo-copy"><p>Explore Uganda</p><h1>Journeys begin with a place that moves you.</h1><span>Rwenzori Mountains · Western Uganda</span></div>
       </div>
@@ -27,11 +30,11 @@
         <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
         <p class="section-kicker">Welcome back</p>
         <h2 id="login-title">Login to continue</h2>
-        <p class="auth-form-copy">Your destinations, bookings and profile are waiting.</p>
+        <p class="auth-form-copy">Your destinations, saved places, trips and profile are waiting.</p>
         <form id="login-form" class="starter-form auth-form">
           <label>Email<input id="login-email" type="email" autocomplete="email" required /></label>
           <label>Password<input id="login-password" type="password" autocomplete="current-password" required /></label>
-          <button class="primary-button auth-submit-button" type="submit">Login</button>
+          <div class="auth-password-row"><a href="./forgot-password.html">Forgot password?</a></div><button class="primary-button auth-submit-button" type="submit">Login</button>
           <p id="login-message" class="form-message" aria-live="polite"></p>
         </form>
         <p class="auth-switch-copy">New to UgoTour? <a href="./signup.html">Create an account</a>.</p>

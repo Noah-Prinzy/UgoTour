@@ -1,5 +1,6 @@
 import { getAuthenticatedUser } from "../middleware/auth.js";
-import { updateProfile, changePassword, updateProfileImage } from "../services/user-service.js";
+import { changePassword, updateProfile, updateProfileImage } from "../services/user-service.js";
+import { clearSessionCookie } from "../utils/cookies.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
 
@@ -13,7 +14,7 @@ export async function patchProfile(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
   const body = await readJsonBody(request);
-  if (body.name !== undefined && !isNonEmptyString(body.name)) return sendJson(response, 400, { error: "Name cannot be empty." });
+  if (body.name !== undefined && (!isNonEmptyString(body.name) || body.name.trim().length > 120)) return sendJson(response, 400, { error: "Name must contain 1 to 120 characters." });
   if (body.email !== undefined && !isEmail(body.email)) return sendJson(response, 400, { error: "A valid email is required." });
   const updated = await updateProfile(user.id, body);
   if (!updated) return sendJson(response, 404, { error: "User not found." });
@@ -38,7 +39,8 @@ export async function patchPassword(request, response) {
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
   const body = await readJsonBody(request);
   if (!isNonEmptyString(body.currentPassword)) return sendJson(response, 400, { error: "Current password is required." });
-  if (!isNonEmptyString(body.newPassword) || body.newPassword.length < 8) return sendJson(response, 400, { error: "New password must contain at least 8 characters." });
+  if (!isNonEmptyString(body.newPassword) || body.newPassword.length < 10 || body.newPassword.length > 128) return sendJson(response, 400, { error: "New password must contain 10 to 128 characters." });
   await changePassword(user.id, body.currentPassword, body.newPassword);
-  sendJson(response, 200, { message: "Password changed successfully." });
+  clearSessionCookie(response);
+  sendJson(response, 200, { message: "Password changed successfully. Please log in again.", reauthRequired: true });
 }

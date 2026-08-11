@@ -1,8 +1,8 @@
 // ============================================================
-// BOOKING API SERVICE - PHASE 8
+// TRIP PLAN API SERVICE - PHASE 9
 // ============================================================
-// Bookings now live in PostgreSQL. localStorage is no longer used to persist
-// booking records; it holds only the current bearer token through api.js.
+// Trip plans live in PostgreSQL. Browser authentication is handled by the API
+// with an HttpOnly session cookie; JavaScript does not store session tokens.
 
 import { apiRequest } from "../api.js";
 

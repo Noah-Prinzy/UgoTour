@@ -1,22 +1,18 @@
 // ============================================================
-// FRONTEND ASSET PATH HELPER - PHASE 8.1
+// FRONTEND ASSET PATH HELPER - PHASE 9
 // ============================================================
-// Destination photo paths come from PostgreSQL as project-relative paths such
-// as "images/destinations/murchison-falls/murchison-01.jpg". Pages inside /pages are one directory
-// deeper than index.html, so they pass ".." as the base path.
+// PostgreSQL keeps the original local image path for provenance. The browser
+// serves a pre-generated WebP copy from /images/optimized when the path is a
+// local JPG/PNG, cutting image transfer size substantially without changing DB
+// records or source-credit metadata.
 
 export function resolveAssetPath(assetPath, basePath = ".") {
   const value = String(assetPath ?? "").trim();
-
-  if (!value) {
-    return `${basePath}/images/uganda-forest-fallback.jpg`;
-  }
-
-  // Leave full URLs, data URLs and blob URLs untouched.
-  if (/^(https?:|data:|blob:)/i.test(value)) {
-    return value;
-  }
+  if (!value) return `${basePath}/images/optimized/uganda-forest-fallback.webp`;
+  if (/^(https?:|data:|blob:)/i.test(value)) return value;
 
   const cleanPath = value.replace(/^\.\//, "").replace(/^\//, "");
+  const raster = cleanPath.match(/^images\/(.+)\.(jpe?g|png)$/i);
+  if (raster) return `${basePath}/images/optimized/${raster[1]}.webp`;
   return `${basePath}/${cleanPath}`;
 }

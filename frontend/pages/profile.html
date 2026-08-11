@@ -3,20 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Manage your UgoTour profile and profile picture." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/main.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/components.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.8.3" />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <title>Profile | UgoTour</title>
+  <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="dashboard-page profile-page">
   <header id="site-header"></header>
-  <main class="dashboard-main">
+  <main id="main-content" class="dashboard-main">
     <div id="profile-account-content" class="profile-dashboard">
       <section id="profile-logged-out" hidden></section>
       <section id="profile-logged-in">
@@ -63,16 +66,16 @@
             <div class="profile-card-heading"><div><p class="section-kicker">Security</p><h2>Change password</h2></div></div>
             <form id="password-form" class="starter-form profile-form profile-form-password">
               <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
-              <label>New password<input id="new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
-              <label>Confirm new password<input id="confirm-new-password" type="password" minlength="8" autocomplete="new-password" required /></label>
+              <label>New password<input id="new-password" type="password" minlength="10" autocomplete="new-password" required /></label>
+              <label>Confirm new password<input id="confirm-new-password" type="password" minlength="10" autocomplete="new-password" required /></label>
               <button class="secondary-button" type="submit">Change password</button>
               <p id="password-message" class="form-message" aria-live="polite"></p>
             </form>
           </section>
 
           <section class="profile-settings-card profile-actions-card">
-            <div><p class="section-kicker">Account actions</p><h2>Session</h2><p>Logging out removes the bearer token from this device.</p></div>
-            <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
+            <div><p class="section-kicker">Account actions</p><h2>Session</h2><p>Your secure session is stored in an HttpOnly cookie. Logging out ends it on this device.</p></div>
+            <div class="profile-action-links"><a class="secondary-button" href="./saved.html">Saved places</a><a id="profile-admin-link" class="secondary-button" href="./admin.html" hidden>Admin dashboard</a><button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button></div>
           </section>
         </div>
       </section>

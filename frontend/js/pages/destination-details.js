@@ -7,6 +7,7 @@ import { createBooking } from "../services/booking-service.js";
 import { isFutureOrToday, isValidTravellerCount } from "../utils/validation.js";
 import { resolveAssetPath } from "../utils/assets.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
+import { getSavedStatus, toggleSavedPlace } from "../services/saved-service.js";
 
 let currentUser = await requireAuthenticatedUser("..");
 await renderNavbar("..", currentUser);
@@ -405,12 +406,12 @@ function prepareBookingIdentity() {
   if (bookingTravellers) bookingTravellers.disabled = !loggedIn;
   if (bookingSubmit) bookingSubmit.disabled = !loggedIn;
   if (bookingLoginNote) bookingLoginNote.hidden = loggedIn;
-  if (!loggedIn) showBookingMessage("Login before creating a booking.", "error");
+  if (!loggedIn) showBookingMessage("Login before saving a trip plan.", "error");
 }
 
 bookingForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!destination || !currentUser) return showBookingMessage("Login before creating a booking.", "error");
+  if (!destination || !currentUser) return showBookingMessage("Login before saving a trip plan.", "error");
 
   const travelDate = bookingDate?.value ?? "";
   const travellers = Number(bookingTravellers?.value ?? 0);
@@ -431,19 +432,26 @@ bookingForm?.addEventListener("submit", async (event) => {
 });
 
 const favoriteButton = document.getElementById("details-favorite");
-const favoriteKey = standaloneAttractionId ? `ugotour_favourite_attraction_${standaloneAttractionId}` : `ugotour_favourite_${destinationId}`;
-updateFavoriteButton(localStorage.getItem(favoriteKey) === "1");
-favoriteButton?.addEventListener("click", () => {
-  const shouldSave = localStorage.getItem(favoriteKey) !== "1";
-  localStorage.setItem(favoriteKey, shouldSave ? "1" : "0");
-  updateFavoriteButton(shouldSave);
+const favoritePlaceType = standaloneAttractionId ? "attraction" : "destination";
+const favoritePlaceId = standaloneAttractionId || destinationId;
+let favoriteSaved = false;
+try { favoriteSaved = await getSavedStatus(favoritePlaceType, favoritePlaceId); } catch (error) { console.warn("Could not load saved status:", error); }
+updateFavoriteButton(favoriteSaved);
+favoriteButton?.addEventListener("click", async () => {
+  if (favoriteButton.disabled) return;
+  favoriteButton.disabled = true;
+  try {
+    favoriteSaved = await toggleSavedPlace(favoritePlaceType, favoritePlaceId, favoriteSaved);
+    updateFavoriteButton(favoriteSaved);
+  } catch (error) { console.error("Could not update saved place:", error); }
+  finally { favoriteButton.disabled = false; }
 });
 
 function updateFavoriteButton(saved) {
   if (!favoriteButton) return;
   favoriteButton.textContent = saved ? "♥" : "♡";
   favoriteButton.setAttribute("aria-pressed", saved ? "true" : "false");
-  favoriteButton.setAttribute("aria-label", saved ? "Remove saved destination" : "Save destination");
+  favoriteButton.setAttribute("aria-label", saved ? "Remove saved place" : "Save place");
 }
 
 experience?.addEventListener("pointerenter", () => setAutoplayPaused(true));

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="description" content="UgoTour — discover Uganda through immersive destinations, culture and adventures." />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -10,16 +12,16 @@
 
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="./css/main.css?v=8.8.3" />
-  <link rel="stylesheet" href="./css/components.css?v=8.8.3" />
-  <link rel="stylesheet" href="./css/animations.css?v=8.8.3" />
-  <link rel="stylesheet" href="./css/responsive.css?v=8.8.3" />
+  <link rel="preload" as="image" href="./images/optimized/destinations/murchison-falls/murchison-01.webp" fetchpriority="high" />
+  <link rel="stylesheet" href="./css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="./css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="./css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="./css/responsive.css?v=9.0.0" />
 </head>
 <body class="page-home">
   <header id="site-header"></header>
 
-  <main>
+  <main id="main-content">
     <!--
       Phase 8.4 keeps the full-screen destination queue but changes the Home
       handoff to a one-gesture cinematic transition. One scroll/swipe plays the
@@ -32,14 +34,17 @@
       <img
         id="journey-bg-a"
         class="journey-bg is-active"
-        src="./images/destinations/murchison-falls/murchison-01.jpg"
+        fetchpriority="high"
+        loading="eager"
+        src="./images/optimized/destinations/murchison-falls/murchison-01.webp"
         alt=""
         aria-hidden="true"
       />
       <img
         id="journey-bg-b"
         class="journey-bg"
-        src="./images/destinations/murchison-falls/murchison-01.jpg"
+        loading="eager"
+        src="./images/optimized/destinations/murchison-falls/murchison-01.webp"
         alt=""
         aria-hidden="true"
       />

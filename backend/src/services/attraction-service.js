@@ -28,7 +28,9 @@ function mapAttraction(row) {
     galleryImages,
     photoCredit: row.photo_credit ?? galleryImages[0]?.credit ?? null,
     photoSourceUrl: row.photo_source_url ?? galleryImages[0]?.sourceUrl ?? null,
-    createdAt: row.created_at
+    isActive: row.is_active ?? true,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at ?? null
   };
 }
 
@@ -39,18 +41,18 @@ const attractionSelect = `
 `;
 
 export async function getAllAttractions() {
-  const result = await database.query(`${attractionSelect} ORDER BY a.name`);
+  const result = await database.query(`${attractionSelect} WHERE a.is_active=TRUE ORDER BY a.name`);
   return result.rows.map(mapAttraction);
 }
 
 export async function getAttractionById(attractionId) {
-  const result = await database.query(`${attractionSelect} WHERE a.id = $1`, [Number(attractionId)]);
+  const result = await database.query(`${attractionSelect} WHERE a.id = $1 AND a.is_active=TRUE`, [Number(attractionId)]);
   return mapAttraction(result.rows[0]);
 }
 
 export async function getAttractionsByDestinationId(destinationId) {
   const result = await database.query(
-    `${attractionSelect} WHERE a.destination_id = $1 ORDER BY a.name`,
+    `${attractionSelect} WHERE a.destination_id = $1 AND a.is_active=TRUE ORDER BY a.name`,
     [Number(destinationId)]
   );
   return result.rows.map(mapAttraction);

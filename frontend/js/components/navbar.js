@@ -1,4 +1,4 @@
-import "../pwa.js";
+import { onInstallAvailability, requestInstall } from "../pwa.js";
 import { getCurrentUser, logoutUser } from "../services/auth-service.js";
 
 export async function renderNavbar(basePath = ".", validatedUser = undefined) {
@@ -7,29 +7,29 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
 
   let currentUser = validatedUser;
   if (currentUser === undefined) {
-    try {
-      currentUser = await getCurrentUser();
-    } catch (error) {
-      console.error("Could not load navbar session:", error);
-      currentUser = null;
-    }
+    try { currentUser = await getCurrentUser(); }
+    catch (error) { console.error("Could not load navbar session:", error); currentUser = null; }
   }
 
   const profileHref = `${basePath}/pages/profile.html`;
   const avatar = renderAvatar(currentUser);
-
+  const adminLink = currentUser?.role === "admin"
+    ? `<a class="nav-admin-link" href="${basePath}/pages/admin.html">Admin</a>`
+    : "";
   const accountArea = currentUser
-    ? `<div class="nav-account"><a class="nav-profile-pill nav-user-link" href="${profileHref}">${avatar}<span>Hi, ${escapeHtml(currentUser.name.split(" ")[0])}</span></a><button id="nav-logout-button" class="secondary-button" type="button">Logout</button></div>`
-    : `<div class="nav-account"><a class="nav-login-link" href="${basePath}/pages/login.html">Login</a><a class="primary-button nav-signup-button" href="${basePath}/pages/signup.html">Sign up</a></div>`;
+    ? `<div class="nav-account"><button id="nav-install-button" class="nav-install-button" type="button" hidden>Install</button>${adminLink}<a class="nav-profile-pill nav-user-link" href="${profileHref}">${avatar}<span>Hi, ${escapeHtml(currentUser.name.split(" ")[0])}</span></a><button id="nav-logout-button" class="secondary-button" type="button">Logout</button></div>`
+    : `<div class="nav-account"><button id="nav-install-button" class="nav-install-button" type="button" hidden>Install</button><a class="nav-login-link" href="${basePath}/pages/login.html">Login</a><a class="primary-button nav-signup-button" href="${basePath}/pages/signup.html">Sign up</a></div>`;
 
   header.innerHTML = `
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <nav class="site-nav" aria-label="Primary navigation">
       <a class="brand" href="${basePath}/index.html">Ugo<span>Tour</span></a>
       <div class="nav-links">
         ${navLink("Home", `${basePath}/index.html`, "index.html")}
         ${navLink("Destinations", `${basePath}/pages/destinations.html`, "destinations.html")}
         ${navLink("Map", `${basePath}/pages/map.html`, "map.html")}
-        ${navLink("Bookings", `${basePath}/pages/bookings.html`, "bookings.html")}
+        ${navLink("Saved", `${basePath}/pages/saved.html`, "saved.html")}
+        ${navLink("Trips", `${basePath}/pages/bookings.html`, "bookings.html")}
         ${navLink("Profile", profileHref, "profile.html")}
       </div>
       ${accountArea}
@@ -40,49 +40,31 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
       ${mobileLink("Map", `${basePath}/pages/map.html`, "map.html", mapPinIcon())}
       ${mobileLink("Trips", `${basePath}/pages/bookings.html`, "bookings.html", ticketIcon())}
       ${mobileLink("Profile", profileHref, "profile.html", userIcon())}
-    </nav>
-  `;
+    </nav>`;
 
   document.getElementById("nav-logout-button")?.addEventListener("click", async () => {
     await logoutUser();
     window.location.replace(`${basePath}/pages/login.html`);
   });
+
+  const installButton = document.getElementById("nav-install-button");
+  onInstallAvailability((available) => { if (installButton) installButton.hidden = !available; });
+  installButton?.addEventListener("click", () => requestInstall());
 }
 
 function renderAvatar(user) {
   if (!user) return "";
-  if (user.profileImage) {
-    return `<span class="nav-avatar"><img src="${escapeHtml(user.profileImage)}" alt="" /></span>`;
-  }
+  if (user.profileImage) return `<span class="nav-avatar"><img src="${escapeHtml(user.profileImage)}" alt="" /></span>`;
   return `<span class="nav-avatar">${makeInitials(user.name)}</span>`;
 }
-
-function currentFile() {
-  const file = window.location.pathname.split("/").pop();
-  return file || "index.html";
-}
-
-function navLink(label, href, file) {
-  return `<a class="${currentFile() === file ? "is-active" : ""}" href="${href}">${label}</a>`;
-}
-
-function mobileLink(label, href, file, icon) {
-  return `<a class="${currentFile() === file ? "is-active" : ""}" href="${href}">${icon}<span>${label}</span></a>`;
-}
-
-function makeInitials(name) {
-  return String(name ?? "UG").trim().split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase() ?? "").join("") || "UG";
-}
-
-function svg(path) {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
-}
-const homeIcon = () => svg('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/>');
-const compassIcon = () => svg('<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/>');
-const mapPinIcon = () => svg('<path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/>');
-const ticketIcon = () => svg('<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V7Z"/><path d="M12 8.5v7"/>');
-const userIcon = () => svg('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.7-4 3-6 6.5-6s5.8 2 6.5 6"/>');
-
-function escapeHtml(value) {
-  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
-}
+function currentFile() { const file=window.location.pathname.split("/").pop(); return file||"index.html"; }
+function navLink(label,href,file){return `<a class="${currentFile()===file?"is-active":""}" href="${href}">${label}</a>`;}
+function mobileLink(label,href,file,icon){return `<a class="${currentFile()===file?"is-active":""}" href="${href}">${icon}<span>${label}</span></a>`;}
+function makeInitials(name){return String(name??"UG").trim().split(/\s+/).slice(0,2).map((part)=>part[0]?.toUpperCase()??"").join("")||"UG";}
+function svg(path){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;}
+const homeIcon=()=>svg('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5"/>');
+const compassIcon=()=>svg('<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/>');
+const mapPinIcon=()=>svg('<path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/>');
+const ticketIcon=()=>svg('<path d="M4 7h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V7Z"/><path d="M12 8.5v7"/>');
+const userIcon=()=>svg('<circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.7-4 3-6 6.5-6s5.8 2 6.5 6"/>');
+function escapeHtml(value){return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");}

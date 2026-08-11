@@ -1674,3 +1674,318 @@ This phase makes the Uganda Map the intentional bridge between discovery and det
 
 ### Database
 No PostgreSQL migration is required for Phase 8.11.
+
+---
+
+## Phase 9 — Final Features and Production Readiness
+
+Phase 9 is the pre-deployment completion pass. It deliberately avoids adding another large tourism subsystem and instead finishes the user/account experience, introduces operator tools, hardens the public API, and supplies deployment/backup/SEO tooling.
+
+### Saved Places / Favorites
+
+Logged-in users can now save both major destinations and attractions. Saved state is stored in PostgreSQL rather than browser storage and appears through heart controls on discovery cards, Destination Details and map callouts.
+
+New REST endpoints:
+
+```text
+GET    /api/saved
+GET    /api/saved/status?placeType=destination|attraction&placeId=<id>
+POST   /api/saved
+DELETE /api/saved/:placeType/:id
+```
+
+New frontend page:
+
+```text
+frontend/pages/saved.html
+```
+
+The navbar exposes **Saved** on desktop; mobile users can reach Saved through Profile while keeping the bottom navigation concise.
+
+### Trip planning terminology
+
+The underlying compatibility endpoint remains `/api/bookings`, but the user-facing product now describes these records as **My Trips / Planned Visits**. A saved trip is a personal plan containing a destination, date and traveller count; it is not presented as a confirmed hotel, tour-operator, payment or transport reservation.
+
+### HttpOnly cookie sessions
+
+Browser bearer-token storage has been retired. Login and signup create an expiring server-side session and set the random session identifier as an HttpOnly cookie. Frontend JavaScript uses `credentials: "include"` and never reads the session token.
+
+Production defaults:
+
+- `Secure` cookies;
+- `SameSite=Lax` unless intentionally configured otherwise;
+- host-only `__Host-ugotour_session` cookie when no explicit cookie name is supplied;
+- seven-day session expiry by default (configurable, capped by backend logic);
+- database checks reject expired sessions;
+- password changes and password resets invalidate existing sessions.
+
+Bearer headers remain accepted for API tooling/backwards compatibility but the browser does not use them.
+
+### Cross-site request protection
+
+Credentialed CORS now reflects only an exact configured origin (plus localhost during development). Browser write requests are additionally rejected when Fetch Metadata reports `cross-site`, or when an explicit `Origin` is not trusted. This complements the session cookie's SameSite policy.
+
+The recommended deployment topology is a same-origin `/api` reverse proxy. The production frontend API client therefore defaults to:
+
+```text
+https://your-site.example/api
+```
+
+instead of accidentally pointing deployed visitors at localhost.
+
+### Password recovery
+
+New pages:
+
+```text
+frontend/pages/forgot-password.html
+frontend/pages/reset-password.html
+```
+
+New API routes:
+
+```text
+POST /api/auth/password-reset/request
+POST /api/auth/password-reset/confirm
+```
+
+Reset tokens are generated with cryptographic randomness but only a SHA-256 token hash is stored in PostgreSQL. Links expire after 30 minutes and are single-use. A successful reset updates the password hash and removes all user sessions.
+
+Development prints the reset URL in the backend terminal. Production email delivery is implemented through the Resend Email API when `RESEND_API_KEY` and `PASSWORD_RESET_FROM` are configured. Public reset-request responses remain generic so account existence is not intentionally disclosed.
+
+### Informational, support and legal pages
+
+Added:
+
+```text
+frontend/pages/about.html
+frontend/pages/help.html
+frontend/pages/contact.html
+frontend/pages/privacy.html
+frontend/pages/terms.html
+```
+
+The Contact form writes messages into PostgreSQL. Privacy and Terms are explicit pre-deployment templates and should be reviewed for the jurisdiction in which UgoTour is publicly operated.
+
+### Admin/content management
+
+The `users` table now supports `role = user | admin`. Admin endpoints are protected by server-side role checks, not merely hidden navigation.
+
+Admin capabilities include:
+
+- summary counts;
+- view/add/edit major destinations;
+- view/add/edit attractions;
+- change map coordinates and local image paths;
+- publish/hide tourism records through `is_active`;
+- review Contact messages and mark them new/read/closed.
+
+The current local-image architecture means the Admin UI manages the image **path** rather than uploading arbitrary production binaries. New images should still go through the curated `frontend/images/` + optimization/source-credit workflow.
+
+Grant an existing account admin access from `backend`:
+
+```powershell
+npm run admin:grant -- user@example.com
+```
+
+### Phase 9 database migration
+
+`008_phase9_predeployment_features.sql` is additive and preserves existing users, trips, destinations and attractions. It adds:
+
+```text
+users.role
+sessions.expires_at
+destinations.is_active / updated_at
+attractions.is_active / updated_at
+saved_places
+password_reset_tokens
+contact_messages
+```
+
+plus supporting constraints and indexes.
+
+For an existing database already through migration 007:
+
+```powershell
+cd backend
+psql -U ugotour_user -h localhost -p 5432 -d ugotour_db -f ..\database\migrations\008_phase9_predeployment_features.sql
+```
+
+### API hardening
+
+The custom Node.js API now includes:
+
+- configurable JSON-body size limit;
+- general rate limiting;
+- tighter authentication/password-reset rate limiting;
+- Contact-form rate limiting;
+- exact credentialed CORS allowlisting;
+- Fetch-Metadata/origin checks for browser writes;
+- request IDs;
+- structured JSON request/error logging;
+- safe generic production 500 responses;
+- `X-Content-Type-Options`;
+- `Referrer-Policy`;
+- `Permissions-Policy`;
+- no-store API response policy;
+- graceful shutdown that closes the PostgreSQL pool;
+- server request/header/keep-alive timeouts.
+
+The in-memory limiter is suitable for this single-instance prototype/deployment tier. A future horizontally scaled deployment should move rate-limit counters into shared infrastructure.
+
+### PWA install and update UX
+
+The PWA layer now captures `beforeinstallprompt` and exposes **Install UgoTour** controls when supported. When a new service worker waits, the UI exposes an **Update available** action that activates the new worker and reloads cleanly.
+
+The final service-worker cache is:
+
+```text
+ugotour-v1-0-0
+```
+
+Navigation uses network-first behavior with `offline.html` fallback. JavaScript/CSS are network-first, optimized local images become cache-first after use, and OpenStreetMap tiles/API responses are explicitly excluded from PWA caching.
+
+### Performance/image delivery
+
+The project retains original high-resolution tourism sources for quality and provenance, while normal browser paths resolve raster images to generated WebP assets under:
+
+```text
+frontend/images/optimized/
+```
+
+Final optimization pass:
+
+```text
+103 raster source images
+~166 MB source raster bytes
+~40 MB optimized WebP bytes
+~76% transfer-size reduction
+```
+
+Off-screen destination/trip images use lazy loading. The Home opening image is eager/high-priority and preloaded because it is the initial visual/LCP candidate.
+
+The development-only Tailwind browser CDN was removed because the final UI is already implemented in project CSS; this avoids shipping a runtime development compiler to users.
+
+### Accessibility pass
+
+Phase 9 adds/reinforces:
+
+- skip-to-content navigation;
+- visible `:focus-visible` treatment;
+- semantic main landmarks;
+- accessible names on map/profile/save controls;
+- live regions for form/status feedback;
+- keyboard-accessible links/buttons/dialog controls;
+- reduced-motion support retained from earlier animation phases.
+
+### SEO tooling
+
+Public pages have page-specific titles/descriptions and private/account pages are `noindex,nofollow` where appropriate. Once the final public domain is known, run:
+
+```powershell
+npm run seo:build -- https://your-domain.example
+```
+
+This produces deployment-specific `frontend/sitemap.xml` and `frontend/robots.txt`. Dynamic personal pages are excluded.
+
+### Backups and operational monitoring
+
+Added Windows backup helper:
+
+```powershell
+.\scripts\backup-db.ps1
+```
+
+It creates a PostgreSQL custom-format dump through `pg_dump`. Production should schedule backups (or enable managed-provider backups) and periodically test restoration.
+
+The backend now emits structured request logs with request ID, method, path, response status and duration. `/health` verifies database connectivity and reports the runtime environment/timestamp for uptime checks.
+
+### Production configuration
+
+A root `.env.example` documents database, cookie, CORS, rate-limit and password-reset settings. `backend/start.js` contains a zero-dependency local `.env` loader; environment variables supplied by a hosting provider take precedence.
+
+Before public deployment configure at minimum:
+
+```text
+APP_ENV=production
+DATABASE_URL=...
+CORS_ALLOWED_ORIGINS=https://your-domain.example
+COOKIE_SECURE=true
+COOKIE_SAME_SITE=Lax
+PUBLIC_APP_URL=https://your-domain.example
+RESEND_API_KEY=...
+PASSWORD_RESET_FROM=...
+```
+
+The preferred setup serves the frontend and API through the same HTTPS site, forwarding `/api/*` to Node.js. If frontend/API origins are intentionally split, CORS, the browser API base and CSP must be configured for those exact origins.
+
+### Final validation commands
+
+From the project root:
+
+```powershell
+npm run backend:check
+npm run assets:verify
+npm run predeploy:check
+npm run security:smoke
+```
+
+With PostgreSQL running, from `backend`:
+
+```powershell
+npm run db:test
+npm run map:verify
+```
+
+After the production domain is known:
+
+```powershell
+npm run seo:build -- https://your-domain.example
+```
+
+### Phase 9 key files added
+
+```text
+.env.example
+backend/start.js
+backend/src/controllers/admin-controller.js
+backend/src/controllers/contact-controller.js
+backend/src/controllers/password-reset-controller.js
+backend/src/controllers/saved-controller.js
+backend/src/services/admin-service.js
+backend/src/services/contact-service.js
+backend/src/services/password-reset-service.js
+backend/src/services/saved-service.js
+backend/src/middleware/rate-limit.js
+backend/src/middleware/security.js
+backend/src/utils/cookies.js
+backend/src/database/grant-admin.js
+database/migrations/008_phase9_predeployment_features.sql
+frontend/offline.html
+frontend/pages/saved.html
+frontend/pages/forgot-password.html
+frontend/pages/reset-password.html
+frontend/pages/about.html
+frontend/pages/help.html
+frontend/pages/contact.html
+frontend/pages/privacy.html
+frontend/pages/terms.html
+frontend/pages/admin.html
+frontend/js/services/saved-service.js
+frontend/js/services/contact-service.js
+frontend/js/services/admin-service.js
+frontend/js/pages/saved.js
+frontend/js/pages/forgot-password.js
+frontend/js/pages/reset-password.js
+frontend/js/pages/contact.js
+frontend/js/pages/admin.js
+frontend/js/pages/static-page.js
+scripts/optimize-images.py
+scripts/build-seo.js
+scripts/backup-db.ps1
+scripts/predeploy-check.js
+```
+
+### Phase 9 status
+
+The application code is now at its final pre-deployment feature stage. Actual deployment still requires infrastructure-specific values that cannot be embedded safely in a downloadable ZIP: the public domain, production PostgreSQL connection, HTTPS/reverse-proxy configuration, email-provider credentials, and final legal review.

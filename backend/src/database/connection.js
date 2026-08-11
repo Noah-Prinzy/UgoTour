@@ -2,29 +2,29 @@ import pg from "pg";
 
 const { Pool } = pg;
 
-// PHASE 6: PostgreSQL connection pool.
-//
-// `pg` is the small Node.js PostgreSQL driver we installed with:
-//   npm install pg
-//
-// A Pool keeps reusable database connections available instead of opening a
-// completely new connection for every API request.
-//
-// For this local-learning phase we provide the values you created in psql as
-// defaults. Environment variables can override them later during deployment.
-const database = new Pool({
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT || 5432),
-  database: process.env.DB_NAME || "ugotour_db",
-  user: process.env.DB_USER || "ugotour_user",
-  password: process.env.DB_PASSWORD || "UgoTour_dev_2026!"
-});
+const useSsl = String(process.env.DB_SSL || "").toLowerCase() === "true";
+const common = {
+  max: Number(process.env.DB_POOL_MAX || 10),
+  idleTimeoutMillis: Number(process.env.DB_IDLE_TIMEOUT_MS || 30_000),
+  connectionTimeoutMillis: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10_000),
+  ssl: useSsl ? { rejectUnauthorized: false } : undefined
+};
 
-// If a connection becomes unhealthy while sitting inside the pool, pg emits
-// an error event. Logging it gives us a useful diagnostic instead of allowing
-// the failure to go unnoticed.
+// Deployment platforms commonly expose one DATABASE_URL. Local development can
+// keep using the explicit variables below.
+const database = process.env.DATABASE_URL
+  ? new Pool({ connectionString: process.env.DATABASE_URL, ...common })
+  : new Pool({
+      host: process.env.DB_HOST || "localhost",
+      port: Number(process.env.DB_PORT || 5432),
+      database: process.env.DB_NAME || "ugotour_db",
+      user: process.env.DB_USER || "ugotour_user",
+      password: process.env.DB_PASSWORD || "UgoTour_dev_2026!",
+      ...common
+    });
+
 database.on("error", (error) => {
-  console.error("Unexpected PostgreSQL pool error:", error);
+  console.error(JSON.stringify({ level: "error", type: "postgres_pool", message: error.message, at: new Date().toISOString() }));
 });
 
 export default database;

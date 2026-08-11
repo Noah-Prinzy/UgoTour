@@ -63,10 +63,10 @@ function createBookingCard(booking) {
       <dl class="booking-meta-grid">
         <div><dt>Travel date</dt><dd>${formatDate(booking.travelDate)}</dd></div>
         <div><dt>Travellers</dt><dd>${booking.travellers}</dd></div>
-        <div><dt>Status</dt><dd>${escapeHtml(booking.status || "confirmed")}</dd></div>
+        <div><dt>Status</dt><dd>${escapeHtml(booking.status || "planned")}</dd></div>
         <div><dt>Account</dt><dd>${escapeHtml(currentUser?.email || "Current user")}</dd></div>
       </dl>
-      <button class="cancel-booking-button" type="button" data-cancel-booking="${booking.id}">Cancel booking</button>
+      <button class="cancel-booking-button" type="button" data-cancel-booking="${booking.id}">Remove trip</button>
     </div>`;
   return article;
 }
@@ -81,9 +81,9 @@ bookingList?.addEventListener("click", async (event) => {
     await cancelBooking(button.dataset.cancelBooking);
     bookings = bookings.filter((booking) => booking.id !== Number(button.dataset.cancelBooking));
     renderBookings();
-    if (bookingStatus) bookingStatus.textContent = "Booking cancelled.";
+    if (bookingStatus) bookingStatus.textContent = "Trip removed.";
   } catch (error) {
-    button.disabled = false; button.textContent = "Cancel booking";
+    button.disabled = false; button.textContent = "Remove trip";
     if (bookingStatus) bookingStatus.textContent = error.message;
   }
 });

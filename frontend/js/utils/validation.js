@@ -12,10 +12,9 @@ export function isNotEmpty(value) {
   return String(value).trim().length > 0;
 }
 
-// The frontend mirrors the backend learning rule: at least 8 characters.
-// The backend remains the final authority and validates the password again.
-export function isValidPassword(password) {
-  return typeof password === "string" && password.length >= 8;
+// The frontend mirrors the backend minimum while the backend remains the final authority.
+export function isValidPassword(password, minimumLength = 10) {
+  return typeof password === "string" && password.length >= minimumLength && password.length <= 128;
 }
 
 export function passwordsMatch(password, confirmation) {

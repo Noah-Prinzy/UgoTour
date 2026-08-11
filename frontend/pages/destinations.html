@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Browse Uganda destinations with UgoTour." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/main.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/components.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.11.0" />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <title>Destinations | UgoTour</title>
 </head>
 <body class="dashboard-page destinations-page">
   <header id="site-header"></header>
-  <main class="dashboard-main">
+  <main id="main-content" class="dashboard-main">
     <section class="discovery-dashboard" aria-labelledby="catalog-heading">
       <div class="dashboard-heading-row">
         <div>
@@ -65,7 +67,7 @@
           <p class="section-kicker">Your journeys</p>
           <h2>Upcoming trips</h2>
           <div id="journey-panel-list" class="journey-panel-list"></div>
-          <a href="./bookings.html">View all bookings →</a>
+          <a href="./bookings.html">View all trips →</a>
         </aside>
       </div>
     </section>

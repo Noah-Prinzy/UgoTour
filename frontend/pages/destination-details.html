@@ -3,21 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="../css/main.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/components.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.11.0" />
-  <meta name="description" content="Explore a UgoTour destination and create a booking." />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <meta name="description" content="Explore a UgoTour destination and plan a trip." />
   <title>Destination Details | UgoTour</title>
 </head>
 <body class="visual-page details-page">
   <header id="site-header"></header>
-  <main>
+  <main id="main-content">
     <section id="destination-details-shell" class="details-shell">
       <div id="details-experience" class="details-experience">
         <img id="details-bg-a" class="details-experience-bg is-active" src="" alt="" aria-hidden="true" />
@@ -86,7 +87,7 @@
               <div><p class="section-kicker">Plan your visit</p><h2 id="booking-heading">Make the journey real.</h2></div>
             </div>
             <p class="booking-panel-copy">Choose your date and travel party. We will keep the trip with your UgoTour account.</p>
-            <p id="booking-login-note" class="form-message form-message-error" hidden>You need to <a href="./login.html"><strong>login</strong></a> before booking.</p>
+            <p id="booking-login-note" class="form-message form-message-error" hidden>You need to <a href="./login.html"><strong>login</strong></a> before saving a trip plan.</p>
             <form id="booking-form" class="booking-form" novalidate>
               <label><span>Full name</span><input id="booking-name" name="name" type="text" autocomplete="name" /></label>
               <label><span>Email</span><input id="booking-email" name="email" type="email" autocomplete="email" /></label>

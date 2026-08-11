@@ -1,7 +1,7 @@
 import { getCurrentUser } from "./auth-service.js";
 
-// Every application page validates the bearer token against GET /api/profile.
-// A stored token is only a session hint; the API remains the source of truth.
+// Protected application pages validate the HttpOnly cookie session through GET /api/profile.
+// The API remains the source of truth; frontend JavaScript never reads the session token.
 export async function requireAuthenticatedUser(basePath = ".") {
   const user = await getCurrentUser().catch((error) => {
     console.error("Could not validate the UgoTour session:", error);

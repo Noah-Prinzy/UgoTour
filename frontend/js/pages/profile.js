@@ -29,6 +29,7 @@ async function renderProfile() {
   setText("profile-display-name", currentUser.name);
   setText("profile-display-email", currentUser.email);
   setText("profile-member-since", formatDate(currentUser.createdAt));
+  document.getElementById("profile-admin-link")?.toggleAttribute("hidden", currentUser.role !== "admin");
   const name = document.getElementById("profile-name"); const email = document.getElementById("profile-email");
   if (name) name.value = currentUser.name; if (email) email.value = currentUser.email;
   renderAvatar(currentUser.profileImage);
@@ -46,7 +47,7 @@ profileForm?.addEventListener("submit", async (event) => {
   const button = profileForm.querySelector('button[type="submit"]'); if (button) button.disabled = true;
   const result = await updateCurrentUserProfile({ name: document.getElementById("profile-name")?.value ?? "", email: document.getElementById("profile-email")?.value ?? "" });
   showMessage("profile-message", result.message, result.success);
-  if (result.success) { currentUser = result.user; await renderProfile(); await renderNavbar(".."); }
+  if (result.success) { currentUser = result.user; await renderProfile(); await renderNavbar("..", currentUser); }
   if (button) button.disabled = false;
 });
 
@@ -59,7 +60,13 @@ passwordForm?.addEventListener("submit", async (event) => {
   const button = passwordForm.querySelector('button[type="submit"]'); if (button) button.disabled = true;
   const result = await changeCurrentUserPassword(currentPassword, newPassword);
   showMessage("password-message", result.message, result.success);
-  if (result.success) passwordForm.reset();
+  if (result.success) {
+    passwordForm.reset();
+    if (result.reauthRequired) {
+      window.setTimeout(() => window.location.replace("./login.html"), 900);
+      return;
+    }
+  }
   if (button) button.disabled = false;
 });
 

@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Explore Uganda through UgoTour's interactive tourism map." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <link rel="stylesheet" href="../css/main.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/components.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.11.0" />
-  <link rel="stylesheet" href="../css/map.css?v=8.11.0" />
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/map.css?v=9.0.0" />
   <title>Map | UgoTour</title>
 </head>
 <body class="map-page">
   <header id="site-header"></header>
 
-  <main class="map-main">
+  <main id="main-content" class="map-main">
     <section class="map-stage" aria-label="Interactive map of Uganda tourism locations">
       <div id="uganda-map" class="uganda-map" role="region" aria-label="Uganda tourism map"></div>
 
@@ -72,7 +74,7 @@
           <h2 id="map-place-name"></h2>
           <p id="map-place-location" class="map-place-location"></p>
           <p id="map-place-description"></p>
-          <a id="map-place-details" class="map-details-link" href="#">View details <span aria-hidden="true">→</span></a>
+          <div class="map-callout-actions"><button id="map-place-save" class="map-place-save" type="button" aria-pressed="false">♡ Save</button><a id="map-place-details" class="map-details-link" href="#">View details <span aria-hidden="true">→</span></a></div>
         </div>
       </article>
     </section>
