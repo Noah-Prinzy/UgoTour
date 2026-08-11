@@ -1559,6 +1559,128 @@
   font-size: .72rem;
 }
 
+/* The homepage discovery step is one full-bleed photographic hero. Search and
+   mood-led browsing share this surface instead of competing as separate cards. */
+.home-search-hero {
+  position: relative;
+  width: 100%;
+  min-height: clamp(690px, 84vh, 900px);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: url("../images/optimized/destinations/lake-bunyonyi/lake-bunyonyi-01.webp") center 52% / cover no-repeat;
+  color: var(--white);
+}
+
+/* The lower mood section shares the fixed journey slideshow. Its shade remains
+   for legibility, but this opt-in class removes only the static photo layer. */
+.page-home .home-search-hero.home-search-slideshow-through {
+  background-color: transparent;
+  background-image: none;
+}
+
+.home-search-hero-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7,14,8,.9) 0%, rgba(7,14,8,.64) 54%, rgba(7,14,8,.3) 100%),
+    linear-gradient(0deg, rgba(7,14,8,.82) 0%, transparent 58%);
+}
+
+.home-search-hero-inner {
+  position: relative;
+  z-index: 1;
+  width: min(var(--page-width), calc(100% - 64px));
+  margin-inline: auto;
+  padding: clamp(82px, 9vw, 126px) 0 clamp(64px, 7vw, 92px);
+}
+
+.home-search-hero .home-search-copy { max-width: 790px; }
+.home-search-hero .section-kicker { color: rgba(221,235,180,.9); }
+
+.home-search-hero .home-search-copy h2 {
+  max-width: 760px;
+  margin: 12px 0 26px;
+  font-size: clamp(3.25rem, 7vw, 6.8rem);
+  line-height: .88;
+  letter-spacing: -.065em;
+}
+
+.home-search-support-title {
+  display: block;
+  font-size: clamp(1.1rem, 1.8vw, 1.45rem);
+}
+
+.home-search-support-copy {
+  max-width: 510px;
+  margin: 7px 0 0;
+  color: rgba(255,255,255,.72);
+  line-height: 1.6;
+}
+
+.home-search-hero .home-search-control {
+  max-width: 720px;
+  margin-top: 30px;
+}
+
+.home-search-hero .home-search-control .search-box {
+  padding: 7px;
+  border: 1px solid rgba(255,255,255,.22);
+  background: rgba(251,250,246,.94);
+  box-shadow: 0 20px 55px rgba(0,0,0,.24);
+}
+
+.home-search-hero .home-search-control #search-message { color: rgba(255,255,255,.72); }
+
+.travel-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: clamp(42px, 6vw, 70px);
+}
+
+.travel-mood-card {
+  min-height: 155px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 22px;
+  background: rgba(12,20,12,.4);
+  backdrop-filter: blur(14px);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.travel-mood-card:hover,
+.travel-mood-card:focus-visible {
+  transform: translateY(-5px);
+  border-color: rgba(221,235,180,.72);
+  background: rgba(27,43,24,.72);
+}
+
+.travel-mood-card:focus-visible {
+  outline: 3px solid rgba(221,235,180,.86);
+  outline-offset: 3px;
+}
+
+.travel-mood-card > span {
+  margin-bottom: auto;
+  color: rgba(221,235,180,.72);
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.travel-mood-card strong { font-size: 1rem; }
+
+.travel-mood-card p {
+  margin: 5px 0 0;
+  color: rgba(255,255,255,.62);
+  font-size: .72rem;
+  line-height: 1.45;
+}
+
 /* Exact-location thumbnail stack on Destination Details, inspired by the
    reference video's persistent card rail and the user's earlier mobile UI. */
 .details-gallery {
@@ -1665,19 +1787,104 @@
 /* The hero and content are now two clean resting screens. JavaScript does not
    continuously map scroll pixels to opacity. Instead, one deliberate scroll /
    swipe gesture plays the complete transition and lands exactly on Search. */
+.page-home #main-content {
+  position: relative;
+  isolation: isolate;
+}
+
+.page-home .home-background-slideshow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--forest-950);
+}
+
+.page-home .home-background-slideshow .journey-bg,
+.page-home .home-background-slideshow .journey-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.page-home .home-page-content {
+  position: relative;
+  z-index: 1;
+}
+
+.page-home #site-footer {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin: 0;
+  border-top-color: rgba(255, 255, 255, .18);
+  background: rgba(8, 13, 7, .76);
+  color: var(--white);
+  backdrop-filter: blur(12px);
+}
+
+.page-home #site-footer p,
+.page-home #site-footer .footer-links a {
+  color: rgba(255, 255, 255, .74);
+}
+
+.page-home #site-footer .footer-links a:hover,
+.page-home #site-footer .footer-links a:focus-visible {
+  color: var(--white);
+}
+
+.page-home #site-footer .install-app-button {
+  border-color: rgba(255, 255, 255, .34);
+  background: rgba(255, 255, 255, .1);
+  color: var(--white);
+}
+
 .page-home .home-hero-transition {
   position: relative;
   width: 100%;
   height: 100vh;
   height: 100svh;
   min-height: 660px;
-  background: var(--forest-950);
+  background: transparent;
 }
 
 .page-home .journey-slider {
   position: relative;
   top: auto;
+  background: transparent;
   will-change: opacity, transform, filter;
+}
+
+@media (orientation: landscape) and (max-width: 980px) and (max-height: 560px) {
+  .page-home #main-content .home-hero-transition,
+  .page-home #main-content .journey-slider {
+    height: 100svh;
+    min-height: 100svh !important;
+  }
+
+  .page-home #main-content .journey-stage {
+    min-height: 100svh;
+    gap: 8px !important;
+    padding: calc(max(8px, env(safe-area-inset-top)) + 68px) 18px calc(12px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .page-home #main-content .journey-rail-area {
+    height: 88px;
+    min-height: 0;
+  }
+
+  .page-home #main-content .journey-cards {
+    height: 82px;
+  }
+
+  .page-home #main-content .journey-scroll-cue {
+    display: none;
+  }
 }
 
 .page-home .journey-stage,
@@ -1699,10 +1906,10 @@ html.home-handoff-running body {
   z-index: 8;
   min-height: 100vh;
   margin-top: 0;
-  padding: 42px 0 72px;
+  padding: 0 0 72px;
   overflow: clip;
   border-radius: 46px 46px 0 0;
-  background: var(--cream-100);
+  background: linear-gradient(180deg, rgba(8, 13, 7, .18), rgba(8, 13, 7, .34));
   box-shadow: 0 -34px 90px rgba(8, 13, 7, .2);
 }
 
@@ -1714,11 +1921,17 @@ html.home-handoff-running body {
   width: 54px;
   height: 4px;
   border-radius: 999px;
-  background: rgba(23, 33, 20, .18);
+  background: rgba(255, 255, 255, .46);
   transform: translateX(-50%);
 }
 
-.page-home .home-content-surface .home-search-band { margin-top: 0; }
+.page-home .home-content-surface .home-search-hero { margin-top: 0; }
+
+.page-home .home-content-surface > .section-shell .section-kicker,
+.page-home .home-content-surface > .section-shell .section-heading h2 {
+  color: var(--white);
+  text-shadow: 0 2px 20px rgba(8, 13, 7, .46);
+}
 
 .page-home .journey-cards {
   position: relative;

@@ -117,6 +117,15 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   installButtons.forEach((button) => button.addEventListener("click", () => requestInstall()));
 
   initialiseMobileDrawer();
+
+  // Phase 1.15: destination cards are progressively enriched after the shared
+  // navbar is ready. Keeping this page-specific module lazy prevents any
+  // destination-catalogue work from affecting Home, Map, Profile, or auth.
+  if (document.body.classList.contains("destinations-page")) {
+    import("../pages/destination-experience.js").catch((error) => {
+      console.error("Could not load destination experience enhancements:", error);
+    });
+  }
 }
 
 function ensureMobilePhaseOneStyles() {
@@ -133,7 +142,7 @@ function ensureMobilePhaseOneStyles() {
 
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = new URL("../../css/mobile-phase1.css?v=10.9.0", import.meta.url).href;
+  link.href = new URL("../../css/mobile-phase1.css?v=11.5.1", import.meta.url).href;
   link.dataset.ugotourMobilePhase = "1";
 
   const ready = new Promise((resolve) => {

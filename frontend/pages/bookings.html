@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://upload.wikimedia.org https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="View and manage your UgoTour trip plans." />
+  <meta name="robots" content="noindex,nofollow" />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
@@ -15,18 +16,17 @@
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <title>My Trips | UgoTour</title>
-  <meta name="robots" content="noindex,nofollow" />
 </head>
-<body class="dashboard-page bookings-page">
+<body class="bookings-page home-reference-page">
   <header id="site-header"></header>
-  <main id="main-content" class="dashboard-main">
-    <section class="section-shell bookings-content-shell dashboard-content-shell">
+  <main id="main-content" class="dashboard-main bookings-main">
+    <section class="bookings-content-shell bookings-editorial-shell">
       <div class="page-content-intro">
-        <div class="page-content-titlebar">
+        <div class="page-content-titlebar bookings-titlebar">
           <div class="page-content-title">
             <p class="section-kicker">Your journeys</p>
             <h1 id="bookings-hero-title">My trips</h1>
-            <p class="section-lead">Personal Uganda trip plans, travel dates and group details in one calm itinerary.</p>
+            <p class="section-lead">Personal Uganda trip plans, travel dates and group details in one clear itinerary.</p>
           </div>
           <div class="bookings-heading-actions">
             <div class="dashboard-count"><strong id="booking-total">0</strong><span>planned visits</span></div>
@@ -36,8 +36,13 @@
         <p id="booking-status" class="catalog-summary booking-status-line" aria-live="polite"></p>
       </div>
       <div id="booking-list" class="booking-list"></div>
-      <div id="booking-auth-state" class="empty-state" hidden><h3>Login required.</h3><p>Your trips are linked to your UgoTour account.</p><a class="primary-button inline-button" href="./login.html">Login</a></div>
-      <div id="booking-empty-state" class="empty-state" hidden><h3>No trips planned yet.</h3><p>Choose a destination and create your first trip plan.</p><a class="primary-button inline-button" href="./destinations.html">Browse destinations</a></div>
+      <div id="booking-auth-state" class="empty-state" hidden>
+        <h3>Login required.</h3><p>Your trips are linked to your UgoTour account.</p><a class="primary-button inline-button" href="./login.html">Login</a>
+      </div>
+      <div id="booking-empty-state" class="empty-state" hidden>
+        <h3>No trips planned yet.</h3><p>Choose a destination and create your first trip plan.</p><a class="primary-button inline-button" href="./destinations.html">Browse destinations</a>
+      </div>
+      <p class="page-background-credit">Background: <a href="https://commons.wikimedia.org/wiki/File:A_road_through_a_green_hilly_landscape_in_Bushenyi_District.jpg" target="_blank" rel="noreferrer">Bushenyi highland road · BalukuBrian · CC BY-SA 4.0</a></p>
     </section>
   </main>
   <footer id="site-footer"></footer>

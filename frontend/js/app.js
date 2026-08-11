@@ -1,7 +1,6 @@
 import "./ui-motion.js";
 import { renderNavbar } from "./components/navbar.js";
 import { renderFooter } from "./components/footer.js";
-import { createDestinationCard } from "./components/destination-card.js";
 import { getAllDestinations } from "./services/destination-service.js";
 import { resolveAssetPath } from "./utils/assets.js";
 import { requireAuthenticatedUser } from "./services/session-guard.js";
@@ -23,7 +22,6 @@ const copyBlock = document.getElementById("journey-copy");
 const counter = document.getElementById("journey-counter");
 const photoCredit = document.getElementById("journey-photo-credit");
 const progressFill = document.getElementById("journey-progress-fill");
-const grid = document.getElementById("experience-grid");
 const searchInput = document.getElementById("destination-search");
 const searchButton = document.getElementById("search-button");
 const searchMessage = document.getElementById("search-message");
@@ -618,16 +616,6 @@ async function initialize() {
     activeBackgroundIndex = 0;
     updateHeroContent(first);
     renderJourneyQueue();
-
-    if (grid) {
-      grid.innerHTML = "";
-      destinations.slice(0, 3).forEach((destination) => {
-        grid.appendChild(createDestinationCard(destination, {
-          detailsPagePath: "./pages/destination-details.html",
-          assetBasePath: "."
-        }));
-      });
-    }
 
     if (searchMessage) searchMessage.textContent = `${destinations.length} destinations ready to explore.`;
     restartAutoplay();

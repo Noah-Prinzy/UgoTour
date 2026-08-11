@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png" />
   <link rel="preload" as="image" href="./images/optimized/destinations/murchison-falls/murchison-01.webp" fetchpriority="high" />
   <link rel="stylesheet" href="./css/main.css?v=9.0.0" />
-  <link rel="stylesheet" href="./css/components.css?v=9.0.0" />
+  <link rel="stylesheet" href="./css/components.css?v=9.0.1" />
   <link rel="stylesheet" href="./css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="./css/responsive.css?v=9.0.0" />
 </head>
@@ -22,8 +22,7 @@
   <header id="site-header"></header>
 
   <main id="main-content">
-    <div id="home-hero-transition" class="home-hero-transition">
-    <section id="journey-slider" class="journey-slider" aria-labelledby="journey-title">
+    <div class="home-background-slideshow" aria-hidden="true">
       <img
         id="journey-bg-a"
         class="journey-bg is-active"
@@ -31,7 +30,6 @@
         loading="eager"
         src="./images/optimized/destinations/murchison-falls/murchison-01.webp"
         alt=""
-        aria-hidden="true"
       />
       <img
         id="journey-bg-b"
@@ -39,9 +37,13 @@
         loading="eager"
         src="./images/optimized/destinations/murchison-falls/murchison-01.webp"
         alt=""
-        aria-hidden="true"
       />
-      <div class="journey-shade" aria-hidden="true"></div>
+      <div class="journey-shade"></div>
+    </div>
+
+    <div class="home-page-content">
+    <div id="home-hero-transition" class="home-hero-transition">
+    <section id="journey-slider" class="journey-slider" aria-labelledby="journey-title">
       <div class="journey-progress" aria-hidden="true"><span id="journey-progress-fill"></span></div>
 
       <div class="journey-stage">
@@ -70,47 +72,36 @@
     </div>
 
     <div id="home-content" class="home-content-surface">
-    <section id="home-search" class="home-search-band" aria-labelledby="home-search-heading">
-      <div class="home-search-copy">
-        <p class="section-kicker">Find your route</p>
-        <h2 id="home-search-heading">Where in Uganda are you heading?</h2>
-      </div>
-      <div class="home-search-control">
-        <label class="sr-only" for="destination-search">Search Uganda destinations</label>
-        <div class="search-box">
-          <input id="destination-search" type="search" placeholder="Search Jinja, Bwindi, Sipi…" autocomplete="off" />
-          <button id="search-button" type="button">Search</button>
+    <section id="home-search" class="home-search-hero home-search-slideshow-through" aria-labelledby="home-search-heading">
+      <div class="home-search-hero-shade" aria-hidden="true"></div>
+      <div class="home-search-hero-inner">
+        <div class="home-search-copy">
+          <p class="section-kicker">Find your route</p>
+          <h2 id="home-search-heading">Where in Uganda are you heading?</h2>
+          <strong class="home-search-support-title">Travel your way</strong>
+          <p class="home-search-support-copy">Pick the mood, then discover a destination that fits it.</p>
         </div>
-        <p id="search-message" aria-live="polite">Loading Uganda destinations…</p>
-      </div>
-    </section>
 
-    <section class="home-discovery-strip" aria-label="Travel themes">
-      <div class="discovery-intro">
-        <strong>Travel your way</strong>
-        <p>Pick the mood, then discover a destination that fits it.</p>
-      </div>
-      <a class="discovery-chip" href="./pages/destinations.html?q=Wildlife">
-        <strong>Wildlife</strong><p>Safari & gorillas</p>
-      </a>
-      <a class="discovery-chip" href="./pages/destinations.html?q=Adventure">
-        <strong>Adventure</strong><p>Nile & mountains</p>
-      </a>
-      <a class="discovery-chip" href="./pages/destinations.html?q=Nature">
-        <strong>Nature</strong><p>Waterfalls & lakes</p>
-      </a>
-    </section>
-
-    <section class="section-shell">
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">More to discover</p>
-          <h2>Uganda, one journey at a time.</h2>
+        <div class="home-search-control">
+          <label class="sr-only" for="destination-search">Search Uganda destinations</label>
+          <div class="search-box">
+            <input id="destination-search" type="search" placeholder="Search Jinja, Bwindi, Sipi…" autocomplete="off" />
+            <button id="search-button" type="button">Search</button>
+          </div>
+          <p id="search-message" aria-live="polite">Loading Uganda destinations…</p>
         </div>
-        <a class="secondary-button" href="./pages/destinations.html">View all destinations →</a>
+
+        <nav class="travel-mood-grid" aria-label="Choose a travel mood">
+          <a class="travel-mood-card" href="./pages/destinations.html?q=Wildlife"><span>01</span><strong>Wildlife</strong><p>Safari & gorillas</p></a>
+          <a class="travel-mood-card" href="./pages/destinations.html?q=Adventure"><span>02</span><strong>Adventure</strong><p>Nile & mountains</p></a>
+          <a class="travel-mood-card" href="./pages/destinations.html?q=Nature"><span>03</span><strong>Nature</strong><p>Forests & waterfalls</p></a>
+          <a class="travel-mood-card" href="./pages/destinations.html?q=Culture"><span>04</span><strong>Culture</strong><p>Heritage & local life</p></a>
+          <a class="travel-mood-card" href="./pages/destinations.html?q=Lake"><span>05</span><strong>Lakeside</strong><p>Islands & quiet shores</p></a>
+          <a class="travel-mood-card" href="./pages/destinations.html?q=City"><span>06</span><strong>City breaks</strong><p>Food, art & energy</p></a>
+        </nav>
       </div>
-      <div id="experience-grid" class="experience-grid"></div>
     </section>
+    </div>
     </div>
   </main>
 

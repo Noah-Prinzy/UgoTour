@@ -1280,7 +1280,7 @@ try {
     focusFromUrl();
     if (!parseFocus()) await showPreviouslyGrantedLocation();
     if (capabilities.routingFallback) {
-      showStatus("Map discovery and directions are ready. Add OPENROUTESERVICE_API_KEY later for production-grade mode-specific routing.");
+      if (statusToast) statusToast.hidden = true;
     }
   }
 } catch (error) {

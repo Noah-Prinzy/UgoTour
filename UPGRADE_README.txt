@@ -1,52 +1,28 @@
-UgoTour Phase 1.14 — Contextual Markers + Live Navigation UX
-============================================================
+UgoTour Phase 1.17 — Dense Catalogue + Home-Reference Pages
 
-This is a cumulative overlay ZIP. Extract it over the existing UgoTour project
-while working on the map-api-upgrade branch. It includes the earlier Phase 1.10–1.13
-frontend/map work plus the Phase 1.14 navigation UX changes.
+Overlay this package on the existing UgoTour project while working on the map-api-upgrade branch.
 
-Phase 1.14 changes
-------------------
-1. Exactly one UgoTour search-clear (×) control. The search field is now a text
-   searchbox so Chromium does not add a second native clear icon.
-2. Calm default map: tourism markers are NOT shown globally. The map shows the
-   user's location when permission is already granted or after My Location is used.
-3. Specific-place search: selecting one result displays only that place marker.
-4. General/area search: displays only results relevant to that area.
-5. Nearby category filters: display only markers for the selected category/context.
-6. Clearing search removes tourism markers and returns to the user's location when
-   available.
-7. Selected marker is enlarged/pulsed and always kept above other result pins.
-8. Marker-to-information-card connector now uses a high-contrast two-pass curve with
-   anchored endpoints, making the selected place much easier to follow visually.
-9. Directions responses now include maneuver steps from openrouteservice or OSRM.
-10. New Start navigation mode uses geolocation.watchPosition for live GPS updates,
-    next-maneuver guidance, remaining distance/time, route progress and up to three
-    upcoming steps.
-11. Optional browser speech synthesis provides spoken navigation instructions.
-12. Off-route detection can request a fresh route after sustained deviation.
-13. Navigation mode hides unrelated tourism markers and keeps only the user's live
-    location, destination marker and route.
+Changes:
+- Destinations uses the Home visual language for its full-screen background and shared navigation treatment, while keeping destination search/filter/catalogue functionality.
+- Destinations background is constant instead of parallax-driven; the text sits directly on the image with no hero-card border.
+- Destination cards use a controlled-random 7/5 and 4/4/4 layout pattern with CSS grid dense packing, eliminating dead grey gaps. Tablet becomes a stable two-column layout and phones a single-column feed.
+- The Map startup/provider setup hint is no longer shown to users. Action/error feedback still appears when relevant.
+- Saved and Bookings now use the same immersive background + Home-style navigation treatment, with angular responsive cards.
+- Home and Profile remain intentionally outside this redesign.
 
-Routing providers
------------------
-OPENROUTESERVICE_API_KEY remains recommended for production-grade driving, walking
-and cycling routes. Without it, the app uses the public OSRM demo road router as a
-prototype fallback. OSRM fallback turn steps are real road maneuvers for driving;
-walking/cycling timing remains estimated until openrouteservice is configured.
+PWA cache: ugotour-v1-13-0
+Responsive UI stylesheet revision: mobile-phase1.css?v=11.2.0
 
-Testing
--------
-1. Restart the Node backend after extraction.
-2. Hard-refresh / clear the old service worker cache once.
-3. Map default: confirm no tourism pins are shown.
-4. Use My Location: confirm the blue location marker appears.
-5. Search a specific place and select it: only that place marker should remain.
-6. Search Kampala as an area: relevant results should appear as map markers and the
-   suggestion panel should close.
-7. Test Attractions / Hotels / Food / Fuel / Health.
-8. Select a place -> Directions -> Start navigation. On a real phone, grant precise
-   location permission and keep the PWA/browser open while testing live guidance.
+After overlaying: restart the backend if it is running, then hard-refresh/clear the old service-worker cache once.
 
-PWA cache: ugotour-v1-10-0
-Responsive UI stylesheet: mobile-phase1.css?v=10.9.0
+
+PHASE 1.18
+-----------
+- Removes the final legacy rounded/photo hero layer from Destinations.
+- Discover Uganda heading/count now sit directly over the one full-screen background.
+- Destinations background: Lake Victoria at Munyonyo (Michael Shade, public domain).
+- Saved background: Kalangala beach, Lake Victoria (Frederick Noronha, CC BY-SA 3.0).
+- Bookings background: Bushenyi highland road (BalukuBrian, CC BY-SA 4.0).
+- Background sources are new to this build and are loaded from Wikimedia Commons.
+- PWA cache: ugotour-v1-14-0.
+- mobile-phase1.css revision: 11.3.0.

@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-v1-10-0";
+const CACHE_NAME = "ugotour-v1-14-2";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest",
@@ -9,7 +9,7 @@ const APP_SHELL = [
   "./js/services/destination-service.js", "./js/services/attraction-service.js", "./js/services/map-service.js",
   "./js/services/saved-service.js", "./js/services/contact-service.js", "./js/services/admin-service.js",
   "./js/utils/validation.js", "./js/utils/assets.js",
-  "./js/pages/destinations.js", "./js/pages/map.js", "./js/pages/destination-details.js", "./js/pages/bookings.js",
+  "./js/pages/destinations.js", "./js/pages/destinations-parallax.js", "./js/pages/destination-experience.js", "./js/pages/map.js", "./js/pages/destination-details.js", "./js/pages/bookings.js",
   "./js/pages/login.js", "./js/pages/signup.js", "./js/pages/profile.js", "./js/pages/saved.js",
   "./js/pages/forgot-password.js", "./js/pages/reset-password.js", "./js/pages/contact.js", "./js/pages/admin.js", "./js/pages/static-page.js", "./js/pages/offline.js",
   "./pages/destinations.html", "./pages/map.html", "./pages/destination-details.html", "./pages/bookings.html",
@@ -18,6 +18,7 @@ const APP_SHELL = [
   "./pages/contact.html", "./pages/privacy.html", "./pages/terms.html", "./pages/admin.html",
   "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
   "./images/optimized/uganda-forest-fallback.webp", "./images/optimized/profile-page-background.webp",
+  "./images/backgrounds/saved-kalangala-beach.jpg", "./images/backgrounds/bookings-bushenyi-road.jpg",
   "./images/optimized/destinations/murchison-falls/murchison-01.webp",
   "./images/optimized/destinations/lake-bunyonyi/lake-bunyonyi-01.webp",
   "./images/optimized/destinations/kidepo/kidepo-04.webp",
