@@ -1,6 +1,6 @@
 {
   "name": "ugotour-backend",
-  "version": "0.8.9",
+  "version": "0.8.11",
   "private": true,
   "type": "module",
   "description": "UgoTour JavaScript/Node.js REST API with PostgreSQL destinations, attractions, bookings and map-ready tourism data",

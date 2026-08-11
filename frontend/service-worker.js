@@ -1,4 +1,4 @@
-const CACHE_NAME = "ugotour-phase8-9-v1";
+const CACHE_NAME = "ugotour-phase8-11-v1";
 
 const APP_SHELL = [
   "./",

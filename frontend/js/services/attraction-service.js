@@ -1,5 +1,10 @@
 import { ApiError, apiRequest } from "../api.js";
 
+export async function getAllAttractions() {
+  const payload = await apiRequest("/attractions");
+  return payload.data;
+}
+
 export async function getAttractionsByDestinationId(destinationId) {
   const payload = await apiRequest(`/destinations/${Number(destinationId)}/attractions`);
   return payload.data;

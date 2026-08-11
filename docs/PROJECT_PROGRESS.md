@@ -1543,3 +1543,134 @@ Uganda. Current GeoNames/OpenStreetMap-derived references place the channel near
 
 Because Phase 8.8 may already have been applied on a developer database, this is
 kept as a new migration rather than silently rewriting migration `006`.
+
+## Phase 8.10 — Immersive Map Canvas & Connected Pin Callouts
+
+Phase 8.10 simplifies the Phase 8.9 map experience after UI review. The tourism
+library, GeoJSON endpoint, coordinates, deep links and PostgreSQL architecture
+remain unchanged; this phase is a focused frontend interaction redesign.
+
+### Map layout redesign
+
+The map is now the complete visual surface of `pages/map.html`, similar to the
+full-screen image treatment used on Home. The page no longer contains the large
+"Explore Uganda" introduction, tourism-library counters, dashboard filter bar,
+left-hand results list, or footer section. The map uses the visible viewport
+(`100svh`) and the normal UgoTour navigation floats above it.
+
+A compact search control and `Fit Uganda` action float directly on the map. The
+page itself does not need to scroll, which keeps the map concise on desktop,
+tablet and mobile.
+
+### Direct tourism pins
+
+All map-ready tourism locations are rendered directly as Leaflet pin icons.
+Phase 8.10 removes marker clustering so destinations and attractions are treated
+as actual geographic pinpoints rather than dashboard results. Major destination
+pins use the UgoTour forest treatment and attraction pins use a warm heritage
+accent. Hovering/focusing a pin shows its place name and selecting it enlarges
+the active marker subtly.
+
+### Search interaction
+
+Search no longer filters a persistent results list. Typing opens a small,
+temporary suggestion surface (maximum six matches). Choosing a result, or
+pressing Enter, flies the map to that tourism location, activates the matching
+pin and opens its place callout. Clearing search closes the active callout and
+returns the map to the Uganda-wide view.
+
+Search still uses the complete GeoJSON properties, including name, category,
+region, district, parent destination, description and highlight.
+
+### Connected information callout
+
+Selecting a marker opens one compact map callout containing:
+
+- local tourism image;
+- destination/attraction type;
+- category;
+- place name;
+- district/region;
+- short description;
+- `View details` when a supported Destination Details route exists.
+
+An SVG connector is positioned between the selected Leaflet marker and the
+callout. JavaScript recalculates the connection whenever the map pans, zooms,
+resizes or finishes a search focus, so the callout remains visually tied to the
+correct pin. On smaller screens the callout settles near the bottom of the map
+and the connector adapts to that layout.
+
+Nested attractions continue linking to their parent destination through
+`destination-details.html?id=<destination>&attraction=<attraction>`. Independent
+attractions with no destination-details route keep their map summary without a
+fake details link.
+
+### Preserved Phase 8.9 architecture
+
+No PostgreSQL migration is required for Phase 8.10. These systems are preserved:
+
+- `GET /api/map/locations` GeoJSON endpoint;
+- 19 major destinations and 41 attractions;
+- all stored latitude/longitude values;
+- Uganda boundary GeoJSON;
+- `map.html?focus=destination:<id>` / `attraction:<id>` deep links;
+- Destination Details `View on map` links;
+- authentication/session gate;
+- bookings and profiles;
+- OpenStreetMap attribution and network-driven tiles.
+
+The service-worker cache advances to `ugotour-phase8-10-v1` so older Phase 8.9
+map HTML/CSS/JavaScript cannot remain stuck in the installed PWA.
+
+### Phase 8.10 files changed
+
+- `frontend/pages/map.html`
+- `frontend/js/pages/map.js`
+- `frontend/css/map.css`
+- `frontend/service-worker.js`
+- `package.json`
+- `backend/package.json`
+- `docs/PROJECT_PROGRESS.md`
+
+### Phase 8.10 checks
+
+- frontend map JavaScript syntax check;
+- backend `npm run check`;
+- map-page structure check confirming removal of the results list/dashboard;
+- marker-cluster dependency removal check;
+- connected-callout element/path checks;
+- service-worker cache version check;
+- ZIP integrity check.
+
+
+---
+
+## Phase 8.11 — Discovery → Map → Details Flow
+
+This phase makes the Uganda Map the intentional bridge between discovery and detailed planning.
+
+### Discovery page
+- The Destinations page now loads both major destinations and attractions from the REST API.
+- The total counter represents the whole tourism library rather than destinations only.
+- Search and category filtering operate across both place types.
+- Major-destination cards link to `map.html?focus=destination:<id>`.
+- Attraction cards link to `map.html?focus=attraction:<id>`.
+- Attractions are displayed in their own image-led discovery section instead of being hidden only inside Destination Details.
+
+### Map callouts
+- Map information callouts are larger, with a larger image, title, description and stronger `View details` action.
+- Major destinations open their normal Destination Details page.
+- Attractions that belong to a destination open the parent Destination Details page without adding an attraction query parameter.
+- Independent attractions without a parent destination use the same Destination Details page in standalone-attraction mode, rather than losing the `View details` action.
+- Therefore arriving from the Map no longer auto-opens the attraction modal.
+
+### Destination Details cleanup
+- The top-level `View on map` button was removed from Destination Details.
+- Automatic popup-on-arrival logic for `?attraction=<id>` was removed.
+- Attraction cards inside Destination Details can still be intentionally opened by the user.
+
+### Navigation model
+`Destinations / Attractions → Map pin + callout → View details → Destination Details`
+
+### Database
+No PostgreSQL migration is required for Phase 8.11.

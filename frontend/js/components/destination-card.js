@@ -4,8 +4,13 @@ import { resolveAssetPath } from "../utils/assets.js";
 // Phase 8.1 uses two exact-location gallery photos so cards feel alive instead
 // of repeating one static image everywhere. The second photo crossfades in on
 // hover/focus while both files remain local inside frontend/images/.
-export function createDestinationCard(destination, { detailsPagePath = null, assetBasePath = "." } = {}) {
-  const detailsUrl = detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null;
+export function createDestinationCard(
+  destination,
+  { detailsPagePath = null, linkUrl = null, assetBasePath = "." } = {}
+) {
+  // `linkUrl` lets discovery surfaces choose a different next step (for
+  // example, Destinations -> Map) without changing cards used elsewhere.
+  const detailsUrl = linkUrl || (detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null);
   const card = document.createElement(detailsUrl ? "a" : "article");
   card.className = "destination-card";
   card.dataset.destinationId = destination.id;

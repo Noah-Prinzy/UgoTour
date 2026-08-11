@@ -8,10 +8,10 @@
   <meta name="description" content="Browse Uganda destinations with UgoTour." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-  <link rel="stylesheet" href="../css/main.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/components.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/animations.css?v=8.8.3" />
-  <link rel="stylesheet" href="../css/responsive.css?v=8.8.3" />
+  <link rel="stylesheet" href="../css/main.css?v=8.11.0" />
+  <link rel="stylesheet" href="../css/components.css?v=8.11.0" />
+  <link rel="stylesheet" href="../css/animations.css?v=8.11.0" />
+  <link rel="stylesheet" href="../css/responsive.css?v=8.11.0" />
   <title>Destinations | UgoTour</title>
 </head>
 <body class="dashboard-page destinations-page">
@@ -24,7 +24,7 @@
           <h1 id="catalog-heading">Discover Uganda</h1>
           <p>Search by place, region or travel style and shape your next journey.</p>
         </div>
-        <div class="dashboard-count"><strong id="catalog-total">0</strong><span>destinations</span></div>
+        <div class="dashboard-count"><strong id="catalog-total">0</strong><span>places</span></div>
       </div>
 
       <div class="catalog-controls catalog-controls-elevated">
@@ -43,7 +43,22 @@
             <p id="destination-summary" class="catalog-summary" aria-live="polite"></p>
           </div>
           <div id="destination-list" class="experience-grid destination-grid"></div>
-          <div id="destination-empty-state" class="empty-state" hidden><h3>No destination found.</h3><p>Try another search or reset your filters.</p></div>
+
+          <section class="attraction-discovery-section" aria-labelledby="all-attractions-heading">
+            <div class="dashboard-section-heading attraction-discovery-heading">
+              <div>
+                <p class="section-kicker">Places within the journey</p>
+                <h2 id="all-attractions-heading">Attractions &amp; experiences</h2>
+              </div>
+              <p id="attraction-summary" class="catalog-summary" aria-live="polite"></p>
+            </div>
+            <div id="attraction-list" class="attraction-discovery-grid"></div>
+          </section>
+
+          <div id="destination-empty-state" class="empty-state" hidden>
+            <h3>No matching place found.</h3>
+            <p>Try another search or reset your filters.</p>
+          </div>
         </section>
 
         <aside id="journey-panel" class="journey-panel" hidden>

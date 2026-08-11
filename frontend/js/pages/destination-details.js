@@ -2,7 +2,7 @@ import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import { getDestinationById } from "../services/destination-service.js";
-import { getAttractionsByDestinationId } from "../services/attraction-service.js";
+import { getAttractionById, getAttractionsByDestinationId } from "../services/attraction-service.js";
 import { createBooking } from "../services/booking-service.js";
 import { isFutureOrToday, isValidTravellerCount } from "../utils/validation.js";
 import { resolveAssetPath } from "../utils/assets.js";
@@ -13,8 +13,8 @@ await renderNavbar("..", currentUser);
 renderFooter();
 
 const params = new URLSearchParams(window.location.search);
-const destinationId = Number(params.get("id"));
-const focusedAttractionId = Number(params.get("attraction")) || null;
+const destinationId = Number(params.get("id")) || null;
+const standaloneAttractionId = destinationId ? null : (Number(params.get("attraction")) || null);
 const bookingForm = document.getElementById("booking-form");
 const bookingDate = document.getElementById("booking-date");
 const bookingTravellers = document.getElementById("booking-travellers");
@@ -47,6 +47,32 @@ let autoplayTimer = null;
 async function initializePage() {
   prepareBookingDateInput();
   try {
+    // Independent attractions (those without a parent destination) still use
+    // this full-page details experience. This avoids sending map users into a
+    // modal while keeping every map callout's "View details" action useful.
+    if (standaloneAttractionId) {
+      const attraction = await getAttractionById(standaloneAttractionId);
+      if (!attraction) {
+        setText("details-name", "Attraction not found");
+        setText("details-description", "This attraction could not be loaded from the UgoTour API.");
+        document.querySelector(".booking-panel")?.setAttribute("hidden", "");
+        return;
+      }
+
+      destination = {
+        ...attraction,
+        activities: [attraction.highlight || `Explore ${attraction.name}`],
+        bestFor: attraction.category || "Uganda explorers",
+        suggestedDays: 1,
+        travelTip: "Use the UgoTour map to understand the surrounding region and confirm current visitor arrangements before travelling."
+      };
+
+      renderDestination(destination);
+      document.querySelector(".booking-panel")?.setAttribute("hidden", "");
+      document.getElementById("details-attractions-section")?.setAttribute("hidden", "");
+      return;
+    }
+
     destination = await getDestinationById(destinationId);
 
     if (!destination) {
@@ -62,10 +88,6 @@ async function initializePage() {
     try {
       const attractions = await getAttractionsByDestinationId(destinationId);
       renderAttractions(attractions);
-      if (focusedAttractionId) {
-        const focusedAttraction = attractions.find((item) => Number(item.id) === focusedAttractionId);
-        if (focusedAttraction) window.setTimeout(() => openAttraction(focusedAttraction), 180);
-      }
     } catch (error) {
       console.warn("Attractions are not available from this API process yet.", error);
     }
@@ -135,9 +157,6 @@ function renderDestination(item) {
   setText("details-days", item.suggestedDays ? `${item.suggestedDays} day${item.suggestedDays === 1 ? "" : "s"}` : "Flexible");
   setText("details-best-for", item.bestFor || "Curious travellers");
   setText("details-travel-tip", item.travelTip || "Plan ahead and leave room for spontaneous discoveries.");
-  const mapLink = document.getElementById("details-map-link");
-  if (mapLink) mapLink.href = `./map.html?focus=destination:${Number(item.id)}`;
-
   initializeDestinationGallery(item);
 
   const activities = document.getElementById("details-activities");
@@ -412,7 +431,7 @@ bookingForm?.addEventListener("submit", async (event) => {
 });
 
 const favoriteButton = document.getElementById("details-favorite");
-const favoriteKey = `ugotour_favourite_${destinationId}`;
+const favoriteKey = standaloneAttractionId ? `ugotour_favourite_attraction_${standaloneAttractionId}` : `ugotour_favourite_${destinationId}`;
 updateFavoriteButton(localStorage.getItem(favoriteKey) === "1");
 favoriteButton?.addEventListener("click", () => {
   const shouldSave = localStorage.getItem(favoriteKey) !== "1";
