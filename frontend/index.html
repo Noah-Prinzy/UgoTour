@@ -22,15 +22,8 @@
   <header id="site-header"></header>
 
   <main id="main-content">
-    <!--
-      Phase 8.4 keeps the full-screen destination queue but changes the Home
-      handoff to a one-gesture cinematic transition. One scroll/swipe plays the
-      full fade-and-settle animation, then lands exactly on the Search section.
-    -->
     <div id="home-hero-transition" class="home-hero-transition">
     <section id="journey-slider" class="journey-slider" aria-labelledby="journey-title">
-      <!-- Two background layers let images crossfade behind the UI. This avoids
-           the old temporary image clone covering the title/cards during a change. -->
       <img
         id="journey-bg-a"
         class="journey-bg is-active"
@@ -58,17 +51,14 @@
           <h1 id="journey-title">Murchison Falls</h1>
           <p id="journey-description" class="journey-description">Loading your Uganda journey…</p>
           <div class="journey-copy-actions">
-            <a id="journey-explore" class="journey-explore-button" href="./pages/destination-details.html?id=1">
-              Explore destination <span aria-hidden="true">↗</span>
-            </a>
             <span id="journey-highlight" class="journey-highlight">Discover Uganda</span>
           </div>
         </div>
 
         <div class="journey-rail-area">
           <p class="journey-rail-label">Explore Uganda</p>
-          <div id="journey-cards" class="journey-cards" role="listbox" aria-label="Uganda destinations"></div>
-          <div id="journey-dots" class="journey-dots" aria-label="Select a destination"></div>
+          <div id="journey-cards" class="journey-cards" role="listbox" aria-label="Uganda destinations — select a card to open it on the map"></div>
+          <div id="journey-dots" class="journey-dots" aria-label="Select a destination for the hero"></div>
         </div>
       </div>
 
@@ -126,5 +116,6 @@
 
   <footer id="site-footer"></footer>
   <script type="module" src="./js/app.js"></script>
+  <script type="module" src="./js/home-card-routing.js"></script>
 </body>
 </html>

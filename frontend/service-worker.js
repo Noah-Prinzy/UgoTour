@@ -1,9 +1,9 @@
-const CACHE_NAME = "ugotour-v1-0-0";
+const CACHE_NAME = "ugotour-v1-6-0";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest",
-  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/map.css",
-  "./js/app.js", "./js/api.js", "./js/pwa.js", "./js/ui-motion.js",
+  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css",
+  "./js/app.js", "./js/home-card-routing.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
   "./js/services/auth-service.js", "./js/services/session-guard.js", "./js/services/booking-service.js",
   "./js/services/destination-service.js", "./js/services/attraction-service.js", "./js/services/map-service.js",
@@ -18,6 +18,11 @@ const APP_SHELL = [
   "./pages/contact.html", "./pages/privacy.html", "./pages/terms.html", "./pages/admin.html",
   "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
   "./images/optimized/uganda-forest-fallback.webp", "./images/optimized/profile-page-background.webp",
+  "./images/optimized/destinations/murchison-falls/murchison-01.webp",
+  "./images/optimized/destinations/lake-bunyonyi/lake-bunyonyi-01.webp",
+  "./images/optimized/destinations/kidepo/kidepo-04.webp",
+  "./images/optimized/destinations/rwenzori/rwenzori-01.webp",
+  "./images/optimized/destinations/queen-elizabeth/queen-elizabeth-02.webp",
   "./data/uganda-boundary.geojson"
 ];
 
