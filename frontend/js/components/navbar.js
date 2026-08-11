@@ -133,7 +133,7 @@ function ensureMobilePhaseOneStyles() {
 
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = new URL("../../css/mobile-phase1.css?v=10.8.0", import.meta.url).href;
+  link.href = new URL("../../css/mobile-phase1.css?v=10.9.0", import.meta.url).href;
   link.dataset.ugotourMobilePhase = "1";
 
   const ready = new Promise((resolve) => {

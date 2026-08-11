@@ -5,7 +5,7 @@ const OVERPASS_API_URL = String(process.env.OVERPASS_API_URL || "https://overpas
 const ORS_BASE_URL = String(process.env.ORS_BASE_URL || "https://api.openrouteservice.org").replace(/\/+$/, "");
 const OSRM_BASE_URL = String(process.env.OSRM_BASE_URL || "https://router.project-osrm.org").replace(/\/+$/, "");
 const CACHE_TTL_MS = Math.max(60_000, Number(process.env.MAP_DISCOVERY_CACHE_TTL_MS || 900_000));
-const APP_IDENTITY = `UgoTour/1.12 (${process.env.PUBLIC_APP_URL || "https://ugotour-production.up.railway.app"})`;
+const APP_IDENTITY = `UgoTour/1.14 (${process.env.PUBLIC_APP_URL || "https://ugotour-production.up.railway.app"})`;
 
 const cache = new Map();
 let nominatimChain = Promise.resolve();
@@ -193,20 +193,39 @@ async function getOpenRouteServiceRoute({ from, to, mode, apiKey }) {
     },
     body: JSON.stringify({
       coordinates: [[from.lng, from.lat], [to.lng, to.lat]],
-      instructions: false
+      instructions: true,
+      language: "en"
     })
   }, 18_000);
 
   const feature = response?.features?.[0];
   if (!feature?.geometry) throw providerError("The routing provider did not return a usable road route.");
   const summary = feature.properties?.summary || {};
+  const routeCoordinates = feature.geometry?.coordinates || [];
+  const steps = (feature.properties?.segments || []).flatMap((segment) =>
+    (segment.steps || []).map((step, index) => {
+      const waypointIndex = Array.isArray(step.way_points) ? Number(step.way_points[0]) : Number.NaN;
+      const coordinate = routeCoordinates[waypointIndex] || routeCoordinates[0] || [from.lng, from.lat];
+      return {
+        instruction: String(step.instruction || step.name || "Continue on the route"),
+        name: String(step.name || ""),
+        distanceMeters: Number(step.distance || 0),
+        durationSeconds: Number(step.duration || 0),
+        maneuverType: String(step.type ?? index),
+        location: { lng: Number(coordinate[0]), lat: Number(coordinate[1]) }
+      };
+    })
+  );
+
   return {
     provider: "openrouteservice",
     providerLabel: "openrouteservice",
     mode,
     approximate: false,
+    navigationReady: steps.length > 0,
     distanceMeters: Number(summary.distance || 0),
     durationSeconds: Number(summary.duration || 0),
+    steps,
     geojson: response
   };
 }
@@ -216,7 +235,7 @@ async function getOsrmFallbackRoute({ from, to, mode }) {
   const url = new URL(`${OSRM_BASE_URL}/route/v1/driving/${coordinates}`);
   url.searchParams.set("overview", "full");
   url.searchParams.set("geometries", "geojson");
-  url.searchParams.set("steps", "false");
+  url.searchParams.set("steps", "true");
 
   const response = await fetchJson(url, {
     headers: { "User-Agent": APP_IDENTITY, Accept: "application/json" }
@@ -230,17 +249,35 @@ async function getOsrmFallbackRoute({ from, to, mode }) {
   const durationSeconds = mode === "driving"
     ? Number(route.duration || estimateDuration(distanceMeters, mode))
     : estimateDuration(distanceMeters, mode);
+  const steps = (route.legs || []).flatMap((leg) =>
+    (leg.steps || []).map((step) => ({
+      instruction: osrmInstruction(step),
+      name: String(step.name || ""),
+      distanceMeters: Number(step.distance || 0),
+      durationSeconds: mode === "driving"
+        ? Number(step.duration || 0)
+        : estimateDuration(Number(step.distance || 0), mode),
+      maneuverType: String(step.maneuver?.type || "continue"),
+      modifier: String(step.maneuver?.modifier || ""),
+      location: {
+        lng: Number(step.maneuver?.location?.[0] ?? from.lng),
+        lat: Number(step.maneuver?.location?.[1] ?? from.lat)
+      }
+    }))
+  );
 
   return {
     provider: "osrm-demo",
     providerLabel: "OpenStreetMap road fallback",
     mode,
     approximate: mode !== "driving",
+    navigationReady: steps.length > 0,
     warning: mode === "driving"
       ? "Fallback road routing is active. Configure OPENROUTESERVICE_API_KEY for production routing."
-      : `${mode[0].toUpperCase()}${mode.slice(1)} time is estimated from the fallback road geometry.`,
+      : `${mode[0].toUpperCase()}${mode.slice(1)} time is estimated from the fallback road geometry. Configure OPENROUTESERVICE_API_KEY for true ${mode} routing.`,
     distanceMeters,
     durationSeconds,
+    steps,
     geojson: {
       type: "FeatureCollection",
       features: [{
@@ -252,6 +289,26 @@ async function getOsrmFallbackRoute({ from, to, mode }) {
   };
 }
 
+function osrmInstruction(step) {
+  const maneuver = step?.maneuver || {};
+  const type = String(maneuver.type || "continue").toLowerCase();
+  const modifier = String(maneuver.modifier || "").replaceAll("_", " ");
+  const road = String(step?.name || "").trim();
+  const onto = road ? ` onto ${road}` : "";
+
+  if (type === "depart") return road ? `Start on ${road}` : "Start on the route";
+  if (type === "arrive") return "Arrive at your destination";
+  if (type.includes("roundabout") || type === "rotary") return `Enter the roundabout${onto}`;
+  if (type === "merge") return `Merge${modifier ? ` ${modifier}` : ""}${onto}`;
+  if (type === "fork") return `Keep${modifier ? ` ${modifier}` : " straight"}${onto}`;
+  if (type === "on ramp") return `Take the ramp${modifier ? ` ${modifier}` : ""}${onto}`;
+  if (type === "off ramp") return `Take the exit${modifier ? ` ${modifier}` : ""}${onto}`;
+  if (type === "end of road") return `At the end of the road, turn${modifier ? ` ${modifier}` : ""}${onto}`;
+  if (type === "new name" || type === "continue") return `Continue${onto}`;
+  if (type === "turn") return `Turn${modifier ? ` ${modifier}` : ""}${onto}`;
+  return `${type[0]?.toUpperCase() || "C"}${type.slice(1)}${modifier ? ` ${modifier}` : ""}${onto}`;
+}
+
 function getDirectRouteEstimate({ from, to, mode }) {
   const distanceMeters = haversineKm(from.lat, from.lng, to.lat, to.lng) * 1000;
   return {
@@ -259,9 +316,18 @@ function getDirectRouteEstimate({ from, to, mode }) {
     providerLabel: "Direct distance estimate",
     mode,
     approximate: true,
+    navigationReady: false,
     warning: "Road routing is temporarily unavailable, so this line shows direct distance rather than turn-by-turn roads.",
     distanceMeters,
     durationSeconds: estimateDuration(distanceMeters, mode),
+    steps: [{
+      instruction: "Proceed toward your destination",
+      name: "",
+      distanceMeters,
+      durationSeconds: estimateDuration(distanceMeters, mode),
+      maneuverType: "direct",
+      location: { lng: Number(to.lng), lat: Number(to.lat) }
+    }],
     geojson: {
       type: "FeatureCollection",
       features: [{

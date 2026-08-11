@@ -34,7 +34,10 @@ const callout = document.getElementById("map-place-callout");
 const calloutClose = document.getElementById("map-place-panel-close");
 const connector = document.getElementById("map-callout-connector");
 const connectorLine = document.getElementById("map-callout-line");
+const connectorLineShadow = document.getElementById("map-callout-line-shadow");
+const connectorStart = document.getElementById("map-callout-start");
 const connectorEnd = document.getElementById("map-callout-end");
+const pinKey = document.getElementById("map-pin-key");
 const placeImage = document.getElementById("map-place-image");
 const placeType = document.getElementById("map-place-type");
 const placeCategory = document.getElementById("map-place-category");
@@ -51,7 +54,20 @@ const routeDistance = document.getElementById("map-route-distance");
 const routeDuration = document.getElementById("map-route-duration");
 const routeClear = document.getElementById("map-route-clear");
 const routeModeButtons = [...document.querySelectorAll("[data-route-mode]")];
+const routeModes = document.getElementById("map-route-modes");
+const routeKicker = document.getElementById("map-route-kicker");
 const routeNote = document.getElementById("map-route-note");
+const navigationStart = document.getElementById("map-navigation-start");
+const navigationLive = document.getElementById("map-navigation-live");
+const navigationEnd = document.getElementById("map-navigation-end");
+const navigationVoice = document.getElementById("map-nav-voice");
+const navInstruction = document.getElementById("map-nav-instruction");
+const navStepDistance = document.getElementById("map-nav-step-distance");
+const navManeuverIcon = document.getElementById("map-nav-maneuver-icon");
+const navProgressBar = document.getElementById("map-nav-progress-bar");
+const navRemainingDistance = document.getElementById("map-nav-remaining-distance");
+const navRemainingTime = document.getElementById("map-nav-remaining-time");
+const navUpcomingSteps = document.getElementById("map-nav-upcoming-steps");
 
 let map = null;
 let boundaryLayer = null;
@@ -59,8 +75,8 @@ let features = [];
 let selectedFeature = null;
 let selectedKey = null;
 let positionFrame = null;
-let destinationLayer = null;
-let attractionLayer = null;
+let destinationLayer = null; // retained for reset compatibility; curated markers are now contextual only
+let attractionLayer = null; // retained for reset compatibility
 let discoveryLayer = null;
 let routeLayer = null;
 let userLocationMarker = null;
@@ -71,8 +87,16 @@ let selectedRouteMode = "driving";
 let discoveryContext = null;
 let capabilities = { smartSearch: true, nearbyDiscovery: true, currentLocation: true, routing: false };
 const markerByKey = new Map();
-const discoveryKeys = new Set();
+const contextMarkerKeys = new Set();
 let savedKeys = new Set();
+let lastRouteResult = null;
+let navigationWatchId = null;
+let navigationActive = false;
+let navigationStepIndex = 0;
+let navigationVoiceEnabled = true;
+let lastSpokenStep = -1;
+let lastRerouteAt = 0;
+let navigationRerouteInFlight = false;
 
 function featureKey(feature) {
   const p = feature?.properties || {};
@@ -95,7 +119,10 @@ function isExternal(feature) {
 function createMarkerIcon(feature, isActive = false) {
   const external = isExternal(feature);
   const isDestination = feature.properties.placeType === "destination";
-  const size = external ? [28, 37] : (isDestination ? [34, 44] : [29, 38]);
+  const baseSize = external ? [28, 37] : (isDestination ? [34, 44] : [29, 38]);
+  const size = isActive
+    ? [Math.round(baseSize[0] * 1.28), Math.round(baseSize[1] * 1.28)]
+    : baseSize;
   const activeClass = isActive ? " is-active" : "";
   const typeClass = external ? "is-discovered" : (isDestination ? "is-destination" : "is-attraction");
 
@@ -135,7 +162,7 @@ async function initializeMap() {
   }).setView(UGANDA_CENTER, 7);
 
   window.L.control.zoom({ position: "bottomright" }).addTo(map);
-  destinationLayer = window.L.layerGroup().addTo(map);
+  destinationLayer = window.L.layerGroup();
   attractionLayer = window.L.layerGroup();
   discoveryLayer = window.L.layerGroup().addTo(map);
 
@@ -164,7 +191,6 @@ async function initializeMap() {
   fitUganda();
 
   map.on("move zoom resize", scheduleCalloutPosition);
-  map.on("zoomend", syncCuratedMarkerVisibility);
   map.on("click", (event) => {
     if (event.originalEvent?.target?.closest?.(".leaflet-marker-icon")) return;
     closeCallout();
@@ -188,35 +214,23 @@ function showMapUnavailable(recreate = false) {
     userLocationMarker = null;
     userAccuracyCircle = null;
     markerByKey.clear();
-    discoveryKeys.clear();
+    contextMarkerKeys.clear();
   }
 }
 
 function buildMarkers() {
-  if (!map) return;
-  markerByKey.clear();
-  destinationLayer?.clearLayers();
-  attractionLayer?.clearLayers();
-
-  features.forEach((feature) => {
-    const layer = feature.properties?.placeType === "destination" ? destinationLayer : attractionLayer;
-    addFeatureMarker(feature, layer || map);
-  });
-  syncCuratedMarkerVisibility();
+  // Phase 1.14: the map opens calm. Tourism markers are created only after
+  // a specific selection, an area search, or a nearby-category request.
+  clearContextMarkers();
 }
 
 function syncCuratedMarkerVisibility() {
-  if (!map || !attractionLayer || !destinationLayer) return;
-  if (!map.hasLayer(destinationLayer)) destinationLayer.addTo(map);
-
-  // Country-scale view stays calm and destination-led. Attractions reveal as
-  // the user zooms into a region or starts an area discovery search.
-  const revealAttractions = map.getZoom() >= 8 || Boolean(discoveryContext);
-  if (revealAttractions && !map.hasLayer(attractionLayer)) attractionLayer.addTo(map);
-  if (!revealAttractions && map.hasLayer(attractionLayer)) map.removeLayer(attractionLayer);
+  // Curated destinations are no longer rendered globally. Keeping this small
+  // compatibility function avoids older call sites from reintroducing clutter.
+  updateLegendVisibility();
 }
 
-function addFeatureMarker(feature, layer, { discovered = false } = {}) {
+function addFeatureMarker(feature, layer, { contextual = true } = {}) {
   if (!map || !feature?.geometry?.coordinates) return null;
   const [longitude, latitude] = feature.geometry.coordinates;
   const marker = window.L.marker([latitude, longitude], {
@@ -238,7 +252,7 @@ function addFeatureMarker(feature, layer, { discovered = false } = {}) {
 
   const key = featureKey(feature);
   markerByKey.set(key, marker);
-  if (discovered) discoveryKeys.add(key);
+  if (contextual) contextMarkerKeys.add(key);
   return marker;
 }
 
@@ -260,6 +274,7 @@ function detailsHref(feature) {
 
 function selectFeature(feature, { focusMap = false } = {}) {
   const key = featureKey(feature);
+  if (!markerByKey.has(key)) ensureFeatureMarker(feature, { clearOthers: true });
   if (selectedKey && selectedKey !== key) setMarkerActive(selectedKey, false);
 
   selectedFeature = feature;
@@ -313,12 +328,15 @@ function selectFeature(feature, { focusMap = false } = {}) {
   placeRoute.title = `Route from your current location to ${p.name}`;
 
   callout.hidden = false;
-  connector.classList.toggle("is-visible", !external || window.innerWidth > 720);
+  connector.classList.add("is-visible");
 
   if (focusMap && map) {
     const targetZoom = external ? 13 : (p.placeType === "destination" ? 10 : 12);
     map.flyTo([latitude, longitude], targetZoom, { duration: 0.72 });
-    map.once("moveend", scheduleCalloutPosition);
+    map.once("moveend", () => {
+      keepSelectedMarkerVisible();
+      scheduleCalloutPosition();
+    });
   } else {
     scheduleCalloutPosition();
   }
@@ -386,6 +404,9 @@ function positionCallout() {
     : `M ${markerPoint.x} ${markerPoint.y} C ${markerPoint.x + (endX > markerPoint.x ? bend : -bend)} ${markerPoint.y}, ${endX + (endX > markerPoint.x ? -bend : bend)} ${endY}, ${endX} ${endY}`;
 
   connectorLine.setAttribute("d", path);
+  connectorLineShadow?.setAttribute("d", path);
+  connectorStart?.setAttribute("cx", String(markerPoint.x));
+  connectorStart?.setAttribute("cy", String(markerPoint.y));
   connectorEnd.setAttribute("cx", String(endX));
   connectorEnd.setAttribute("cy", String(endY));
 }
@@ -397,6 +418,7 @@ function closeCallout() {
   callout.hidden = true;
   connector.classList.remove("is-visible");
   connectorLine.setAttribute("d", "");
+  connectorLineShadow?.setAttribute("d", "");
 }
 
 function fitUganda() {
@@ -420,7 +442,6 @@ function setDiscoveryContext(context) {
   }
   locateButton?.classList.toggle("is-active", discoveryContext?.source === "location");
   locateButton?.setAttribute("aria-pressed", String(discoveryContext?.source === "location"));
-  syncCuratedMarkerVisibility();
 }
 
 function getSearchMatches(query) {
@@ -442,7 +463,7 @@ function getSearchMatches(query) {
 }
 
 function renderSuggestions(query) {
-  const matches = getSearchMatches(query).slice(0, 5);
+  const matches = getSearchMatches(query).slice(0, 4);
   suggestions.innerHTML = "";
 
   if (!query.trim()) {
@@ -484,7 +505,10 @@ function chooseSearchResult(feature) {
   searchInput.value = feature.properties.name;
   searchClear.hidden = false;
   closeSuggestions();
+  clearRoute(false);
+  showOnlyFeatureMarker(feature);
   selectFeature(feature, { focusMap: true });
+  showStatus(`${feature.properties.name} selected.`);
 }
 
 function closeSuggestions() {
@@ -496,13 +520,15 @@ async function performSmartSearch(query) {
   const term = String(query || "").trim();
   if (term.length < 2) return;
   closeSuggestions();
+  closeCallout();
+  clearRoute(false);
   searchClear.hidden = false;
   nearbyButtons.forEach((button) => { button.classList.remove("is-active"); button.setAttribute("aria-pressed", "false"); });
   showStatus(`Searching ${term} and nearby tourism sites…`, { persistent: true });
 
   try {
     const result = await searchMapPlaces(term);
-    renderDiscoveryCollection(result.collection);
+    renderContextCollection(result.collection);
     if (result.area) {
       setDiscoveryContext({
         lat: result.area.latitude,
@@ -511,7 +537,7 @@ async function performSmartSearch(query) {
         source: "area"
       });
     }
-    renderRemoteSuggestions(result.collection?.features || [], result.area);
+    closeSuggestions();
     focusDiscoveryArea(result);
     const total = result.collection?.meta?.total ?? result.collection?.features?.length ?? 0;
     const verified = result.collection?.meta?.verified ?? 0;
@@ -539,19 +565,38 @@ function renderRemoteSuggestions(resultFeatures, area) {
   suggestions.hidden = false;
 }
 
-function renderDiscoveryCollection(collection) {
-  clearDiscoveryMarkers();
+function renderContextCollection(collection) {
+  clearContextMarkers();
   const resultFeatures = Array.isArray(collection?.features) ? collection.features : [];
-  for (const feature of resultFeatures) {
-    if (!isExternal(feature)) continue;
-    addFeatureMarker(feature, discoveryLayer, { discovered: true });
-  }
+  for (const feature of resultFeatures) addFeatureMarker(feature, discoveryLayer, { contextual: true });
+  updateLegendVisibility(resultFeatures.length);
 }
 
-function clearDiscoveryMarkers() {
+function clearContextMarkers() {
   discoveryLayer?.clearLayers();
-  discoveryKeys.forEach((key) => markerByKey.delete(key));
-  discoveryKeys.clear();
+  contextMarkerKeys.forEach((key) => markerByKey.delete(key));
+  contextMarkerKeys.clear();
+  updateLegendVisibility(0);
+}
+
+function ensureFeatureMarker(feature, { clearOthers = false } = {}) {
+  if (clearOthers) clearContextMarkers();
+  const key = featureKey(feature);
+  const existing = markerByKey.get(key);
+  if (existing) return existing;
+  const marker = addFeatureMarker(feature, discoveryLayer, { contextual: true });
+  updateLegendVisibility(contextMarkerKeys.size);
+  return marker;
+}
+
+function showOnlyFeatureMarker(feature) {
+  clearContextMarkers();
+  ensureFeatureMarker(feature);
+}
+
+function updateLegendVisibility(markerCount = contextMarkerKeys.size) {
+  if (!pinKey) return;
+  pinKey.hidden = Number(markerCount || 0) === 0;
 }
 
 function focusDiscoveryArea(result) {
@@ -646,6 +691,9 @@ async function getNearbyOrigin() {
 }
 
 async function showNearby(category) {
+  closeSuggestions();
+  closeCallout();
+  clearRoute(false);
   nearbyButtons.forEach((button) => {
     const active = button.dataset.nearbyCategory === category;
     button.classList.toggle("is-active", active);
@@ -663,9 +711,9 @@ async function showNearby(category) {
       context: origin.label
     });
 
-    renderDiscoveryCollection(result.collection);
+    renderContextCollection(result.collection);
     const resultFeatures = result.collection?.features || [];
-    renderRemoteSuggestions(resultFeatures, { name: origin.label });
+    closeSuggestions();
     fitFeaturesWithOrigin(resultFeatures, origin);
     showStatus(`${resultFeatures.length} ${friendlyNearby(category)} found near ${shortAreaName(origin.label)}.`);
   } catch (error) {
@@ -709,8 +757,9 @@ async function routeToFeature(feature = selectedFeature, mode = selectedRouteMod
       to: { lat, lng },
       mode
     });
+    lastRouteResult = result;
     drawRoute(result, feature);
-    showStatus(result?.approximate ? "Route ready · estimate mode" : "Road route ready.");
+    showStatus(result?.approximate ? "Route ready · estimate mode" : "Road route ready. Start navigation when ready.");
   } catch (error) {
     console.error("Route request failed:", error);
     showStatus(error.message || "Could not build this route.", { error: true, persistent: true });
@@ -745,6 +794,14 @@ function drawRoute(result, feature) {
   routeDestination.textContent = feature.properties.name;
   routeDistance.textContent = formatDistance(result.distanceMeters);
   routeDuration.textContent = formatDuration(result.durationSeconds);
+  if (routeKicker) routeKicker.textContent = "Directions";
+  if (navigationStart) {
+    navigationStart.hidden = false;
+    navigationStart.disabled = !Array.isArray(result.steps) || result.steps.length === 0;
+    navigationStart.textContent = result.navigationReady === false ? "Preview guidance" : "Start navigation";
+  }
+  if (navigationLive) navigationLive.hidden = true;
+  if (routeModes) routeModes.hidden = false;
   if (routeNote) {
     routeNote.textContent = result.warning || (result.approximate
       ? "This is an approximate route estimate."
@@ -752,16 +809,300 @@ function drawRoute(result, feature) {
     routeNote.classList.toggle("is-warning", Boolean(result.approximate || result.warning));
   }
   routePanel.hidden = false;
+  // Keep the destination marker visible while the route is displayed. The
+  // selected information card closes only to make room for navigation UI.
   closeCallout();
+  ensureFeatureMarker(feature);
+  setMarkerActive(featureKey(feature), true);
 }
 
 function clearRoute(resetView = false) {
+  endNavigation({ keepRoute: false, silent: true });
   routeLayer?.remove();
   routeLayer = null;
   routeTargetFeature = null;
+  lastRouteResult = null;
   routePanel.hidden = true;
+  if (navigationLive) navigationLive.hidden = true;
+  if (navigationStart) navigationStart.hidden = false;
+  if (routeModes) routeModes.hidden = false;
   if (routeNote) { routeNote.textContent = ""; routeNote.classList.remove("is-warning"); }
   if (resetView) fitUganda();
+}
+
+function keepSelectedMarkerVisible() {
+  if (!map || !selectedFeature || callout.hidden) return;
+  const [lng, lat] = selectedFeature.geometry.coordinates;
+  const commandBottom = commandPanel ? commandPanel.offsetTop + commandPanel.offsetHeight + 24 : 170;
+  const cardHeight = callout.offsetHeight || 190;
+  map.panInside([lat, lng], {
+    paddingTopLeft: [36, commandBottom + 44],
+    paddingBottomRight: [36, cardHeight + 76],
+    animate: true
+  });
+}
+
+async function showPreviouslyGrantedLocation() {
+  if (!navigator.geolocation || !navigator.permissions?.query) return;
+  try {
+    const permission = await navigator.permissions.query({ name: "geolocation" });
+    if (permission.state === "granted") await acquireCurrentLocation({ focus: false, useAsDiscoveryContext: false });
+  } catch { /* Permissions API is optional. */ }
+}
+
+async function startNavigation() {
+  if (!routeTargetFeature || !lastRouteResult || navigationActive) return;
+  try {
+    await acquireCurrentLocation({ focus: false });
+  } catch (error) {
+    showStatus(error.message || "Location access is required for live navigation.", { error: true });
+    return;
+  }
+
+  if (!navigator.geolocation?.watchPosition) {
+    showStatus("This browser cannot provide continuous GPS navigation.", { error: true });
+    return;
+  }
+
+  navigationActive = true;
+  navigationStepIndex = 0;
+  lastSpokenStep = -1;
+  lastRerouteAt = 0;
+  navigationRerouteInFlight = false;
+  if (routeKicker) routeKicker.textContent = "Navigating";
+  if (navigationStart) navigationStart.hidden = true;
+  if (navigationLive) navigationLive.hidden = false;
+  if (routeModes) routeModes.hidden = true;
+  if (routeNote) routeNote.textContent = lastRouteResult.approximate
+    ? "Live position is active. Route guidance is approximate until a full routing provider is configured."
+    : "Live GPS guidance is active. Keep UgoTour open while navigating.";
+
+  showOnlyFeatureMarker(routeTargetFeature);
+  setMarkerActive(featureKey(routeTargetFeature), true);
+  updateNavigationGuidance(userLocation);
+  speakNavigationStep(true);
+
+  navigationWatchId = navigator.geolocation.watchPosition(
+    (position) => handleNavigationPosition(position),
+    (error) => showStatus(navigationLocationError(error), { error: true, persistent: true }),
+    { enableHighAccuracy: true, maximumAge: 2500, timeout: 15_000 }
+  );
+  showStatus(`Navigation started to ${routeTargetFeature.properties.name}.`);
+}
+
+function handleNavigationPosition(position) {
+  userLocation = {
+    lat: Number(position.coords.latitude),
+    lng: Number(position.coords.longitude),
+    accuracy: Number(position.coords.accuracy || 0),
+    heading: Number(position.coords.heading),
+    speed: Number(position.coords.speed)
+  };
+  renderUserLocation();
+  if (!navigationActive) return;
+  updateNavigationGuidance(userLocation);
+  followNavigationCamera(userLocation);
+  maybeRerouteNavigation(userLocation);
+}
+
+function updateNavigationGuidance(location) {
+  if (!navigationActive || !routeTargetFeature || !location) return;
+  const steps = Array.isArray(lastRouteResult?.steps) ? lastRouteResult.steps : [];
+  const [destLng, destLat] = routeTargetFeature.geometry.coordinates;
+  const destinationDistance = haversineMeters(location.lat, location.lng, destLat, destLng);
+
+  if (destinationDistance <= Math.max(24, Number(location.accuracy || 0) * 1.15)) {
+    if (navInstruction) navInstruction.textContent = `You have arrived at ${routeTargetFeature.properties.name}`;
+    if (navStepDistance) navStepDistance.textContent = "Destination reached";
+    if (navManeuverIcon) navManeuverIcon.textContent = "✓";
+    if (navProgressBar) navProgressBar.style.width = "100%";
+    if (navRemainingDistance) navRemainingDistance.textContent = "0 m";
+    if (navRemainingTime) navRemainingTime.textContent = "Arrived";
+    if (navigationVoiceEnabled && lastSpokenStep !== 999999) {
+      speakText(`You have arrived at ${routeTargetFeature.properties.name}.`);
+      lastSpokenStep = 999999;
+    }
+    endNavigation({ keepRoute: true, silent: true, arrived: true });
+    return;
+  }
+
+  if (!steps.length) {
+    if (navInstruction) navInstruction.textContent = "Continue toward your destination";
+    if (navStepDistance) navStepDistance.textContent = formatDistance(destinationDistance);
+    updateNavigationSummary(destinationDistance, lastRouteResult?.durationSeconds || 0);
+    return;
+  }
+
+  navigationStepIndex = Math.min(navigationStepIndex, steps.length - 1);
+  let step = steps[navigationStepIndex];
+  let distanceToStep = distanceToNavigationStep(location, step);
+  while (navigationStepIndex < steps.length - 1 && distanceToStep <= navigationAdvanceThreshold(location)) {
+    navigationStepIndex += 1;
+    step = steps[navigationStepIndex];
+    distanceToStep = distanceToNavigationStep(location, step);
+    speakNavigationStep(true);
+  }
+
+  if (navInstruction) navInstruction.textContent = step.instruction || "Continue on the route";
+  if (navStepDistance) navStepDistance.textContent = `${formatDistance(distanceToStep)} to maneuver`;
+  if (navManeuverIcon) navManeuverIcon.textContent = maneuverIcon(step);
+
+  const remainingAfterStep = steps.slice(navigationStepIndex + 1).reduce((sum, item) => sum + Number(item.distanceMeters || 0), 0);
+  const remainingDistance = Math.min(
+    Math.max(destinationDistance, distanceToStep + remainingAfterStep),
+    Number(lastRouteResult?.distanceMeters || Infinity)
+  );
+  const remainingSeconds = estimateRemainingNavigationSeconds(remainingDistance);
+  updateNavigationSummary(remainingDistance, remainingSeconds);
+  renderUpcomingSteps(steps);
+
+  const total = Math.max(1, Number(lastRouteResult?.distanceMeters || remainingDistance));
+  const progress = clamp((1 - remainingDistance / total) * 100, 0, 100);
+  if (navProgressBar) navProgressBar.style.width = `${progress.toFixed(1)}%`;
+
+  if (distanceToStep <= 220 && lastSpokenStep !== navigationStepIndex) speakNavigationStep(false);
+}
+
+function updateNavigationSummary(distanceMeters, seconds) {
+  if (navRemainingDistance) navRemainingDistance.textContent = formatDistance(distanceMeters);
+  if (navRemainingTime) navRemainingTime.textContent = formatDuration(seconds);
+}
+
+function renderUpcomingSteps(steps) {
+  if (!navUpcomingSteps) return;
+  const upcoming = steps.slice(navigationStepIndex + 1, navigationStepIndex + 4);
+  navUpcomingSteps.innerHTML = upcoming.map((step) => `
+    <div><span>${escapeHtml(maneuverIcon(step))}</span><strong>${escapeHtml(step.instruction || "Continue")}</strong><small>${escapeHtml(formatDistance(step.distanceMeters || 0))}</small></div>
+  `).join("");
+  navUpcomingSteps.hidden = upcoming.length === 0;
+}
+
+function speakNavigationStep(force = false) {
+  if (!navigationVoiceEnabled || !navigationActive) return;
+  const steps = Array.isArray(lastRouteResult?.steps) ? lastRouteResult.steps : [];
+  const step = steps[navigationStepIndex];
+  if (!step) return;
+  if (!force && lastSpokenStep === navigationStepIndex) return;
+  speakText(step.instruction || "Continue on the route");
+  lastSpokenStep = navigationStepIndex;
+}
+
+function speakText(text) {
+  if (!navigationVoiceEnabled || !window.speechSynthesis || !text) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(String(text));
+  utterance.lang = "en-UG";
+  utterance.rate = 1;
+  window.speechSynthesis.speak(utterance);
+}
+
+function followNavigationCamera(location) {
+  if (!map || !location) return;
+  const targetZoom = Math.max(map.getZoom(), 15.5);
+  map.setView([location.lat, location.lng], targetZoom, { animate: true });
+}
+
+async function maybeRerouteNavigation(location) {
+  if (!navigationActive || navigationRerouteInFlight || !routeTargetFeature || !lastRouteResult?.geojson) return;
+  const distanceOffRoute = distanceToRouteMeters(location, lastRouteResult.geojson);
+  if (distanceOffRoute < 110) return;
+  const now = Date.now();
+  if (now - lastRerouteAt < 18_000) return;
+  lastRerouteAt = now;
+  navigationRerouteInFlight = true;
+  showStatus("You appear to be off route. Recalculating…", { persistent: true });
+  try {
+    const [toLng, toLat] = routeTargetFeature.geometry.coordinates;
+    const result = await getMapRoute({
+      from: { lat: location.lat, lng: location.lng },
+      to: { lat: toLat, lng: toLng },
+      mode: selectedRouteMode
+    });
+    lastRouteResult = result;
+    navigationStepIndex = 0;
+    lastSpokenStep = -1;
+    drawRoute(result, routeTargetFeature);
+    navigationActive = true;
+    if (navigationStart) navigationStart.hidden = true;
+    if (navigationLive) navigationLive.hidden = false;
+    if (routeModes) routeModes.hidden = true;
+    if (routeKicker) routeKicker.textContent = "Navigating";
+    showStatus("Route updated.");
+    speakNavigationStep(true);
+  } catch (error) {
+    showStatus(error.message || "Could not recalculate the route.", { error: true });
+  } finally {
+    navigationRerouteInFlight = false;
+  }
+}
+
+function distanceToRouteMeters(location, geojson) {
+  const features = Array.isArray(geojson?.features) ? geojson.features : [];
+  const coordinates = features.flatMap((feature) => feature.geometry?.type === "LineString" ? (feature.geometry.coordinates || []) : []);
+  if (!coordinates.length) return 0;
+  let nearest = Infinity;
+  const stride = Math.max(1, Math.floor(coordinates.length / 350));
+  for (let index = 0; index < coordinates.length; index += stride) {
+    const [lng, lat] = coordinates[index];
+    nearest = Math.min(nearest, haversineMeters(location.lat, location.lng, lat, lng));
+  }
+  return nearest;
+}
+
+function distanceToNavigationStep(location, step) {
+  const lat = Number(step?.location?.lat);
+  const lng = Number(step?.location?.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return Number(step?.distanceMeters || 0);
+  return haversineMeters(location.lat, location.lng, lat, lng);
+}
+
+function navigationAdvanceThreshold(location) {
+  return Math.max(28, Math.min(70, Number(location?.accuracy || 20) * 1.35));
+}
+
+function estimateRemainingNavigationSeconds(distanceMeters) {
+  const speedKph = { driving: 48, walking: 4.8, cycling: 15 }[selectedRouteMode] || 48;
+  return Math.max(30, (Number(distanceMeters || 0) / 1000) / speedKph * 3600);
+}
+
+function maneuverIcon(step) {
+  const instruction = String(step?.instruction || "").toLowerCase();
+  const modifier = String(step?.modifier || "").toLowerCase();
+  if (instruction.includes("arriv")) return "●";
+  if (instruction.includes("roundabout")) return "⟳";
+  if (modifier.includes("left") || instruction.includes("turn left") || instruction.includes("keep left")) return "↰";
+  if (modifier.includes("right") || instruction.includes("turn right") || instruction.includes("keep right")) return "↱";
+  if (instruction.includes("u-turn")) return "↶";
+  return "↑";
+}
+
+function endNavigation({ keepRoute = true, silent = false, arrived = false } = {}) {
+  if (navigationWatchId !== null && navigator.geolocation?.clearWatch) navigator.geolocation.clearWatch(navigationWatchId);
+  navigationWatchId = null;
+  const wasActive = navigationActive;
+  navigationActive = false;
+  navigationRerouteInFlight = false;
+  window.speechSynthesis?.cancel();
+  if (navigationLive && !arrived) navigationLive.hidden = true;
+  if (navigationStart && !arrived) navigationStart.hidden = false;
+  if (routeModes) routeModes.hidden = false;
+  if (routeKicker) routeKicker.textContent = arrived ? "Arrived" : "Directions";
+  if (!keepRoute) routeLayer?.remove();
+  if (wasActive && !silent) showStatus(arrived ? "Destination reached." : "Navigation ended.");
+}
+
+function navigationLocationError(error) {
+  return ({ 1: "Location permission was denied.", 2: "GPS position is temporarily unavailable.", 3: "GPS update timed out." })[error?.code]
+    || "Live location could not be updated.";
+}
+
+function haversineMeters(lat1, lng1, lat2, lng2) {
+  const radius = 6_371_000;
+  const toRad = (value) => Number(value) * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function showStatus(message, { error = false, persistent = false } = {}) {
@@ -793,7 +1134,10 @@ function focusFromUrl() {
   const key = parseFocus();
   if (!key) return;
   const feature = features.find((item) => featureKey(item) === key);
-  if (feature) window.setTimeout(() => selectFeature(feature, { focusMap: true }), 280);
+  if (feature) window.setTimeout(() => {
+    showOnlyFeatureMarker(feature);
+    selectFeature(feature, { focusMap: true });
+  }, 280);
 }
 
 searchInput?.addEventListener("input", (event) => {
@@ -818,10 +1162,12 @@ searchClear?.addEventListener("click", () => {
   searchClear.hidden = true;
   closeSuggestions();
   closeCallout();
-  clearDiscoveryMarkers();
+  clearRoute(false);
+  clearContextMarkers();
   setDiscoveryContext(null);
   nearbyButtons.forEach((button) => { button.classList.remove("is-active"); button.setAttribute("aria-pressed", "false"); });
-  fitUganda();
+  if (userLocation) map?.flyTo([userLocation.lat, userLocation.lng], 14, { duration: 0.6 });
+  else fitUganda();
   searchInput.focus();
 });
 
@@ -829,7 +1175,12 @@ fitButton?.addEventListener("click", fitUganda);
 
 locateButton?.addEventListener("click", async () => {
   try {
+    closeSuggestions();
+    closeCallout();
+    clearRoute(false);
+    clearContextMarkers();
     await acquireCurrentLocation({ focus: true, useAsDiscoveryContext: true });
+    nearbyButtons.forEach((button) => { button.classList.remove("is-active"); button.setAttribute("aria-pressed", "false"); });
   } catch (error) {
     showStatus(error.message || "Could not access your location.", { error: true });
   }
@@ -865,6 +1216,15 @@ routeModeButtons.forEach((button) => {
     if (!routeTargetFeature) return;
     routeToFeature(routeTargetFeature, button.dataset.routeMode);
   });
+});
+
+navigationStart?.addEventListener("click", startNavigation);
+navigationEnd?.addEventListener("click", () => endNavigation({ keepRoute: true }));
+navigationVoice?.addEventListener("click", () => {
+  navigationVoiceEnabled = !navigationVoiceEnabled;
+  navigationVoice.setAttribute("aria-pressed", String(navigationVoiceEnabled));
+  navigationVoice.textContent = navigationVoiceEnabled ? "🔊 Voice on" : "🔇 Voice off";
+  if (!navigationVoiceEnabled) window.speechSynthesis?.cancel();
 });
 
 routeClear?.addEventListener("click", () => clearRoute(false));
@@ -918,6 +1278,7 @@ try {
   setDiscoveryContext(null);
   if (mapReady) {
     focusFromUrl();
+    if (!parseFocus()) await showPreviouslyGrantedLocation();
     if (capabilities.routingFallback) {
       showStatus("Map discovery and directions are ready. Add OPENROUTESERVICE_API_KEY later for production-grade mode-specific routing.");
     }

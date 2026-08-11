@@ -3855,3 +3855,229 @@ body:not(.page-home) .site-nav .nav-links a[aria-current="page"]::after {
     bottom: 92px !important;
   }
 }
+
+
+/* UgoTour visual revision: 10.9.0 */
+/* ============================================================
+   PHASE 1.14 — CONTEXTUAL MARKERS + LIVE NAVIGATION
+   Calm default map, one search-clear control, stronger selected-place link,
+   and an in-PWA turn-by-turn guidance mode.
+   ============================================================ */
+
+/* Chromium renders its own clear glyph for input[type=search]. Phase 1.14
+   uses text/role=searchbox, and this rule also protects older cached markup so
+   there is always exactly one UgoTour-controlled × button. */
+.map-page .map-search input::-webkit-search-cancel-button,
+.map-page .map-search input::-webkit-search-decoration {
+  display: none !important;
+  -webkit-appearance: none !important;
+}
+
+.map-page #map-search-clear {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+}
+
+/* Search suggestions are intentionally compact. Area/general searches close
+   this panel after submission and move their results onto the map instead. */
+.map-page .map-command-panel .map-search-suggestions {
+  max-height: min(330px, 44vh) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  border-radius: 20px !important;
+  scrollbar-width: thin;
+}
+.map-page .map-command-panel .map-suggestion {
+  min-height: 48px;
+  padding: 9px 12px !important;
+}
+.map-page .map-command-panel .map-suggestion strong { font-size: .76rem !important; }
+.map-page .map-command-panel .map-suggestion small { font-size: .58rem !important; }
+
+/* The default canvas contains no tourism pins; legend appears only when a
+   search/category has actually produced contextual place markers. */
+.map-page #map-pin-key[hidden] { display: none !important; }
+
+/* Selected pin is deliberately stronger than surrounding search results. */
+.map-page .leaflet-marker-icon:has(.ugotour-map-pin.is-active) {
+  z-index: 9000 !important;
+}
+.map-page .ugotour-map-pin.is-active {
+  filter: drop-shadow(0 12px 14px rgba(11,28,14,.42)) !important;
+}
+.map-page .ugotour-map-pin.is-active::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  border: 2px solid rgba(220,230,191,.78);
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  animation: mapSelectedPulse 1.8s ease-out infinite;
+}
+@keyframes mapSelectedPulse {
+  0% { opacity: .8; transform: translate(-50%,-50%) scale(.5); }
+  80%,100% { opacity: 0; transform: translate(-50%,-50%) scale(1.25); }
+}
+
+/* Two-pass connector: a pale halo under a strong forest line keeps the visual
+   link readable over roads, labels, water and satellite-like map detail. */
+.map-page .map-callout-connector .map-callout-line-shadow {
+  fill: none;
+  stroke: rgba(255,255,255,.92);
+  stroke-width: 6;
+  stroke-linecap: round;
+  opacity: .88;
+}
+.map-page .map-callout-connector #map-callout-line {
+  stroke: rgba(35,70,36,.94) !important;
+  stroke-width: 2.6px !important;
+  filter: none !important;
+}
+.map-page .map-callout-connector .map-callout-start,
+.map-page .map-callout-connector #map-callout-end {
+  fill: #244a2b !important;
+  stroke: rgba(255,255,255,.98) !important;
+  stroke-width: 2.5px !important;
+}
+
+/* Navigation panel grows only when guidance is active and remains usable on a
+   phone without consuming the full map canvas. */
+.map-page .map-navigation-start {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: #dce6bf;
+  color: #172114;
+  font-size: .72rem;
+  font-weight: 900;
+}
+.map-page .map-navigation-start:disabled { opacity: .48; cursor: not-allowed; }
+.map-page .map-navigation-live {
+  display: grid;
+  gap: 11px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.map-page .map-navigation-live[hidden] { display: none !important; }
+.map-page .map-navigation-instruction {
+  display: grid;
+  grid-template-columns: 52px minmax(0,1fr);
+  gap: 11px;
+  align-items: center;
+}
+.map-page .map-nav-maneuver-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: #dce6bf;
+  color: #172114;
+  font-size: 1.65rem;
+  font-weight: 900;
+}
+.map-page .map-navigation-instruction > div { min-width: 0; display: grid; gap: 2px; }
+.map-page .map-navigation-instruction small {
+  color: rgba(247,244,235,.52);
+  font-size: .52rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.map-page .map-navigation-instruction strong {
+  color: #fff;
+  font-size: .84rem;
+  line-height: 1.25;
+}
+.map-page .map-navigation-instruction span:not(.map-nav-maneuver-icon) {
+  color: #dce6bf;
+  font-size: .59rem;
+  font-weight: 800;
+}
+.map-page .map-navigation-progress {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.10);
+}
+.map-page .map-navigation-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #dce6bf;
+  transition: width 320ms ease;
+}
+.map-page .map-navigation-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(247,244,235,.64);
+  font-size: .58rem;
+}
+.map-page .map-navigation-summary strong { color: #fff; }
+.map-page .map-nav-upcoming-steps {
+  display: grid;
+  gap: 6px;
+}
+.map-page .map-nav-upcoming-steps[hidden] { display: none !important; }
+.map-page .map-nav-upcoming-steps > div {
+  display: grid;
+  grid-template-columns: 22px minmax(0,1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.055);
+}
+.map-page .map-nav-upcoming-steps span { color: #dce6bf; font-size: .88rem; }
+.map-page .map-nav-upcoming-steps strong {
+  overflow: hidden;
+  color: rgba(255,255,255,.82);
+  font-size: .57rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-page .map-nav-upcoming-steps small { color: rgba(255,255,255,.45); font-size: .52rem; }
+.map-page .map-navigation-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.map-page .map-navigation-actions button {
+  min-height: 36px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 11px;
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  font-size: .59rem;
+  font-weight: 800;
+}
+.map-page #map-navigation-end {
+  border-color: rgba(255,160,145,.20);
+  color: #ffd4cc;
+  background: rgba(111,42,32,.24);
+}
+
+@media (max-width: 720px) {
+  .map-page .map-command-panel .map-search-suggestions {
+    max-height: min(280px, 38vh) !important;
+  }
+  .map-page .map-route-panel {
+    max-height: min(58vh, 510px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+  .map-page .map-navigation-instruction {
+    grid-template-columns: 46px minmax(0,1fr);
+  }
+  .map-page .map-nav-maneuver-icon { width: 46px; height: 46px; font-size: 1.45rem; }
+}

@@ -32,7 +32,7 @@
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-4-4" />
             </svg>
-            <input id="map-search-input" type="search" placeholder="Search Kampala, Jinja, museums…" autocomplete="off" />
+            <input id="map-search-input" type="text" role="searchbox" inputmode="search" enterkeyhint="search" placeholder="Search Kampala, Jinja, museums…" autocomplete="off" />
             <button id="map-search-clear" type="button" aria-label="Clear map search" hidden>×</button>
           </label>
           <div id="map-search-suggestions" class="map-search-suggestions" hidden aria-label="Search suggestions"></div>
@@ -60,7 +60,7 @@
         <span>Fit Uganda</span>
       </button>
 
-      <div class="map-pin-key" aria-label="Map pin legend">
+      <div id="map-pin-key" class="map-pin-key" aria-label="Map pin legend" hidden>
         <span><i class="pin-key-dot is-destination"></i>Destination</span>
         <span><i class="pin-key-dot is-attraction"></i>Attraction</span>
         <span><i class="pin-key-dot is-discovered"></i>Discovered</span>
@@ -76,8 +76,10 @@
       <div id="map-search-empty" class="map-search-empty" hidden aria-live="polite">No matching place found.</div>
 
       <svg id="map-callout-connector" class="map-callout-connector" aria-hidden="true">
+        <path id="map-callout-line-shadow" class="map-callout-line-shadow" d="" />
         <path id="map-callout-line" d="" />
-        <circle id="map-callout-end" r="4" cx="0" cy="0" />
+        <circle id="map-callout-start" class="map-callout-start" r="4.5" cx="0" cy="0" />
+        <circle id="map-callout-end" r="4.5" cx="0" cy="0" />
       </svg>
 
       <article id="map-place-callout" class="map-place-callout" hidden aria-live="polite">
@@ -103,20 +105,42 @@
       <aside id="map-route-panel" class="map-route-panel" hidden aria-live="polite">
         <div class="map-route-heading">
           <div>
-            <span class="map-route-kicker">Route</span>
+            <span id="map-route-kicker" class="map-route-kicker">Directions</span>
             <strong id="map-route-destination">Selected place</strong>
           </div>
-          <button id="map-route-clear" type="button" aria-label="Clear route">×</button>
+          <button id="map-route-clear" type="button" aria-label="Close directions">×</button>
         </div>
         <div class="map-route-stats">
           <div><strong id="map-route-distance">—</strong><span>distance</span></div>
           <div><strong id="map-route-duration">—</strong><span>estimated time</span></div>
         </div>
-        <div class="map-route-modes" aria-label="Travel mode">
+        <div id="map-route-modes" class="map-route-modes" aria-label="Travel mode">
           <button type="button" data-route-mode="driving" class="is-active">Drive</button>
           <button type="button" data-route-mode="walking">Walk</button>
           <button type="button" data-route-mode="cycling">Cycle</button>
         </div>
+        <button id="map-navigation-start" class="map-navigation-start" type="button">Start navigation</button>
+
+        <section id="map-navigation-live" class="map-navigation-live" hidden aria-label="Live navigation guidance">
+          <div class="map-navigation-instruction">
+            <span id="map-nav-maneuver-icon" class="map-nav-maneuver-icon" aria-hidden="true">↑</span>
+            <div>
+              <small>Next instruction</small>
+              <strong id="map-nav-instruction">Continue on the route</strong>
+              <span id="map-nav-step-distance">—</span>
+            </div>
+          </div>
+          <div class="map-navigation-progress" aria-hidden="true"><span id="map-nav-progress-bar"></span></div>
+          <div class="map-navigation-summary">
+            <span><strong id="map-nav-remaining-distance">—</strong> remaining</span>
+            <span><strong id="map-nav-remaining-time">—</strong> ETA</span>
+          </div>
+          <div id="map-nav-upcoming-steps" class="map-nav-upcoming-steps" aria-label="Upcoming directions"></div>
+          <div class="map-navigation-actions">
+            <button id="map-nav-voice" type="button" aria-pressed="true">🔊 Voice on</button>
+            <button id="map-navigation-end" type="button">End navigation</button>
+          </div>
+        </section>
         <p id="map-route-note" class="map-route-note"></p>
       </aside>
     </section>
