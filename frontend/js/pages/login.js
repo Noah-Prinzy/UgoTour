@@ -1,6 +1,6 @@
 import "../ui-motion.js";
 // ============================================================
-// LOGIN PAGE - PHASE 8
+// LOGIN PAGE - PHASE 8 + PHASE 1.23 AUTH HANDOFF
 // ============================================================
 // Credentials are verified by the Node.js backend against PostgreSQL. A
 // successful login receives an HttpOnly session cookie from the API; JavaScript
@@ -8,10 +8,9 @@ import "../ui-motion.js";
 
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
-import {
-  loginUser
-} from "../services/auth-service.js";
+import { loginUser } from "../services/auth-service.js";
 import { redirectAuthenticatedUser } from "../services/session-guard.js";
+import { transitionToHome } from "../auth-home-transition.js";
 
 const redirected = await redirectAuthenticatedUser("../index.html");
 if (!redirected) {
@@ -37,13 +36,12 @@ loginForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  showMessage("Login successful. Opening UgoTour...", "success");
-  window.location.replace("../index.html");
+  showMessage("Login successful. Preparing UgoTour…", "success");
+  await transitionToHome("../index.html", { mode: "login" });
 });
 
 function showMessage(message, type) {
   if (!loginMessage) return;
-
   loginMessage.textContent = message;
   loginMessage.className = `form-message ${type === "success" ? "form-message-success" : "form-message-error"}`;
 }
@@ -51,7 +49,6 @@ function showMessage(message, type) {
 function setFormBusy(isBusy) {
   const submitButton = loginForm?.querySelector('button[type="submit"]');
   if (!submitButton) return;
-
   submitButton.disabled = isBusy;
   submitButton.textContent = isBusy ? "Logging in..." : "Login";
 }

@@ -1,53 +1,47 @@
-UgoTour Phase 1.22 — Map Interaction + Result Card Polish
-========================================================
+UgoTour Phase 1.24 — Cinematic Loading + 4-Column Results Gallery
+=================================================================
 
-Apply this overlay after the Phase 1.20 / 1.21 upgrades.
-No database migration is required.
+Apply this ZIP OVER the current Phase 1.23 project (which should already include
+Phases 1.20–1.22). Replace matching files.
 
-What changed
+WHAT CHANGED
 ------------
-1. Destination search-result cards
-   - Reserves a dedicated top-right hit area for the Save heart.
-   - Region labels no longer run underneath the heart on phone/tablet/desktop.
+1. Authentication -> Home loading screen
+   - Uses the existing Murchison Falls Home hero photograph as a full-screen
+     loading background (no new external image dependency).
+   - Photo fades/settles into place while the branded UgoTour content enters.
+   - Progress is a smooth one-pass fill rather than a repeating scanner.
+   - Successful Login/Sign Up handoff is slightly longer and fades out more
+     gently so it reads as a transition rather than a flash.
+   - Reduced-motion users still get a stable, immediate presentation.
 
-2. Map current-location control
-   - The existing working My Location button is moved out of the search field.
-   - It is now placed directly above the Leaflet +/- zoom controls in the
-     bottom-right control stack.
-   - Existing geolocation behavior and state are preserved.
+2. Destinations searched/filtered results
+   - Wide desktop: 4 equal compact cards per row; results wrap into more rows.
+   - Tablet: 2 cards per row.
+   - Phone: 1 card per row.
+   - Cards use image-on-top + information-below instead of very wide/shallow rows.
+   - Destination and attraction cards share the same visual rhythm.
+   - Images use object-fit: cover and controlled aspect ratios.
+   - Titles allow 2 lines; descriptions allow 3 lines; CTA/footer remains visible.
+   - Save hearts retain a dedicated top-right lane and do not cover region text.
+   - Default unfiltered Destinations carousel is NOT changed.
 
-3. Live map search suggestions
-   - Existing UgoTour place matches remain visible directly below the search
-     field while typing.
-   - The dropdown is now height-limited, scrollable and touch-friendly.
-   - Partial intent phrases such as "hot...", "foo...", "fuel..." and
-     "hos..." also surface a quick nearby-command suggestion.
+3. PWA
+   - Cache version: ugotour-v1-16-4
+   - Adds phase1-24.css to the app shell.
 
-4. Map callout/card
-   - Desktop/tablet callout uses a stable bottom-left decision rail instead of
-     jumping around the selected marker.
-   - Phone callout becomes image-over-copy so the photo never crushes text.
-   - Phone card is lifted above the location/zoom controls.
-   - Long names/descriptions wrap safely at unusual viewport widths.
+FILES IN THIS OVERLAY
+---------------------
+frontend/css/phase1-24.css
+frontend/js/auth-home-transition.js
+frontend/js/components/navbar.js
+frontend/service-worker.js
+UPGRADE_README.txt
 
-5. Marker connector
-   - Connector now measures the actual active Leaflet marker and the nearest
-     callout edge.
-   - A requestAnimationFrame interpolation pass keeps the line visually smooth
-     while panning/zooming and while the card/image changes size.
-   - Connector SVG never intercepts map pointer events.
+NO backend or database files are changed.
 
-6. Map movement
-   - Mouse drag, touch drag, Leaflet zoom and direct map interaction remain
-     unobstructed while a selected-place card is visible.
-
-Shared stylesheet order
------------------------
-- navbar.js loads Phase 1.22 after the existing mobile/Phase 1.19-1.21 layers,
-  ensuring these targeted fixes win the cascade without broad !important hacks.
-
-PWA cache
----------
-Cache version: ugotour-v1-16-2
-
-After replacing the files, use Ctrl + Shift + R once in the browser.
+AFTER COPYING
+-------------
+Use Ctrl + Shift + R once. If a previously installed PWA remains stale, close
+and reopen it after the refreshed browser page has activated the new service
+worker.

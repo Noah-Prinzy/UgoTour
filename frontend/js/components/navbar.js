@@ -27,12 +27,18 @@ const phase122StylesReady = ensureStylesheet(
   "../../css/phase1-22.css?v=1.22.0",
   "ugotourPhase122"
 );
+const phase123StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase123="1.23"]',
+  "../../css/phase1-23.css?v=1.23.0",
+  "../../css/phase1-24.css?v=1.24.0",
+  "ugotourPhase123"
+);
 
 export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady]);
+  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady, phase123StylesReady]);
 
   let currentUser = validatedUser;
   if (currentUser === undefined) {
@@ -163,7 +169,8 @@ function ensureStylesheet(selector, relativeUrl, datasetKey) {
     ugotourPhase119: "1.19",
     ugotourPhase120: "1.20",
     ugotourPhase121: "1.21",
-    ugotourPhase122: "1.22"
+    ugotourPhase122: "1.22",
+    ugotourPhase123: "1.23"
   };
   link.dataset[datasetKey] = datasetValues[datasetKey] || "1";
 

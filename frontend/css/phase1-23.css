@@ -1,0 +1,402 @@
+/* ============================================================
+   UgoTour Phase 1.23 — Auth loading handoff + compact search cards
+   ============================================================ */
+
+/* ---------- Successful Login / Sign Up -> Home transition ---------- */
+body.auth-home-transition-open {
+  overflow: hidden !important;
+}
+
+.auth-home-transition {
+  position: fixed;
+  z-index: 5000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 73% 18%, rgba(127, 151, 79, .22), transparent 29%),
+    radial-gradient(circle at 18% 82%, rgba(217, 184, 66, .09), transparent 24%),
+    #0b120b;
+  color: #f8f6ec;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 240ms ease, visibility 240ms step-end;
+}
+
+.auth-home-transition.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 240ms ease, visibility 0s step-start;
+}
+
+.auth-home-transition.is-leaving {
+  opacity: 0;
+}
+
+.auth-home-transition__ambient {
+  position: absolute;
+  inset: -10%;
+  background:
+    linear-gradient(120deg, transparent 0 38%, rgba(255,255,255,.025) 38% 39%, transparent 39% 100%),
+    repeating-linear-gradient(90deg, transparent 0 64px, rgba(255,255,255,.018) 64px 65px);
+  transform: rotate(-4deg) scale(1.08);
+  pointer-events: none;
+}
+
+.auth-home-transition__content {
+  position: relative;
+  width: min(520px, 100%);
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.auth-home-transition__brand {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.auth-home-transition__wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  color: #fff;
+  font-size: clamp(2.7rem, 8vw, 4.5rem);
+  font-weight: 850;
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+
+.auth-home-transition__wordmark i {
+  width: .78em;
+  height: .78em;
+  display: inline-grid;
+  place-items: center;
+  margin-inline: .04em .03em;
+  border-radius: 50%;
+  background:
+    linear-gradient(to bottom,
+      #111 0 16.66%, #f9d71c 16.66% 33.32%, #d91320 33.32% 49.98%,
+      #111 49.98% 66.64%, #f9d71c 66.64% 83.3%, #d91320 83.3% 100%);
+  color: transparent;
+  font-size: .8em;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.2), 0 8px 24px rgba(0,0,0,.24);
+}
+
+.auth-home-transition__wordmark strong:last-child {
+  color: #9ab06a;
+}
+
+.auth-home-transition__tagline {
+  color: rgba(235, 239, 215, .72);
+  font-size: .64rem;
+  font-weight: 850;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+}
+
+.auth-home-transition__copy {
+  margin-top: clamp(44px, 8vh, 76px);
+}
+
+.auth-home-transition__copy p {
+  margin: 0 0 9px;
+  color: #b8ce82;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.auth-home-transition__copy h1 {
+  max-width: 430px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.7rem, 5.4vw, 2.55rem);
+  line-height: 1.03;
+  letter-spacing: -.045em;
+}
+
+.auth-home-transition__progress {
+  width: min(310px, 78vw);
+  height: 2px;
+  margin-top: 34px;
+  overflow: hidden;
+  background: rgba(255,255,255,.13);
+}
+
+.auth-home-transition__progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(90deg, #8faa55, #dcebb5);
+  transform: translateX(-120%);
+  animation: ugotour-auth-progress 1.05s cubic-bezier(.45,0,.2,1) infinite;
+}
+
+.auth-home-transition__content > small {
+  margin-top: 13px;
+  color: rgba(255,255,255,.48);
+  font-size: .65rem;
+  letter-spacing: .02em;
+}
+
+@keyframes ugotour-auth-progress {
+  0% { transform: translateX(-120%); }
+  62% { transform: translateX(145%); }
+  100% { transform: translateX(245%); }
+}
+
+/* ---------- Searched Destinations: compact uniform vertical catalogue ---------- */
+.destinations-page.destination-results-mode .destination-carousel-shell {
+  width: 100%;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-track {
+  width: min(1080px, 100%) !important;
+  margin-inline: auto !important;
+  gap: 12px !important;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-item {
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+.destinations-page.destination-results-mode .destination-card,
+.destinations-page.destination-results-mode .attraction-discovery-card {
+  width: 100% !important;
+  min-height: 176px !important;
+  height: 176px !important;
+  max-height: 176px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.15) !important;
+  border-radius: 12px !important;
+  background: rgba(8,16,9,.82) !important;
+  box-shadow: 0 12px 30px rgba(0,0,0,.12) !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-anchor,
+.destinations-page.destination-results-mode .attraction-discovery-anchor {
+  width: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: clamp(190px, 25vw, 260px) minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-media,
+.destinations-page.destination-results-mode .attraction-discovery-media {
+  width: 100% !important;
+  height: 176px !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-media img,
+.destinations-page.destination-results-mode .attraction-discovery-media img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-content,
+.destinations-page.destination-results-mode .attraction-discovery-copy {
+  min-width: 0 !important;
+  height: 100%;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 58px 16px 20px !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-content h3,
+.destinations-page.destination-results-mode .attraction-discovery-copy h3 {
+  margin: 0 !important;
+  font-size: clamp(1.15rem, 2vw, 1.5rem) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.035em !important;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-copy > p {
+  margin: 0 0 5px !important;
+  overflow: hidden;
+  color: rgba(224,235,193,.78) !important;
+  font-size: .6rem !important;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.destinations-page.destination-results-mode .destination-card-content > p,
+.destinations-page.destination-results-mode .attraction-discovery-copy > span {
+  display: -webkit-box !important;
+  margin: 8px 0 10px !important;
+  overflow: hidden !important;
+  color: rgba(240,240,230,.68) !important;
+  font-size: .72rem !important;
+  line-height: 1.45 !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2 !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-footer {
+  margin-top: auto;
+  min-height: 32px;
+}
+
+.destinations-page.destination-results-mode .destination-highlight,
+.destinations-page.destination-results-mode .attraction-discovery-copy > strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(224,235,193,.88) !important;
+  font-size: .66rem !important;
+}
+
+.destinations-page.destination-results-mode .destination-details-button {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-topline {
+  right: 12px !important;
+}
+
+.destinations-page.destination-results-mode .place-save-button {
+  top: 12px !important;
+  right: 12px !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+}
+
+.destinations-page.destination-results-mode .tag,
+.destinations-page.destination-results-mode .attraction-discovery-type {
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .destinations-page.destination-results-mode .destination-carousel-track {
+    gap: 10px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card,
+  .destinations-page.destination-results-mode .attraction-discovery-card {
+    min-height: 142px !important;
+    height: 142px !important;
+    max-height: 142px !important;
+    border-radius: 10px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-anchor,
+  .destinations-page.destination-results-mode .attraction-discovery-anchor {
+    display: grid !important;
+    grid-template-columns: clamp(96px, 31vw, 124px) minmax(0, 1fr) !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-media,
+  .destinations-page.destination-results-mode .attraction-discovery-media {
+    height: 142px !important;
+    min-height: 142px !important;
+    aspect-ratio: auto !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-content,
+  .destinations-page.destination-results-mode .attraction-discovery-copy {
+    justify-content: center;
+    padding: 11px 46px 11px 13px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-content h3,
+  .destinations-page.destination-results-mode .attraction-discovery-copy h3 {
+    font-size: clamp(.94rem, 4.4vw, 1.08rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  .destinations-page.destination-results-mode .attraction-discovery-copy > p {
+    margin-bottom: 4px !important;
+    font-size: .52rem !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-content > p,
+  .destinations-page.destination-results-mode .attraction-discovery-copy > span {
+    margin: 6px 0 7px !important;
+    font-size: .62rem !important;
+    line-height: 1.38 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-highlight,
+  .destinations-page.destination-results-mode .attraction-discovery-copy > strong {
+    font-size: .58rem !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-details-button {
+    width: 30px !important;
+    min-width: 30px !important;
+    height: 30px !important;
+    min-height: 30px !important;
+  }
+
+  .destinations-page.destination-results-mode .place-save-button {
+    top: 8px !important;
+    right: 8px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+  }
+
+  /* The compact phone thumbnail cannot safely carry both the category and the
+     full region label. Keep the category chip; the place name/details remain
+     in the text column and the card opens the exact mapped destination. */
+  .destinations-page.destination-results-mode .destination-region {
+    display: none !important;
+  }
+
+  .destinations-page.destination-results-mode .tag,
+  .destinations-page.destination-results-mode .attraction-discovery-type {
+    padding: 5px 7px !important;
+    font-size: .52rem !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .destinations-page.destination-results-mode .destination-card,
+  .destinations-page.destination-results-mode .attraction-discovery-card,
+  .destinations-page.destination-results-mode .destination-card-media,
+  .destinations-page.destination-results-mode .attraction-discovery-media {
+    height: 132px !important;
+    min-height: 132px !important;
+    max-height: 132px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-anchor,
+  .destinations-page.destination-results-mode .attraction-discovery-anchor {
+    grid-template-columns: 92px minmax(0,1fr) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-home-transition,
+  .auth-home-transition__progress span {
+    transition: none !important;
+    animation: none !important;
+  }
+}
