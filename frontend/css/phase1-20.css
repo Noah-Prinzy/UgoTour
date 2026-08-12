@@ -1,0 +1,324 @@
+/* ============================================================
+   UgoTour Phase 1.20 — Search / Filter Results UX
+   Builds on Phase 1.19 without changing backend contracts.
+   ============================================================ */
+
+/* ---------- Home lower discovery: same compact-control principles ---------- */
+.page-home .home-search-control {
+  width: min(720px, 100%);
+  margin-top: 26px;
+}
+
+.page-home .home-search-control .search-box {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 12px !important;
+  background: rgba(10,18,11,.48) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.page-home .home-search-control .search-box input {
+  min-width: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 0;
+  outline: 0;
+  background: transparent !important;
+  color: #fff !important;
+  font-size: .84rem;
+}
+
+.page-home .home-search-control .search-box input::placeholder {
+  color: rgba(255,255,255,.66) !important;
+}
+
+.page-home .home-search-control .search-box button {
+  min-width: 98px;
+  height: 42px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 9px !important;
+  background: #dcebb5 !important;
+  color: #132012 !important;
+  font-size: .74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.page-home .home-search-control .search-box:focus-within {
+  border-color: rgba(220,235,181,.82);
+  box-shadow: 0 0 0 3px rgba(220,235,181,.12), 0 14px 38px rgba(0,0,0,.18);
+}
+
+.page-home .home-search-control #search-message {
+  margin: 7px 4px 0;
+  color: rgba(255,255,255,.64) !important;
+  font-size: .64rem;
+}
+
+/* Mood cards remain photographic, but now read as quick filter controls rather
+   than a second, unrelated card system. */
+.page-home .travel-mood-grid {
+  margin-top: 18px !important;
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0,1fr)) !important;
+  gap: 9px !important;
+}
+
+.page-home .travel-mood-card {
+  min-height: 128px !important;
+  padding: 13px !important;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-end;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,.14) !important;
+  background: rgba(10,18,11,.48) !important;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease !important;
+}
+
+.page-home .travel-mood-card > span {
+  position: absolute !important;
+  top: 11px;
+  left: 11px;
+  min-width: 26px;
+  min-height: 22px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 6px;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 7px;
+  background: rgba(8,15,8,.46);
+  font-size: .56rem !important;
+}
+
+.page-home .travel-mood-card strong {
+  font-size: .9rem !important;
+  line-height: 1.05;
+}
+
+.page-home .travel-mood-card p {
+  margin: 4px 0 0 !important;
+  font-size: .62rem !important;
+  line-height: 1.3;
+}
+
+@media (hover:hover) {
+  .page-home .travel-mood-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(220,235,181,.72) !important;
+    box-shadow: 0 16px 34px rgba(0,0,0,.2) !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .page-home .travel-mood-grid { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 560px) {
+  .page-home .home-search-control .search-box {
+    min-height: 48px;
+    grid-template-columns: minmax(0,1fr) auto;
+    padding: 4px;
+  }
+  .page-home .home-search-control .search-box input { height: 40px; padding-inline: 11px; font-size: .78rem; }
+  .page-home .home-search-control .search-box button { min-width: 76px; height: 40px; padding-inline: 11px; }
+  .page-home .travel-mood-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  .page-home .travel-mood-card { min-height: 116px !important; }
+}
+
+/* ---------- Destinations hero cleanup ---------- */
+.destinations-page .dashboard-count,
+.destinations-page #destination-summary,
+.destinations-page .catalog-summary {
+  display: none !important;
+}
+
+.destinations-page .destinations-heading-row {
+  display: block !important;
+}
+
+.destinations-page .destinations-heading-row > div:first-child {
+  max-width: 980px;
+}
+
+.destinations-page .destination-carousel-toolbar {
+  margin-left: auto;
+}
+
+/* ---------- Search/filter mode becomes a true vertical results list ---------- */
+.destinations-page.destination-results-mode .destination-carousel-shell {
+  overflow: visible !important;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-track {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  overflow: visible !important;
+  scroll-snap-type: none !important;
+  transform: none !important;
+  padding: 0 !important;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-item {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  scroll-snap-align: none !important;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-track [data-loop-clone="true"] {
+  display: none !important;
+}
+
+.destinations-page.destination-results-mode .destination-carousel-controls {
+  display: none !important;
+}
+
+.destinations-page .destination-results-badge {
+  margin: 0 0 14px !important;
+  color: rgba(222,235,185,.9) !important;
+  font-size: .68rem !important;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* Destination result: image left, useful text right. */
+.destinations-page.destination-results-mode .destination-card {
+  min-height: 230px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: 0 !important;
+  background: rgba(9,17,10,.72) !important;
+  box-shadow: none !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-anchor {
+  min-height: 230px;
+  display: grid !important;
+  grid-template-columns: minmax(250px, 36%) minmax(0,1fr) !important;
+  align-items: stretch;
+}
+
+.destinations-page.destination-results-mode .destination-card-media {
+  min-height: 230px !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(22px, 3vw, 38px) !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-content h3 {
+  font-size: clamp(1.65rem, 3vw, 2.65rem) !important;
+}
+
+.destinations-page.destination-results-mode .destination-card-content > p {
+  max-width: 760px;
+  -webkit-line-clamp: 4 !important;
+}
+
+/* Attraction results use the same row rhythm as destinations. */
+.destinations-page.destination-results-mode .attraction-discovery-card {
+  min-height: 220px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255,255,255,.16) !important;
+  border-radius: 0 !important;
+  background: rgba(9,17,10,.72) !important;
+  box-shadow: none !important;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-anchor {
+  min-height: 220px;
+  display: grid !important;
+  grid-template-columns: minmax(250px, 36%) minmax(0,1fr) !important;
+  align-items: stretch;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-media {
+  min-height: 220px !important;
+  height: 100% !important;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-media img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-copy {
+  min-width: 0;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(22px, 3vw, 38px) !important;
+}
+
+.destinations-page.destination-results-mode .attraction-discovery-copy h3 {
+  font-size: clamp(1.55rem, 2.8vw, 2.45rem) !important;
+}
+
+.destinations-page.destination-results-mode .place-save-button {
+  z-index: 5;
+}
+
+@media (max-width: 760px) {
+  .destinations-page .destination-carousel-toolbar {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .destinations-page.destination-results-mode .destination-carousel-track {
+    gap: 14px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-anchor,
+  .destinations-page.destination-results-mode .attraction-discovery-anchor {
+    min-height: 0;
+    display: block !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card,
+  .destinations-page.destination-results-mode .attraction-discovery-card {
+    min-height: 0 !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-media,
+  .destinations-page.destination-results-mode .attraction-discovery-media {
+    min-height: 210px !important;
+    height: auto !important;
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-content,
+  .destinations-page.destination-results-mode .attraction-discovery-copy {
+    padding: 18px !important;
+  }
+
+  .destinations-page.destination-results-mode .destination-card-content h3,
+  .destinations-page.destination-results-mode .attraction-discovery-copy h3 {
+    font-size: clamp(1.45rem, 7vw, 2rem) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-home .travel-mood-card,
+  .page-home .travel-mood-card::before { transition: none !important; }
+}

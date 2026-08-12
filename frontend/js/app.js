@@ -10,7 +10,6 @@ await renderNavbar(".", currentUser);
 renderFooter();
 
 const slider = document.getElementById("journey-slider");
-const heroTransition = document.getElementById("home-hero-transition");
 const contentSurface = document.getElementById("home-content");
 const backgroundLayers = [
   document.getElementById("journey-bg-a"),
@@ -39,9 +38,6 @@ let autoplayTimer = null;
 let autoplayPaused = false;
 let activeBackgroundIndex = 0;
 
-// Phase 8.4: the Hero <-> Search handoff is gesture-triggered, not tied to
-// every pixel of scroll. A single deliberate wheel/touch gesture starts the
-// complete cinematic transition and locks out repeated gestures until it lands.
 const HANDOFF_DURATION_MS = 980;
 const WHEEL_TRIGGER = 18;
 const TOUCH_TRIGGER = 34;
@@ -82,12 +78,10 @@ function queueIndicesFor(heroIndex) {
   );
 }
 
-function createJourneyQueueCard(index, order) {
+function populateJourneyCard(button, index, order) {
   const destination = destinations[index];
   const isActive = order === ACTIVE_SELECTOR_ORDER;
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = `journey-card${isActive ? " is-active" : ""}`;
+  button.className = `journey-card is-reused-motion${isActive ? " is-active" : ""}`;
   button.dataset.index = String(index);
   button.dataset.queueOrder = String(order);
   button.setAttribute("role", "option");
@@ -95,18 +89,35 @@ function createJourneyQueueCard(index, order) {
   button.setAttribute("aria-label", isActive ? `Current destination: ${destination.name}` : `Show ${destination.name}`);
 
   const image = resolveAssetPath(primaryImage(destination), ".");
-  button.innerHTML = `
-    <img src="${escapeAttribute(image)}" alt="" />
-    <span class="journey-card-shade" aria-hidden="true"></span>
-    <span class="journey-card-copy">
-      <small>${escapeHtml(destination.category)}</small>
-      <strong>${escapeHtml(destination.name)}</strong>
-    </span>
-  `;
+  const img = button.querySelector("img");
+  const small = button.querySelector("small");
+  const strong = button.querySelector("strong");
 
+  if (!img) {
+    button.innerHTML = `
+      <img src="${escapeAttribute(image)}" alt="" />
+      <span class="journey-card-shade" aria-hidden="true"></span>
+      <span class="journey-card-copy">
+        <small>${escapeHtml(destination.category)}</small>
+        <strong>${escapeHtml(destination.name)}</strong>
+      </span>`;
+  } else {
+    const absoluteImage = new URL(image, window.location.href).href;
+    if (img.src !== absoluteImage) img.src = image;
+    if (small) small.textContent = destination.category || "";
+    if (strong) strong.textContent = destination.name || "";
+  }
+}
+
+function createJourneyQueueCard(index, order) {
+  const button = document.createElement("button");
+  button.type = "button";
+  populateJourneyCard(button, index, order);
   button.addEventListener("click", () => {
-    const direction = order < ACTIVE_SELECTOR_ORDER ? -1 : 1;
-    changeDestination(index, button, direction);
+    const targetIndex = Number(button.dataset.index);
+    const orderNow = Number(button.dataset.queueOrder);
+    const direction = orderNow < ACTIVE_SELECTOR_ORDER ? -1 : 1;
+    changeDestination(targetIndex, button, direction);
   });
   return button;
 }
@@ -134,89 +145,92 @@ function renderJourneyDots() {
   });
 }
 
+// Phase 1.19: reuse the live card nodes instead of deleting/rebuilding the
+// entire five-card queue. The Android selector therefore moves as one fluid
+// FLIP transition and only the single entering/leaving edge item is created/
+// removed. This eliminates the visible queue re-formation in the supplied video.
 async function animateJourneyQueue(nextHeroIndex, direction = 1) {
   if (!cardRail) return;
 
   const nextIndices = queueIndicesFor(nextHeroIndex);
-  const oldCards = [...cardRail.querySelectorAll(".journey-card")];
+  const liveCards = [...cardRail.querySelectorAll(".journey-card:not(.is-leaving-motion)")];
 
-  if (reduceMotion || !oldCards.length || !Element.prototype.animate) {
+  if (reduceMotion || !liveCards.length || !Element.prototype.animate) {
     renderJourneyQueue(nextHeroIndex);
     return;
   }
 
   const railRect = cardRail.getBoundingClientRect();
-  const oldState = new Map(oldCards.map((card) => [
-    Number(card.dataset.index),
-    { rect: card.getBoundingClientRect() }
-  ]));
+  const cardByIndex = new Map(liveCards.map((card) => [Number(card.dataset.index), card]));
+  const oldRects = new Map(liveCards.map((card) => [card, card.getBoundingClientRect()]));
+  const leaving = liveCards.filter((card) => !nextIndices.includes(Number(card.dataset.index)));
 
-  const disappearing = oldCards.filter((card) => !nextIndices.includes(Number(card.dataset.index)));
-  const ghosts = disappearing.map((card) => {
-    const rect = card.getBoundingClientRect();
-    const ghost = card.cloneNode(true);
-    ghost.classList.add("journey-card-ghost");
-    // The clone must not participate in the five live queue positions. Keeping
-    // its queue-order attribute made it match the orbit CSS while it faded out,
-    // which could pull the outgoing top card toward the centre of the screen.
-    delete ghost.dataset.queueOrder;
-    ghost.style.left = `${rect.left - railRect.left}px`;
-    ghost.style.top = `${rect.top - railRect.top}px`;
-    ghost.style.right = "auto";
-    ghost.style.bottom = "auto";
-    ghost.style.width = `${rect.width}px`;
-    ghost.style.height = `${rect.height}px`;
-    ghost.style.margin = "0";
-    ghost.setAttribute("aria-hidden", "true");
-    ghost.tabIndex = -1;
-    cardRail.appendChild(ghost);
-    return ghost;
+  // Freeze only the outgoing edge card in its old physical position. Unlike the
+  // old implementation we do not clone every card, so the active circle and its
+  // neighbours retain identity throughout the movement.
+  leaving.forEach((card) => {
+    const rect = oldRects.get(card);
+    card.classList.add("is-leaving-motion");
+    card.style.left = `${rect.left - railRect.left}px`;
+    card.style.top = `${rect.top - railRect.top}px`;
+    card.style.width = `${rect.width}px`;
+    card.style.height = `${rect.height}px`;
+    card.style.margin = "0";
+    card.style.flex = "none";
   });
 
-  oldCards.forEach((card) => card.remove());
-  nextIndices.forEach((index, order) => cardRail.appendChild(createJourneyQueueCard(index, order)));
+  const nextCards = nextIndices.map((index, order) => {
+    const reused = cardByIndex.get(index);
+    const card = reused || createJourneyQueueCard(index, order);
+    card.classList.remove("is-leaving-motion");
+    if (reused) populateJourneyCard(card, index, order);
+    cardRail.appendChild(card);
+    return card;
+  });
 
-  const newCards = [...cardRail.querySelectorAll(".journey-card:not(.journey-card-ghost)")];
+  // Allow layout to settle after DOM reordering, then invert each reused card
+  // from its previous physical location to its new one.
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
   const animations = [];
-  const movementEasing = "cubic-bezier(.18,.82,.2,1)";
+  const easing = "cubic-bezier(.16,.84,.18,1)";
 
-  newCards.forEach((card) => {
-    const destinationIndex = Number(card.dataset.index);
-    const previous = oldState.get(destinationIndex);
+  nextCards.forEach((card) => {
+    const oldRect = oldRects.get(card);
+    const newRect = card.getBoundingClientRect();
 
-    if (previous) {
-      const newRect = card.getBoundingClientRect();
-      const deltaX = previous.rect.left - newRect.left;
-      const deltaY = previous.rect.top - newRect.top;
+    if (oldRect) {
+      const dx = oldRect.left - newRect.left;
+      const dy = oldRect.top - newRect.top;
+      const sx = newRect.width ? oldRect.width / newRect.width : 1;
+      const sy = newRect.height ? oldRect.height / newRect.height : 1;
       const animation = card.animate([
-        { transform: `translate3d(${deltaX}px, ${deltaY}px, 0)`, opacity: 0.88 },
-        { transform: "translate3d(0, 0, 0)", opacity: 1 }
-      ], { duration: 620, easing: movementEasing });
+        { transform: `translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`, opacity: .96 },
+        { transform: "translate3d(0,0,0) scale(1,1)", opacity: 1 }
+      ], { duration: 560, easing });
       animations.push(animation.finished.catch(() => {}));
       return;
     }
 
-    const enterX = direction >= 0 ? 58 : -58;
+    const enterDistance = direction >= 0 ? 34 : -34;
     const animation = card.animate([
-      { transform: `translate3d(${enterX}px, 8px, 0) scale(.955)`, opacity: 0 },
-      { transform: "translate3d(0, 0, 0) scale(1)", opacity: 1 }
-    ], { duration: 650, delay: 90, easing: movementEasing });
+      { transform: `translate3d(${enterDistance}px,0,0) scale(.9)`, opacity: 0 },
+      { transform: "translate3d(0,0,0) scale(1)", opacity: 1 }
+    ], { duration: 470, delay: 35, easing });
     animations.push(animation.finished.catch(() => {}));
   });
 
-  ghosts.forEach((ghost) => {
-    // Hold the outgoing card exactly where it was and simply dissolve it.
-    // Moving this absolute clone caused the visible jump reported in the
-    // carousel recording, especially when the first orbit item left the queue.
-    const animation = ghost.animate([
-      { opacity: 1 },
-      { opacity: 0 }
-    ], { duration: 280, easing: "ease-out", fill: "forwards" });
+  leaving.forEach((card) => {
+    const leaveDistance = direction >= 0 ? -24 : 24;
+    const animation = card.animate([
+      { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+      { transform: `translate3d(${leaveDistance}px,0,0) scale(.88)`, opacity: 0 }
+    ], { duration: 300, easing: "ease-out", fill: "forwards" });
     animations.push(animation.finished.catch(() => {}));
   });
 
   await Promise.all(animations);
-  ghosts.forEach((ghost) => ghost.remove());
+  leaving.forEach((card) => card.remove());
 }
 
 function updateHeroContent(destination) {
@@ -245,15 +259,15 @@ async function animateCopyChange(destination) {
 
   await copyBlock.animate([
     { opacity: 1, transform: "translateY(0)" },
-    { opacity: 0, transform: "translateY(-18px)" }
-  ], { duration: 210, easing: "ease-in", fill: "forwards" }).finished;
+    { opacity: 0, transform: "translateY(-16px)" }
+  ], { duration: 190, easing: "ease-in", fill: "forwards" }).finished;
 
   updateHeroContent(destination);
 
   await copyBlock.animate([
-    { opacity: 0, transform: "translateY(24px)" },
+    { opacity: 0, transform: "translateY(20px)" },
     { opacity: 1, transform: "translateY(0)" }
-  ], { duration: 470, easing: "cubic-bezier(.18,.82,.2,1)", fill: "forwards" }).finished;
+  ], { duration: 420, easing: "cubic-bezier(.18,.82,.2,1)", fill: "forwards" }).finished;
 }
 
 async function crossfadeBackground(destination) {
@@ -291,8 +305,7 @@ async function changeDestination(nextIndex, sourceCard = null, directionHint = 1
 
   transitionLocked = true;
   const destination = destinations[normalized];
-  const targetCard = sourceCard || cardRail?.querySelector(`[data-index="${normalized}"]`);
-  targetCard?.classList.add("is-transition-source");
+  sourceCard?.classList.add("is-transition-source");
 
   const queueAnimation = animateJourneyQueue(normalized, directionHint);
   activeIndex = normalized;
@@ -305,6 +318,7 @@ async function changeDestination(nextIndex, sourceCard = null, directionHint = 1
       queueAnimation
     ]);
   } finally {
+    sourceCard?.classList.remove("is-transition-source");
     transitionLocked = false;
   }
 }
@@ -335,7 +349,7 @@ function submitSearch() {
     searchInput?.focus();
     return;
   }
-  window.location.href = `./pages/destinations.html?q=${encodeURIComponent(term)}`;
+  window.location.href = `./pages/destinations.html?q=${encodeURIComponent(term)}&results=1`;
 }
 
 function getContentSnapTop() {
@@ -356,8 +370,6 @@ function animateWindowScroll(targetY, duration = HANDOFF_DURATION_MS) {
     return Promise.resolve();
   }
 
-  // main.css enables smooth scrolling globally. For this one cinematic handoff
-  // JavaScript owns the motion, so temporarily force frame-by-frame scrolling.
   const root = document.documentElement;
   const body = document.body;
   const previousRootBehavior = root.style.scrollBehavior;
@@ -367,23 +379,19 @@ function animateWindowScroll(targetY, duration = HANDOFF_DURATION_MS) {
 
   return new Promise((resolve) => {
     const startedAt = performance.now();
-
     function frame(now) {
       const progress = clamp((now - startedAt) / duration);
       const eased = easeInOutCubic(progress);
       window.scrollTo(0, startY + (distance * eased));
-
       if (progress < 1) {
         requestAnimationFrame(frame);
         return;
       }
-
       window.scrollTo(0, targetY);
       root.style.scrollBehavior = previousRootBehavior;
       body.style.scrollBehavior = previousBodyBehavior;
       resolve();
     }
-
     requestAnimationFrame(frame);
   });
 }
@@ -395,9 +403,6 @@ function createHandoffAnimations(direction) {
   const easing = "cubic-bezier(.22,.78,.18,1)";
   const duration = HANDOFF_DURATION_MS;
 
-  // The whole photographic hero fades while the content surface rises/falls
-  // into place. The final content keyframe has a tiny overshoot so the section
-  // visibly settles — the soft snap the user requested.
   const heroFrames = down
     ? [
         { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0px)", offset: 0 },
@@ -432,31 +437,17 @@ function createHandoffAnimations(direction) {
   ];
 
   if (copyBlock?.animate) {
-    const copyFrames = down
-      ? [
-          { opacity: 1, transform: "translateY(0)" },
-          { opacity: .82, transform: "translateY(-8px)", offset: .25 },
-          { opacity: 0, transform: "translateY(-34px)" }
-        ]
-      : [
-          { opacity: 0, transform: "translateY(-30px)" },
-          { opacity: .78, transform: "translateY(7px)", offset: .72 },
-          { opacity: 1, transform: "translateY(0)" }
-        ];
-    animations.push(copyBlock.animate(copyFrames, { duration: duration * .78, easing, fill: "both" }));
+    animations.push(copyBlock.animate(down
+      ? [{ opacity: 1, transform: "translateY(0)" }, { opacity: .82, transform: "translateY(-8px)", offset: .25 }, { opacity: 0, transform: "translateY(-34px)" }]
+      : [{ opacity: 0, transform: "translateY(-30px)" }, { opacity: .78, transform: "translateY(7px)", offset: .72 }, { opacity: 1, transform: "translateY(0)" }],
+    { duration: duration * .78, easing, fill: "both" }));
   }
 
   if (cardRail?.animate) {
-    const queueFrames = down
-      ? [
-          { opacity: 1, transform: "translateY(0)" },
-          { opacity: 0, transform: "translateY(34px)", offset: 1 }
-        ]
-      : [
-          { opacity: 0, transform: "translateY(32px)" },
-          { opacity: 1, transform: "translateY(0)", offset: 1 }
-        ];
-    animations.push(cardRail.animate(queueFrames, { duration: duration * .72, easing, fill: "both" }));
+    animations.push(cardRail.animate(down
+      ? [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(34px)" }]
+      : [{ opacity: 0, transform: "translateY(32px)" }, { opacity: 1, transform: "translateY(0)" }],
+    { duration: duration * .72, easing, fill: "both" }));
   }
 
   return animations;
@@ -468,25 +459,20 @@ async function runHomeHandoff(direction) {
   const contentTop = getContentSnapTop();
   if (contentTop <= 0) return;
 
-  const down = direction === "down";
-  const targetY = down ? contentTop : 0;
+  const targetY = direction === "down" ? contentTop : 0;
   homeHandoffLocked = true;
   document.documentElement.classList.add("home-handoff-running", `home-handoff-${direction}`);
-
   const animations = createHandoffAnimations(direction);
 
   try {
-    if (reduceMotion) {
-      window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
-    } else {
+    if (reduceMotion) window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
+    else {
       await Promise.all([
         animateWindowScroll(targetY),
         ...animations.map((animation) => animation.finished.catch(() => {}))
       ]);
     }
   } finally {
-    // Always finish on an exact resting point. Cancelling the temporary WAAPI
-    // animations restores normal CSS once the hero is fully off/on screen.
     window.scrollTo({ top: targetY, left: 0, behavior: "auto" });
     animations.forEach((animation) => animation.cancel());
     document.documentElement.classList.remove("home-handoff-running", "home-handoff-down", "home-handoff-up");
@@ -503,10 +489,6 @@ function resetWheelIntentSoon() {
 
 function handleHomeWheel(event) {
   if (!slider || !contentSurface) return;
-
-  // Touchpads often keep emitting momentum events after the user's initial
-  // gesture. Briefly swallow that tail so the Search section stays perfectly
-  // snapped instead of immediately drifting farther down the page.
   if (homeHandoffLocked || performance.now() < handoffCooldownUntil) {
     event.preventDefault();
     return;
@@ -543,7 +525,6 @@ function handleTouchStart(event) {
 
 function handleTouchMove(event) {
   if (touchStartY == null || !slider || !contentSurface) return;
-
   if (homeHandoffLocked) {
     event.preventDefault();
     return;
@@ -551,15 +532,13 @@ function handleTouchMove(event) {
 
   const currentY = event.touches[0]?.clientY;
   if (currentY == null) return;
-  const gesture = touchStartY - currentY; // positive = finger moved up = scroll down
+  const gesture = touchStartY - currentY;
   const y = window.scrollY;
   const contentTop = getContentSnapTop();
   const atHero = y <= 10;
   const atContentBoundary = y >= contentTop - 8 && y <= contentTop + 54;
 
   if (atHero && gesture > 0) {
-    // Hold the fullscreen hero still until the swipe is deliberate, then play
-    // the full handoff rather than partially dragging the page.
     event.preventDefault();
     if (gesture >= TOUCH_TRIGGER) {
       touchStartY = null;
@@ -627,23 +606,32 @@ async function initialize() {
   }
 }
 
+
+// Phase 1.20: mood cards are quick filters that use the same results mode as
+// Home/Destinations search. The destination page owns the actual filtering.
+document.querySelectorAll(".travel-mood-card").forEach((card) => {
+  card.addEventListener("click", (event) => {
+    event.preventDefault();
+    const target = new URL(card.href, window.location.href);
+    target.searchParams.set("results", "1");
+    window.location.assign(target.href);
+  });
+});
+
 searchButton?.addEventListener("click", submitSearch);
 searchInput?.addEventListener("keydown", (event) => { if (event.key === "Enter") submitSearch(); });
-
 slider?.addEventListener("pointerenter", () => setAutoplayPaused(true));
 slider?.addEventListener("pointerleave", () => setAutoplayPaused(false));
 slider?.addEventListener("focusin", () => setAutoplayPaused(true));
 slider?.addEventListener("focusout", (event) => {
   if (!slider.contains(event.relatedTarget)) setAutoplayPaused(false);
 });
-
 document.addEventListener("visibilitychange", () => setAutoplayPaused(document.hidden));
 window.addEventListener("wheel", handleHomeWheel, { passive: false });
 window.addEventListener("touchstart", handleTouchStart, { passive: true });
 window.addEventListener("touchmove", handleTouchMove, { passive: false });
 window.addEventListener("touchend", () => { touchStartY = null; }, { passive: true });
 window.addEventListener("keydown", handleHomeKeydown);
-
 scrollCue?.addEventListener("click", (event) => {
   event.preventDefault();
   runHomeHandoff("down");
@@ -657,9 +645,6 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
-
-function escapeAttribute(value) {
-  return escapeHtml(value);
-}
+function escapeAttribute(value) { return escapeHtml(value); }
 
 await initialize();

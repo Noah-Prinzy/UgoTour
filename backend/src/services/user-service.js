@@ -2,9 +2,9 @@ import database from "../database/connection.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { toPublicUser } from "./auth-service.js";
 
-const publicUserColumns = "id,name,email,profile_image,role,created_at,updated_at";
+const publicUserColumns = "id,name,email,bio,profile_image,role,created_at,updated_at";
 
-export async function updateProfile(userId, { name, email }) {
+export async function updateProfile(userId, { name, email, bio }) {
   const numericUserId = Number(userId);
   const normalizedEmail = email === undefined ? null : email.trim().toLowerCase();
   if (normalizedEmail !== null) {
@@ -18,10 +18,18 @@ export async function updateProfile(userId, { name, email }) {
 
   const result = await database.query(`
     UPDATE users
-    SET name=COALESCE($2,name),email=COALESCE($3,email),updated_at=NOW()
+    SET name=COALESCE($2,name),
+        email=COALESCE($3,email),
+        bio=COALESCE($4,bio),
+        updated_at=NOW()
     WHERE id=$1
     RETURNING ${publicUserColumns}
-  `, [numericUserId, name === undefined ? null : name.trim(), normalizedEmail]);
+  `, [
+    numericUserId,
+    name === undefined ? null : name.trim(),
+    normalizedEmail,
+    bio === undefined ? null : String(bio).trim()
+  ]);
   return toPublicUser(result.rows[0]);
 }
 
@@ -31,6 +39,38 @@ export async function updateProfileImage(userId, imageData) {
     WHERE id=$1 RETURNING ${publicUserColumns}
   `, [Number(userId), imageData]);
   return toPublicUser(result.rows[0]);
+}
+
+export async function getProfileFeedback(userId) {
+  const result = await database.query(`
+    SELECT rating,review,created_at,updated_at
+    FROM user_feedback WHERE user_id=$1
+  `, [Number(userId)]);
+  const row = result.rows[0];
+  if (!row) return null;
+  return {
+    rating: Number(row.rating),
+    review: row.review,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+export async function upsertProfileFeedback(userId, { rating, review }) {
+  const result = await database.query(`
+    INSERT INTO user_feedback (user_id,rating,review)
+    VALUES ($1,$2,$3)
+    ON CONFLICT (user_id) DO UPDATE
+    SET rating=EXCLUDED.rating, review=EXCLUDED.review, updated_at=NOW()
+    RETURNING rating,review,created_at,updated_at
+  `, [Number(userId), Number(rating), String(review).trim()]);
+  const row = result.rows[0];
+  return {
+    rating: Number(row.rating),
+    review: row.review,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {

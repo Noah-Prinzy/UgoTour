@@ -1,5 +1,11 @@
 import { getAuthenticatedUser } from "../middleware/auth.js";
-import { changePassword, updateProfile, updateProfileImage } from "../services/user-service.js";
+import {
+  changePassword,
+  getProfileFeedback,
+  updateProfile,
+  updateProfileImage,
+  upsertProfileFeedback
+} from "../services/user-service.js";
 import { clearSessionCookie } from "../utils/cookies.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
@@ -16,6 +22,7 @@ export async function patchProfile(request, response) {
   const body = await readJsonBody(request);
   if (body.name !== undefined && (!isNonEmptyString(body.name) || body.name.trim().length > 120)) return sendJson(response, 400, { error: "Name must contain 1 to 120 characters." });
   if (body.email !== undefined && !isEmail(body.email)) return sendJson(response, 400, { error: "A valid email is required." });
+  if (body.bio !== undefined && (typeof body.bio !== "string" || body.bio.trim().length > 500)) return sendJson(response, 400, { error: "Bio must contain at most 500 characters." });
   const updated = await updateProfile(user.id, body);
   if (!updated) return sendJson(response, 404, { error: "User not found." });
   sendJson(response, 200, { data: updated });
@@ -32,6 +39,23 @@ export async function patchProfilePhoto(request, response) {
   }
   const updated = await updateProfileImage(user.id, imageData);
   sendJson(response, 200, { data: updated });
+}
+
+export async function getFeedback(request, response) {
+  const user = await getAuthenticatedUser(request);
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
+  sendJson(response, 200, { data: await getProfileFeedback(user.id) });
+}
+
+export async function patchFeedback(request, response) {
+  const user = await getAuthenticatedUser(request);
+  if (!user) return sendJson(response, 401, { error: "Authentication required." });
+  const body = await readJsonBody(request);
+  const rating = Number(body.rating);
+  const review = String(body.review ?? "").trim();
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return sendJson(response, 400, { error: "Rating must be from 1 to 5." });
+  if (!review || review.length > 1200) return sendJson(response, 400, { error: "Feedback must contain 1 to 1200 characters." });
+  sendJson(response, 200, { data: await upsertProfileFeedback(user.id, { rating, review }) });
 }
 
 export async function patchPassword(request, response) {

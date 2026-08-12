@@ -6,7 +6,7 @@ export async function getAuthenticatedUser(request) {
   if (!token) return null;
 
   const result = await database.query(`
-    SELECT u.id,u.name,u.email,u.profile_image,u.role,u.created_at,u.updated_at
+    SELECT u.id,u.name,u.email,u.bio,u.profile_image,u.role,u.created_at,u.updated_at
     FROM sessions AS s
     INNER JOIN users AS u ON u.id=s.user_id
     WHERE s.token=$1 AND s.expires_at > NOW()
@@ -18,6 +18,7 @@ export async function getAuthenticatedUser(request) {
     id: Number(user.id),
     name: user.name,
     email: user.email,
+    bio: user.bio ?? "",
     profileImage: user.profile_image,
     role: user.role || "user",
     createdAt: user.created_at,

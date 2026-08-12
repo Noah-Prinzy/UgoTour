@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/map.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
   <title>Map | UgoTour</title>
 </head>
 <body class="map-page">
@@ -32,23 +33,26 @@
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-4-4" />
             </svg>
-            <input id="map-search-input" type="text" role="searchbox" inputmode="search" enterkeyhint="search" placeholder="Search Kampala, Jinja, museums…" autocomplete="off" />
+            <input id="map-search-input" type="text" role="searchbox" inputmode="search" enterkeyhint="search" placeholder="Search a place or type ‘hotels near me’" autocomplete="off" />
+            <button id="map-locate-me" class="map-inline-location" type="button" aria-label="Use my current location" title="My location">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+              </svg>
+            </button>
             <button id="map-search-clear" type="button" aria-label="Clear map search" hidden>×</button>
           </label>
           <div id="map-search-suggestions" class="map-search-suggestions" hidden aria-label="Search suggestions"></div>
         </div>
 
-        <div class="map-nearby-dock" aria-label="Location and nearby discovery">
-          <button id="map-locate-me" class="map-nearby-button map-locate-me" type="button">
-            <span aria-hidden="true">◎</span> My location
-          </button>
-          <button class="map-nearby-button" type="button" data-nearby-category="attractions" aria-pressed="false">Attractions</button>
-          <button class="map-nearby-button" type="button" data-nearby-category="hotels" aria-pressed="false">Hotels</button>
-          <button class="map-nearby-button" type="button" data-nearby-category="restaurants" aria-pressed="false">Food</button>
-          <button class="map-nearby-button" type="button" data-nearby-category="fuel" aria-pressed="false">Fuel</button>
-          <button class="map-nearby-button" type="button" data-nearby-category="hospitals" aria-pressed="false">Health</button>
+        <div class="map-intent-action-source" aria-hidden="true">
+          <button type="button" data-nearby-category="attractions" tabindex="-1">Attractions</button>
+          <button type="button" data-nearby-category="hotels" tabindex="-1">Hotels</button>
+          <button type="button" data-nearby-category="restaurants" tabindex="-1">Food</button>
+          <button type="button" data-nearby-category="fuel" tabindex="-1">Fuel</button>
+          <button type="button" data-nearby-category="hospitals" tabindex="-1">Health</button>
         </div>
 
+        <p class="map-search-intent-hint">Try “hotels near me”, “food near Kampala” or “attractions around Jinja”.</p>
         <div id="map-status-toast" class="map-status-toast" hidden aria-live="polite"></div>
       </section>
 
@@ -147,5 +151,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="../js/pages/map.js"></script>
+  <script type="module" src="../js/pages/map-search-intent.js?v=1.19.0"></script>
+  <script type="module" src="../js/pages/map-polish.js?v=1.22.0"></script>
 </body>
 </html>

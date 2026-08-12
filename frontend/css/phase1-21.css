@@ -1,0 +1,36 @@
+/* ============================================================
+   UgoTour Phase 1.21 — Destination details control spacing
+   ------------------------------------------------------------
+   Mobile-only polish: Back and Save sit on one clear control row.
+   The gallery progress/divider line is positioned underneath the
+   entire row so it never cuts through either control.
+   ============================================================ */
+
+@media (max-width: 720px) {
+  .details-page .details-back-button,
+  .details-page .details-favorite-button {
+    top: 20px !important;
+    height: 46px !important;
+  }
+
+  .details-page .details-back-button {
+    left: 18px !important;
+    min-width: 88px !important;
+  }
+
+  .details-page .details-favorite-button {
+    right: 18px !important;
+    left: auto !important;
+    width: 46px !important;
+  }
+
+  .details-page .details-experience-progress {
+    top: 76px !important;
+    left: 18px !important;
+    right: 18px !important;
+  }
+
+  .details-page .details-experience-stage {
+    padding-top: 102px !important;
+  }
+}

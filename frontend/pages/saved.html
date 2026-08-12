@@ -14,21 +14,25 @@
   <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
   <title>Saved Places | UgoTour</title>
 </head>
 <body class="saved-page home-reference-page">
   <header id="site-header"></header>
   <main id="main-content" class="dashboard-main saved-main">
-    <section class="saved-shell saved-editorial-shell">
-      <div class="page-content-titlebar saved-titlebar">
-        <div>
-          <p class="section-kicker">Your shortlist</p>
-          <h1>Saved places</h1>
-          <p class="section-lead">Keep the Uganda places you want to return to, then jump straight to their map pin.</p>
+    <section class="saved-editorial-shell">
+      <div class="saved-content-intro">
+        <div class="page-content-titlebar saved-titlebar">
+          <div>
+            <p class="section-kicker">Your shortlist</p>
+            <h1>Saved places</h1>
+            <p class="section-lead">Keep the Uganda places you want to return to, then jump straight to their map pin.</p>
+          </div>
+          <a class="secondary-button" href="./map.html">Explore map</a>
         </div>
-        <a class="secondary-button" href="./map.html">Explore map</a>
+        <p id="saved-status" class="catalog-summary saved-status-line" aria-live="polite"></p>
       </div>
-      <div id="saved-status" class="catalog-summary saved-status-line" aria-live="polite"></div>
+
       <div id="saved-list" class="saved-grid"></div>
       <div id="saved-empty" class="empty-state" hidden>
         <h2>No saved places yet.</h2>

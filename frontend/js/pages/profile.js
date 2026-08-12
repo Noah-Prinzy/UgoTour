@@ -2,22 +2,22 @@ import "../ui-motion.js";
 import { renderNavbar } from "../components/navbar.js";
 import { renderFooter } from "../components/footer.js";
 import {
-  changeCurrentUserPassword,
-  logoutUser,
-  updateCurrentUserProfile,
+  getCurrentUserFeedback,
+  updateCurrentUserFeedback,
   updateCurrentUserProfileImage
 } from "../services/auth-service.js";
-import { passwordsMatch } from "../utils/validation.js";
+import { getBookings } from "../services/booking-service.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
+import { resolveAssetPath } from "../utils/assets.js";
 
 let currentUser = await requireAuthenticatedUser("..");
 await renderNavbar("..", currentUser);
 renderFooter();
 
-const loggedOutState = document.getElementById("profile-logged-out");
-const loggedInState = document.getElementById("profile-logged-in");
-const profileForm = document.getElementById("profile-form");
-const passwordForm = document.getElementById("password-form");
+const avatar = document.getElementById("profile-avatar");
+const bio = document.getElementById("profile-display-bio");
+const visitedList = document.getElementById("profile-visited-list");
+const visitedEmpty = document.getElementById("profile-visited-empty");
 
 const photoDialog = document.getElementById("profile-photo-dialog");
 const photoDialogClose = document.getElementById("profile-photo-dialog-close");
@@ -27,29 +27,34 @@ const photoInput = document.getElementById("profile-photo-input");
 const photoPreview = document.getElementById("profile-photo-preview");
 const photoSave = document.getElementById("profile-photo-save");
 const photoRemove = document.getElementById("profile-photo-remove");
+const cropFrame = document.getElementById("profile-crop-frame");
+const cropImage = document.getElementById("profile-crop-image");
+const cropZoom = document.getElementById("profile-crop-zoom");
 
-// undefined = no pending change, null = remove current image, string = new data URL.
+const feedbackDialog = document.getElementById("profile-feedback-dialog");
+const feedbackEdit = document.getElementById("profile-feedback-edit");
+const feedbackClose = document.getElementById("profile-feedback-close");
+const feedbackCancel = document.getElementById("profile-feedback-cancel");
+const feedbackSave = document.getElementById("profile-feedback-save");
+const feedbackText = document.getElementById("profile-feedback-text");
+const ratingPicker = document.getElementById("profile-rating-picker");
+
+let currentFeedback = null;
 let pendingProfileImage;
 let photoSaveInProgress = false;
+let sourceImage = null;
+let sourceObjectUrl = null;
+let cropState = { zoom: 1, x: 0, y: 0 };
+let dragState = null;
+let selectedRating = 0;
 
-async function renderProfile() {
-  loggedOutState?.setAttribute("hidden", "");
-  loggedInState?.removeAttribute("hidden");
-
+function renderProfileIdentity() {
   setText("profile-display-name", currentUser.name);
-  setText("profile-display-email", currentUser.email);
-  setText("profile-member-since", formatDate(currentUser.createdAt));
-
-  const name = document.getElementById("profile-name");
-  const email = document.getElementById("profile-email");
-  if (name) name.value = currentUser.name;
-  if (email) email.value = currentUser.email;
-
+  if (bio) bio.textContent = currentUser.bio?.trim() || "Add a short bio to tell your Uganda travel story.";
   renderAvatar(currentUser.profileImage);
 }
 
 function renderAvatar(imageData = null) {
-  const avatar = document.getElementById("profile-avatar");
   if (!avatar) return;
   avatar.innerHTML = imageData
     ? `<img src="${imageData}" alt="Profile picture" />`
@@ -63,12 +68,120 @@ function renderPhotoPreview(imageData = null) {
     : `<span>${escapeHtml(makeInitials(currentUser?.name))}</span>`;
 }
 
+async function loadVisitedPlaces() {
+  try {
+    const bookings = await getBookings();
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const seen = new Set();
+    const visited = bookings
+      .filter((booking) => new Date(`${booking.travelDate}T00:00:00`) <= today)
+      .sort((a, b) => String(b.travelDate).localeCompare(String(a.travelDate)))
+      .filter((booking) => {
+        const key = Number(booking.destinationId);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+    if (!visitedList || !visitedEmpty) return;
+    visitedList.innerHTML = "";
+    visitedEmpty.hidden = visited.length !== 0;
+    visitedList.hidden = visited.length === 0;
+
+    visited.forEach((booking) => {
+      const link = document.createElement("a");
+      link.className = "visited-place-card";
+      link.href = `./destination-details.html?id=${Number(booking.destinationId)}`;
+      const image = resolveAssetPath(booking.destinationImageUrl, "..");
+      link.innerHTML = `<img src="${escapeHtml(image)}" alt="${escapeHtml(booking.destinationName)}" loading="lazy"/><span class="visited-place-copy"><strong>${escapeHtml(booking.destinationName)}</strong><span>${escapeHtml(booking.destinationRegion || "Uganda")} · visited ${escapeHtml(formatDate(booking.travelDate))}</span></span>`;
+      visitedList.appendChild(link);
+    });
+  } catch (error) {
+    console.error("Could not load visited places:", error);
+    if (visitedEmpty) {
+      visitedEmpty.hidden = false;
+      visitedEmpty.textContent = "Your journey history could not be loaded right now.";
+    }
+  }
+}
+
+async function loadFeedback() {
+  try { currentFeedback = await getCurrentUserFeedback(); }
+  catch (error) { console.error("Could not load feedback:", error); currentFeedback = null; }
+  renderFeedback();
+}
+
+function renderFeedback() {
+  const stars = document.getElementById("profile-feedback-stars");
+  const review = document.getElementById("profile-feedback-review");
+  if (!stars || !review) return;
+  if (!currentFeedback) {
+    stars.textContent = "☆☆☆☆☆";
+    stars.setAttribute("aria-label", "No rating yet");
+    review.textContent = "You have not reviewed UgoTour yet.";
+    review.classList.add("profile-feedback-empty");
+    if (feedbackEdit) feedbackEdit.textContent = "Share feedback";
+    return;
+  }
+  stars.textContent = "★".repeat(currentFeedback.rating) + "☆".repeat(5 - currentFeedback.rating);
+  stars.setAttribute("aria-label", `${currentFeedback.rating} out of 5 stars`);
+  review.textContent = currentFeedback.review;
+  review.classList.remove("profile-feedback-empty");
+  if (feedbackEdit) feedbackEdit.textContent = "Update feedback";
+}
+
+function openFeedbackEditor() {
+  selectedRating = currentFeedback?.rating || 0;
+  if (feedbackText) feedbackText.value = currentFeedback?.review || "";
+  renderRatingPicker();
+  clearMessage("profile-feedback-message");
+  feedbackDialog?.showModal?.();
+}
+function closeFeedbackEditor() { if (feedbackDialog?.open) feedbackDialog.close(); }
+function renderRatingPicker() {
+  ratingPicker?.querySelectorAll("[data-rating]").forEach((button) => {
+    const active = Number(button.dataset.rating) <= selectedRating;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(Number(button.dataset.rating) === selectedRating));
+  });
+}
+ratingPicker?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-rating]");
+  if (!button) return;
+  selectedRating = Number(button.dataset.rating);
+  renderRatingPicker();
+});
+feedbackEdit?.addEventListener("click", openFeedbackEditor);
+feedbackClose?.addEventListener("click", closeFeedbackEditor);
+feedbackCancel?.addEventListener("click", closeFeedbackEditor);
+feedbackSave?.addEventListener("click", async () => {
+  const review = feedbackText?.value.trim() || "";
+  if (!selectedRating) return showMessage("profile-feedback-message", "Choose a rating from 1 to 5 stars.", false);
+  if (!review) return showMessage("profile-feedback-message", "Write a short review before saving.", false);
+  feedbackSave.disabled = true;
+  const result = await updateCurrentUserFeedback({ rating: selectedRating, review });
+  showMessage("profile-feedback-message", result.message, result.success);
+  feedbackSave.disabled = false;
+  if (result.success) {
+    currentFeedback = result.feedback;
+    renderFeedback();
+    window.setTimeout(closeFeedbackEditor, 450);
+  }
+});
+
 function resetPhotoEditor() {
   pendingProfileImage = undefined;
   photoSaveInProgress = false;
+  sourceImage = null;
+  cropState = { zoom: 1, x: 0, y: 0 };
+  if (sourceObjectUrl) URL.revokeObjectURL(sourceObjectUrl);
+  sourceObjectUrl = null;
   if (photoInput) photoInput.value = "";
   if (photoSave) photoSave.disabled = true;
   if (photoRemove) photoRemove.disabled = !currentUser.profileImage;
+  if (cropZoom) cropZoom.value = "1";
+  photoDialog?.classList.remove("has-crop");
   renderPhotoPreview(currentUser.profileImage);
   clearMessage("profile-photo-message");
 }
@@ -78,11 +191,8 @@ function openPhotoEditor() {
   if (photoDialog?.showModal) {
     photoDialog.showModal();
     window.setTimeout(() => photoChoose?.focus(), 0);
-    return;
-  }
-  photoDialog?.setAttribute("open", "");
+  } else photoDialog?.setAttribute("open", "");
 }
-
 function closePhotoEditor() {
   if (photoSaveInProgress) return;
   if (photoDialog?.open && photoDialog.close) photoDialog.close();
@@ -90,93 +200,86 @@ function closePhotoEditor() {
   resetPhotoEditor();
 }
 
-profileForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const button = profileForm.querySelector('button[type="submit"]');
-  if (button) button.disabled = true;
-
-  const result = await updateCurrentUserProfile({
-    name: document.getElementById("profile-name")?.value ?? "",
-    email: document.getElementById("profile-email")?.value ?? ""
-  });
-
-  showMessage("profile-message", result.message, result.success);
-  if (result.success) {
-    currentUser = result.user;
-    await renderProfile();
-    await renderNavbar("..", currentUser);
-  }
-  if (button) button.disabled = false;
-});
-
-passwordForm?.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const currentPassword = document.getElementById("current-password")?.value ?? "";
-  const newPassword = document.getElementById("new-password")?.value ?? "";
-  const confirm = document.getElementById("confirm-new-password")?.value ?? "";
-
-  if (!passwordsMatch(newPassword, confirm)) {
-    showMessage("password-message", "New passwords do not match.", false);
-    return;
-  }
-
-  const button = passwordForm.querySelector('button[type="submit"]');
-  if (button) button.disabled = true;
-  const result = await changeCurrentUserPassword(currentPassword, newPassword);
-  showMessage("password-message", result.message, result.success);
-
-  if (result.success) {
-    passwordForm.reset();
-    if (result.reauthRequired) {
-      window.setTimeout(() => window.location.replace("./login.html"), 900);
-      return;
-    }
-  }
-  if (button) button.disabled = false;
-});
-
 document.getElementById("profile-photo-edit")?.addEventListener("click", openPhotoEditor);
 photoChoose?.addEventListener("click", () => photoInput?.click());
 photoDialogClose?.addEventListener("click", closePhotoEditor);
 photoCancel?.addEventListener("click", closePhotoEditor);
 
-document.getElementById("profile-edit-shortcut")?.addEventListener("click", () => {
-  document.getElementById("profile-details-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
-  document.getElementById("profile-name")?.focus({ preventScroll: true });
-});
-
 photoInput?.addEventListener("change", async () => {
   const file = photoInput.files?.[0];
   if (!file) return;
-
   const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-  if (!allowedTypes.has(file.type)) {
-    showMessage("profile-photo-message", "Choose a JPEG, PNG or WebP image.", false);
-    return;
-  }
-  if (file.size > 6_000_000) {
-    showMessage("profile-photo-message", "Choose an image smaller than 6 MB.", false);
-    return;
-  }
+  if (!allowedTypes.has(file.type)) return showMessage("profile-photo-message", "Choose a JPEG, PNG or WebP image.", false);
+  if (file.size > 6_000_000) return showMessage("profile-photo-message", "Choose an image smaller than 6 MB.", false);
 
   try {
-    showNeutralMessage("profile-photo-message", "Preparing preview…");
-    pendingProfileImage = await resizeProfileImage(file);
-    renderPhotoPreview(pendingProfileImage);
+    showNeutralMessage("profile-photo-message", "Preparing crop editor…");
+    if (sourceObjectUrl) URL.revokeObjectURL(sourceObjectUrl);
+    sourceObjectUrl = URL.createObjectURL(file);
+    sourceImage = await loadImage(sourceObjectUrl);
+    cropState = { zoom: 1, x: 0, y: 0 };
+    if (cropZoom) cropZoom.value = "1";
+    cropImage.src = sourceObjectUrl;
+    photoDialog?.classList.add("has-crop");
+    requestAnimationFrame(renderCrop);
     if (photoSave) photoSave.disabled = false;
     if (photoRemove) photoRemove.disabled = false;
-    showMessage("profile-photo-message", "Preview ready. Save when you are happy with it.", true);
+    showMessage("profile-photo-message", "Drag and zoom until the crop looks right, then save.", true);
   } catch (error) {
     console.error("Could not prepare profile picture:", error);
-    pendingProfileImage = undefined;
-    if (photoSave) photoSave.disabled = true;
     showMessage("profile-photo-message", "That image could not be prepared.", false);
   }
 });
 
+function cropGeometry() {
+  if (!sourceImage || !cropFrame) return null;
+  const size = cropFrame.clientWidth;
+  const baseScale = Math.max(size / sourceImage.naturalWidth, size / sourceImage.naturalHeight);
+  const scale = baseScale * cropState.zoom;
+  const width = sourceImage.naturalWidth * scale;
+  const height = sourceImage.naturalHeight * scale;
+  return { size, baseScale, scale, width, height };
+}
+function clampCrop() {
+  const g = cropGeometry();
+  if (!g) return;
+  cropState.x = Math.max(-(g.width - g.size) / 2, Math.min((g.width - g.size) / 2, cropState.x));
+  cropState.y = Math.max(-(g.height - g.size) / 2, Math.min((g.height - g.size) / 2, cropState.y));
+}
+function renderCrop() {
+  const g = cropGeometry();
+  if (!g || !cropImage) return;
+  clampCrop();
+  cropImage.style.width = `${g.width}px`;
+  cropImage.style.height = `${g.height}px`;
+  cropImage.style.transform = `translate(calc(-50% + ${cropState.x}px), calc(-50% + ${cropState.y}px))`;
+}
+
+cropZoom?.addEventListener("input", () => {
+  cropState.zoom = Number(cropZoom.value) || 1;
+  renderCrop();
+});
+cropFrame?.addEventListener("pointerdown", (event) => {
+  if (!sourceImage) return;
+  cropFrame.setPointerCapture?.(event.pointerId);
+  dragState = { pointerId:event.pointerId, x:event.clientX, y:event.clientY };
+});
+cropFrame?.addEventListener("pointermove", (event) => {
+  if (!dragState || dragState.pointerId !== event.pointerId) return;
+  cropState.x += event.clientX - dragState.x;
+  cropState.y += event.clientY - dragState.y;
+  dragState.x = event.clientX; dragState.y = event.clientY;
+  renderCrop();
+});
+function endCropDrag(event) { if (dragState?.pointerId === event.pointerId) dragState = null; }
+cropFrame?.addEventListener("pointerup", endCropDrag);
+cropFrame?.addEventListener("pointercancel", endCropDrag);
+window.addEventListener("resize", () => { if (sourceImage) renderCrop(); });
+
 photoRemove?.addEventListener("click", () => {
   pendingProfileImage = null;
-  if (photoInput) photoInput.value = "";
+  sourceImage = null;
+  photoDialog?.classList.remove("has-crop");
   renderPhotoPreview(null);
   if (photoSave) photoSave.disabled = false;
   photoRemove.disabled = true;
@@ -184,152 +287,87 @@ photoRemove?.addEventListener("click", () => {
 });
 
 photoSave?.addEventListener("click", async () => {
-  if (pendingProfileImage === undefined || photoSaveInProgress) return;
-
-  photoSaveInProgress = true;
-  photoSave.disabled = true;
-  if (photoChoose) photoChoose.disabled = true;
-  if (photoRemove) photoRemove.disabled = true;
-  if (photoCancel) photoCancel.disabled = true;
-  showNeutralMessage("profile-photo-message", "Saving your profile picture…");
-
+  if (photoSaveInProgress) return;
   try {
+    photoSaveInProgress = true;
+    photoSave.disabled = true;
+    if (sourceImage) pendingProfileImage = await encodeCurrentCrop();
+    if (pendingProfileImage === undefined) return;
+    showNeutralMessage("profile-photo-message", "Saving your profile picture…");
     const result = await updateCurrentUserProfileImage(pendingProfileImage);
     showMessage("profile-photo-message", result.message, result.success);
-
-    if (!result.success) {
-      photoSaveInProgress = false;
-      photoSave.disabled = false;
-      if (photoChoose) photoChoose.disabled = false;
-      if (photoRemove) photoRemove.disabled = false;
-      if (photoCancel) photoCancel.disabled = false;
-      return;
-    }
-
+    if (!result.success) return;
     currentUser = result.user;
     renderAvatar(currentUser.profileImage);
     await renderNavbar("..", currentUser);
-
-    // Saving the photo completes this focused task and returns the traveller
-    // to the Home experience, as requested for the profile-photo workflow.
     window.location.replace("../index.html");
   } catch (error) {
     console.error("Could not save profile picture:", error);
     showMessage("profile-photo-message", "Your profile picture could not be saved. Please try again.", false);
+  } finally {
     photoSaveInProgress = false;
-    photoSave.disabled = false;
-    if (photoChoose) photoChoose.disabled = false;
-    if (photoRemove) photoRemove.disabled = false;
-    if (photoCancel) photoCancel.disabled = false;
+    if (photoSave) photoSave.disabled = false;
   }
 });
 
-photoDialog?.addEventListener("cancel", (event) => {
-  if (photoSaveInProgress) {
-    event.preventDefault();
-    return;
+async function encodeCurrentCrop() {
+  const g = cropGeometry();
+  if (!g || !sourceImage) return undefined;
+  const sourceSide = g.size / g.scale;
+  const sourceX = (sourceImage.naturalWidth - sourceSide) / 2 - cropState.x / g.scale;
+  const sourceY = (sourceImage.naturalHeight - sourceSide) / 2 - cropState.y / g.scale;
+
+  for (const [size, quality] of [[768,.88],[640,.84],[560,.80]]) {
+    const canvas = document.createElement("canvas");
+    canvas.width = size; canvas.height = size;
+    const context = canvas.getContext("2d", { alpha:false });
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(sourceImage, sourceX, sourceY, sourceSide, sourceSide, 0, 0, size, size);
+    const data = canvas.toDataURL("image/jpeg", quality);
+    if (data.length <= 820_000) return data;
   }
-  resetPhotoEditor();
-});
-
-photoDialog?.addEventListener("click", (event) => {
-  if (event.target === photoDialog) closePhotoEditor();
-});
-
-photoDialog?.addEventListener("close", () => {
-  if (!photoSaveInProgress) resetPhotoEditor();
-});
-
-document.getElementById("profile-logout-button")?.addEventListener("click", async () => {
-  await logoutUser();
-  window.location.replace("./login.html");
-});
-
-function resizeProfileImage(file) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    const objectUrl = URL.createObjectURL(file);
-
-    image.onload = () => {
-      try {
-        // 768px keeps the avatar crisp on high-DPI screens while remaining
-        // compact enough for the existing profile-image API/data-URL storage.
-        const maxSide = 768;
-        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
-        const width = Math.max(1, Math.round(image.width * scale));
-        const height = Math.max(1, Math.round(image.height * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d", { alpha: false });
-        if (!context) throw new Error("Canvas is unavailable");
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = "high";
-        context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      } catch (error) {
-        reject(error);
-      } finally {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("Invalid image"));
-    };
-    image.src = objectUrl;
-  });
+  throw new Error("Cropped image is still too large");
 }
 
+photoDialog?.addEventListener("cancel", (event) => {
+  if (photoSaveInProgress) event.preventDefault();
+  else resetPhotoEditor();
+});
+photoDialog?.addEventListener("click", (event) => { if (event.target === photoDialog) closePhotoEditor(); });
+photoDialog?.addEventListener("close", () => { if (!photoSaveInProgress) resetPhotoEditor(); });
+feedbackDialog?.addEventListener("click", (event) => { if (event.target === feedbackDialog) closeFeedbackEditor(); });
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Invalid image"));
+    image.src = src;
+  });
+}
 function showMessage(id, message, success) {
   const element = document.getElementById(id);
   if (!element) return;
   element.textContent = message;
   element.className = `form-message ${success ? "form-message-success" : "form-message-error"}`;
 }
-
 function showNeutralMessage(id, message) {
   const element = document.getElementById(id);
   if (!element) return;
   element.textContent = message;
   element.className = "form-message";
 }
-
 function clearMessage(id) {
   const element = document.getElementById(id);
   if (!element) return;
   element.textContent = "";
   element.className = "form-message";
 }
+function setText(id, value) { const element = document.getElementById(id); if (element) element.textContent = value ?? ""; }
+function makeInitials(name) { return String(name ?? "UG").trim().split(/\s+/).slice(0,2).map((part) => part[0]?.toUpperCase() ?? "").join("") || "UG"; }
+function formatDate(value) { return value ? new Intl.DateTimeFormat("en", { day:"numeric", month:"short", year:"numeric" }).format(new Date(`${value}T00:00:00`)) : "Unknown"; }
+function escapeHtml(value) { return String(value ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
 
-function setText(id, value) {
-  const element = document.getElementById(id);
-  if (element) element.textContent = value ?? "";
-}
-
-function makeInitials(name) {
-  return String(name ?? "UG")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "UG";
-}
-
-function formatDate(value) {
-  return value
-    ? new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" }).format(new Date(value))
-    : "Unknown";
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-await renderProfile();
+renderProfileIdentity();
+await Promise.all([loadVisitedPlaces(), loadFeedback()]);

@@ -15,9 +15,11 @@
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/mobile-phase1.css?v=11.5.1" />
+  <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
+  <link rel="stylesheet" href="../css/phase1-20.css?v=1.20.0" data-ugotour-phase120="1.20" />
   <title>Destinations | UgoTour</title>
 </head>
-<body class="destinations-page editorial-page home-reference-page" data-destinations-redesign="unified-loop-v2">
+<body class="destinations-page editorial-page home-reference-page" data-destinations-redesign="search-switch-v1">
   <header id="site-header"></header>
 
   <main id="main-content" class="dashboard-main destinations-main">
@@ -35,26 +37,30 @@
               <h1 id="catalog-heading">Discover Uganda</h1>
               <p>Wild landscapes, living culture and journeys shaped by the people and places that make Uganda distinct.</p>
             </div>
-            <div class="dashboard-count"><strong id="catalog-total">0</strong><span>places to explore</span></div>
           </div>
-
         </section>
 
         <div class="dashboard-discovery-layout destinations-catalog-layer">
           <section class="dashboard-results destination-carousel-column" aria-labelledby="all-destinations-heading">
             <div class="dashboard-section-heading destinations-section-heading">
-              <div><p class="section-kicker">One continuous collection</p><h2 id="all-destinations-heading">My destinations</h2></div>
+              <div><p id="destination-section-kicker" class="section-kicker">One continuous collection</p><h2 id="all-destinations-heading">My destinations</h2></div>
               <div class="destination-carousel-toolbar">
-                <p id="destination-summary" class="catalog-summary" aria-live="polite"></p>
-                <button id="destination-filter-toggle" class="destination-filter-toggle" type="button" aria-expanded="false" aria-controls="destination-filter-overlay"><span aria-hidden="true">&#9776;</span> <span id="destination-filter-label">Filters</span></button>
+                <button id="destination-search-toggle" class="destination-search-toggle" type="button" aria-haspopup="dialog" aria-controls="destination-filter-overlay">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                  <span>Search places…</span>
+                </button>
+                <button id="destination-filter-toggle" class="destination-filter-toggle" type="button" aria-expanded="false" aria-controls="destination-filter-overlay"><span aria-hidden="true">☰</span> <span id="destination-filter-label">Filters</span></button>
               </div>
             </div>
+
+            <p class="destination-results-badge" id="destination-results-badge">Search results</p>
+
             <div class="destination-carousel-shell" aria-roledescription="carousel" aria-label="Uganda destinations, attractions, sites and experiences">
               <div id="destination-list" class="experience-grid destination-grid destination-carousel-track"></div>
               <div class="destination-carousel-controls">
-                <button id="destination-carousel-previous" class="destination-carousel-button" type="button" aria-label="Show previous places">&#8592;</button>
+                <button id="destination-carousel-previous" class="destination-carousel-button" type="button" aria-label="Show previous places">←</button>
                 <p id="destination-carousel-status" class="destination-carousel-status" aria-live="polite">Preparing places</p>
-                <button id="destination-carousel-next" class="destination-carousel-button" type="button" aria-label="Show next places">&#8594;</button>
+                <button id="destination-carousel-next" class="destination-carousel-button" type="button" aria-label="Show next places">→</button>
               </div>
             </div>
 
@@ -63,18 +69,14 @@
               <p>Try another search or reset your filters.</p>
             </div>
           </section>
-
         </div>
 
         <div id="destination-filter-overlay" class="destination-filter-overlay" hidden aria-hidden="true">
-          <button class="destination-filter-backdrop" type="button" data-filter-dismiss aria-label="Close filters"></button>
+          <button class="destination-filter-backdrop" type="button" data-filter-cancel aria-label="Close filters"></button>
           <section id="destination-filter-panel" class="destination-filter-panel" role="dialog" aria-modal="true" aria-labelledby="destination-filter-heading" tabindex="-1">
             <header class="destination-filter-heading">
-              <div>
-                <p class="section-kicker">Shape the journey</p>
-                <h2 id="destination-filter-heading">Filters</h2>
-              </div>
-              <button id="destination-filter-close" class="destination-filter-close" type="button" aria-label="Close filters">&#10005;</button>
+              <div><p class="section-kicker">Shape the journey</p><h2 id="destination-filter-heading">Search &amp; filters</h2></div>
+              <button id="destination-filter-close" class="destination-filter-close" type="button" aria-label="Close filters">✕</button>
             </header>
 
             <details class="destination-filter-group" open>
@@ -94,7 +96,7 @@
 
             <div class="destination-filter-actions">
               <button id="reset-filters" class="secondary-button destination-filter-reset" type="button">Reset all filters</button>
-              <button class="primary-button destination-filter-apply" type="button" data-filter-dismiss>Show places</button>
+              <button id="destination-filter-apply" class="primary-button destination-filter-apply" type="button">Show places</button>
             </div>
           </section>
         </div>
@@ -103,6 +105,6 @@
     </section>
   </main>
   <footer id="site-footer"></footer>
-  <script type="module" src="../js/pages/destinations.js?v=12.0.0"></script>
+  <script type="module" src="../js/pages/destinations.js?v=14.0.0"></script>
 </body>
 </html>

@@ -13,6 +13,7 @@ export function toPublicUser(user) {
     id: Number(user.id),
     name: user.name,
     email: user.email,
+    bio: user.bio ?? "",
     profileImage: user.profile_image ?? user.profileImage ?? null,
     role: user.role ?? "user",
     createdAt: user.created_at ?? user.createdAt,
@@ -33,7 +34,7 @@ export async function createAccount({ name, email, password }) {
   const result = await database.query(`
     INSERT INTO users (name,email,password_hash)
     VALUES ($1,$2,$3)
-    RETURNING id,name,email,profile_image,role,created_at,updated_at
+    RETURNING id,name,email,bio,profile_image,role,created_at,updated_at
   `, [name.trim(), normalizedEmail, passwordHash]);
 
   const user = result.rows[0];
@@ -44,7 +45,7 @@ export async function createAccount({ name, email, password }) {
 export async function login({ email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
   const result = await database.query(`
-    SELECT id,name,email,password_hash,profile_image,role,created_at,updated_at
+    SELECT id,name,email,bio,password_hash,profile_image,role,created_at,updated_at
     FROM users WHERE email=$1
   `, [normalizedEmail]);
   const user = result.rows[0];

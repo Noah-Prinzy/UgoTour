@@ -1,19 +1,19 @@
-const CACHE_NAME = "ugotour-v1-14-2";
+const CACHE_NAME = "ugotour-v1-16-2";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest",
-  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css",
+  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css",
   "./js/app.js", "./js/home-card-routing.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
   "./js/services/auth-service.js", "./js/services/session-guard.js", "./js/services/booking-service.js",
   "./js/services/destination-service.js", "./js/services/attraction-service.js", "./js/services/map-service.js",
   "./js/services/saved-service.js", "./js/services/contact-service.js", "./js/services/admin-service.js",
   "./js/utils/validation.js", "./js/utils/assets.js",
-  "./js/pages/destinations.js", "./js/pages/destinations-parallax.js", "./js/pages/destination-experience.js", "./js/pages/map.js", "./js/pages/destination-details.js", "./js/pages/bookings.js",
-  "./js/pages/login.js", "./js/pages/signup.js", "./js/pages/profile.js", "./js/pages/saved.js",
+  "./js/pages/destinations.js", "./js/pages/destination-experience.js", "./js/pages/map.js", "./js/pages/map-search-intent.js", "./js/pages/map-polish.js", "./js/pages/destination-details.js", "./js/pages/bookings.js",
+  "./js/pages/login.js", "./js/pages/signup.js", "./js/pages/profile.js", "./js/pages/profile-settings.js", "./js/pages/saved.js",
   "./js/pages/forgot-password.js", "./js/pages/reset-password.js", "./js/pages/contact.js", "./js/pages/admin.js", "./js/pages/static-page.js", "./js/pages/offline.js",
   "./pages/destinations.html", "./pages/map.html", "./pages/destination-details.html", "./pages/bookings.html",
-  "./pages/login.html", "./pages/signup.html", "./pages/profile.html", "./pages/saved.html",
+  "./pages/login.html", "./pages/signup.html", "./pages/profile.html", "./pages/profile-settings.html", "./pages/saved.html",
   "./pages/forgot-password.html", "./pages/reset-password.html", "./pages/about.html", "./pages/help.html",
   "./pages/contact.html", "./pages/privacy.html", "./pages/terms.html", "./pages/admin.html",
   "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
@@ -32,9 +32,7 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
-  );
+  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))));
   self.clients.claim();
 });
 
@@ -45,46 +43,27 @@ self.addEventListener("message", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-
-  // Never cache account/API responses or map tiles. Both need fresh network data.
   if (url.pathname.startsWith("/api/") || url.port === "3000") return;
   if (url.hostname === "tile.openstreetmap.org" || url.hostname.endsWith(".tile.openstreetmap.org")) return;
 
   if (event.request.mode === "navigate") {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok && url.origin === self.location.origin) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(async () => (await caches.match(event.request)) || caches.match("./offline.html"))
-    );
+    event.respondWith(fetch(event.request).then((response) => {
+      if (response.ok && url.origin === self.location.origin) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+      return response;
+    }).catch(async () => (await caches.match(event.request)) || caches.match("./offline.html")));
     return;
   }
 
   if (url.origin === self.location.origin && ["style", "script"].includes(event.request.destination)) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
+    event.respondWith(fetch(event.request).then((response) => {
+      if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+      return response;
+    }).catch(() => caches.match(event.request)));
     return;
   }
 
-  // Local optimized images are cache-first after first use. The large original
-  // source images are project assets but are not used for normal page transfer.
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-      if (response.ok && url.origin === self.location.origin) {
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-      }
-      return response;
-    }))
-  );
+  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+    if (response.ok && url.origin === self.location.origin) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
+    return response;
+  })));
 });

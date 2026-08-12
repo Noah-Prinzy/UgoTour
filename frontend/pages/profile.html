@@ -7,13 +7,14 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="description" content="Manage your UgoTour profile and profile picture." />
+  <meta name="description" content="Your UgoTour traveller profile, journeys and feedback." />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
   <title>Profile | UgoTour</title>
   <meta name="robots" content="noindex,nofollow" />
 </head>
@@ -22,71 +23,41 @@
 
   <main id="main-content" class="dashboard-main">
     <div id="profile-account-content" class="profile-dashboard">
-      <section id="profile-logged-out" hidden></section>
-
       <section id="profile-logged-in">
-        <header class="profile-identity-card">
-          <div class="profile-banner" aria-hidden="true"></div>
-          <div class="profile-identity-content">
-            <div class="profile-photo-shell">
-              <div id="profile-avatar" class="profile-avatar">UG</div>
-              <button
-                id="profile-photo-edit"
-                class="profile-photo-edit"
-                type="button"
-                aria-label="Edit profile picture"
-                aria-haspopup="dialog"
-                aria-controls="profile-photo-dialog"
-              >+</button>
-            </div>
+        <header class="profile-editorial-identity">
+          <div class="profile-photo-shell profile-photo-shell-editorial">
+            <div id="profile-avatar" class="profile-avatar">UG</div>
+            <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Edit profile picture" aria-haspopup="dialog" aria-controls="profile-photo-dialog">+</button>
+          </div>
 
-            <div class="profile-identity-copy">
-              <p class="section-kicker">Your UgoTour account</p>
-              <h1 id="profile-display-name">UgoTour User</h1>
-              <p id="profile-display-email">user@example.com</p>
-              <span>Member since <strong id="profile-member-since">—</strong></span>
-            </div>
-
-            <button id="profile-edit-shortcut" class="secondary-button" type="button">Edit profile</button>
+          <div class="profile-editorial-copy">
+            <p class="section-kicker">Traveller profile</p>
+            <h1 id="profile-display-name">UgoTour User</h1>
+            <p id="profile-display-bio" class="profile-bio">Add a short bio to tell your Uganda travel story.</p>
+            <a class="secondary-button profile-edit-settings" href="./profile-settings.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.86 2.86-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.86-2.86.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.4v-4h.1A1.7 1.7 0 0 0 4.2 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.66 3.8l.06.06A1.7 1.7 0 0 0 8.6 4.2a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2.4h4v.1a1.7 1.7 0 0 0 1 1.7 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.86 2.86-.06.06A1.7 1.7 0 0 0 19.4 8.6a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4h-.1a1.7 1.7 0 0 0-1.7 1Z"/></svg>
+              Edit profile
+            </a>
           </div>
         </header>
 
-        <div class="profile-dashboard-grid profile-dashboard-grid-simplified">
-          <section id="profile-details-card" class="profile-settings-card profile-details-card">
-            <div class="profile-card-heading">
-              <div>
-                <p class="section-kicker">Profile details</p>
-                <h2>Name and email</h2>
-              </div>
-            </div>
-            <form id="profile-form" class="starter-form profile-form profile-form-inline">
-              <label>Full name<input id="profile-name" type="text" autocomplete="name" required /></label>
-              <label>Email<input id="profile-email" type="email" autocomplete="email" required /></label>
-              <button class="primary-button" type="submit">Save profile</button>
-              <p id="profile-message" class="form-message" aria-live="polite"></p>
-            </form>
+        <div class="profile-story-grid">
+          <section class="profile-story-panel" aria-labelledby="visited-heading">
+            <p class="section-kicker">Journey history</p>
+            <h2 id="visited-heading">Places visited</h2>
+            <div id="profile-visited-list" class="visited-places-grid"></div>
+            <p id="profile-visited-empty" class="profile-feedback-empty" hidden>No completed trips yet. Past trip dates will appear here as visited places.</p>
           </section>
 
-          <section class="profile-settings-card profile-security-card">
-            <div class="profile-card-heading">
-              <div>
-                <p class="section-kicker">Security</p>
-                <h2>Change password</h2>
-              </div>
+          <section class="profile-story-panel" aria-labelledby="feedback-heading">
+            <p class="section-kicker">Your experience</p>
+            <h2 id="feedback-heading">UgoTour feedback</h2>
+            <div id="profile-feedback-display">
+              <div id="profile-feedback-stars" class="profile-feedback-stars" aria-label="No rating yet">☆☆☆☆☆</div>
+              <p id="profile-feedback-review" class="profile-feedback-review profile-feedback-empty">You have not reviewed UgoTour yet.</p>
             </div>
-            <form id="password-form" class="starter-form profile-form profile-form-password">
-              <label>Current password<input id="current-password" type="password" autocomplete="current-password" required /></label>
-              <label>New password<input id="new-password" type="password" minlength="10" autocomplete="new-password" required /></label>
-              <label>Confirm new password<input id="confirm-new-password" type="password" minlength="10" autocomplete="new-password" required /></label>
-              <button class="secondary-button" type="submit">Change password</button>
-              <p id="password-message" class="form-message" aria-live="polite"></p>
-            </form>
+            <button id="profile-feedback-edit" class="secondary-button profile-feedback-edit-button" type="button">Share feedback</button>
           </section>
-        </div>
-
-        <div class="profile-quick-actions" aria-label="Profile actions">
-          <a class="secondary-button profile-saved-button" href="./saved.html">Saved places</a>
-          <button id="profile-logout-button" class="secondary-button profile-logout-button" type="button">Logout</button>
         </div>
       </section>
     </div>
@@ -94,10 +65,7 @@
     <dialog id="profile-photo-dialog" class="profile-photo-dialog" aria-labelledby="profile-photo-dialog-title">
       <section class="profile-photo-editor">
         <header class="profile-photo-editor-header">
-          <div>
-            <p class="section-kicker">Profile picture</p>
-            <h2 id="profile-photo-dialog-title">Edit your photo</h2>
-          </div>
+          <div><p class="section-kicker">Profile picture</p><h2 id="profile-photo-dialog-title">Edit your photo</h2></div>
           <button id="profile-photo-dialog-close" class="profile-photo-dialog-close" type="button" aria-label="Close profile picture editor">×</button>
         </header>
 
@@ -106,26 +74,50 @@
           <span class="profile-photo-preview-label">Preview</span>
         </div>
 
-        <p class="profile-photo-editor-copy">Choose a JPEG, PNG or WebP image up to 6 MB. Your photo is previewed here before anything is saved.</p>
+        <div class="profile-crop-stage" id="profile-crop-stage">
+          <div id="profile-crop-frame" class="profile-crop-frame" aria-label="Drag the image to position the crop">
+            <img id="profile-crop-image" src="" alt="Crop preview" draggable="false" />
+          </div>
+          <div class="profile-crop-controls">
+            <span aria-hidden="true">−</span>
+            <input id="profile-crop-zoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Photo zoom" />
+            <span aria-hidden="true">+</span>
+          </div>
+          <p class="profile-crop-help">Drag to position your photo and use the slider to zoom before saving.</p>
+        </div>
 
+        <p class="profile-photo-editor-copy">Choose a JPEG, PNG or WebP image up to 6 MB. You can crop and resize it before saving.</p>
         <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
-
         <div class="profile-photo-editor-tools">
           <button id="profile-photo-choose" class="secondary-button" type="button">Choose / change photo</button>
           <button id="profile-photo-remove" class="secondary-button profile-photo-remove" type="button">Remove photo</button>
         </div>
-
         <p id="profile-photo-message" class="form-message profile-photo-editor-message" aria-live="polite"></p>
-
         <footer class="profile-photo-editor-footer">
           <button id="profile-photo-cancel" class="secondary-button" type="button">Cancel</button>
           <button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button>
         </footer>
       </section>
     </dialog>
+
+    <dialog id="profile-feedback-dialog" class="profile-feedback-dialog" aria-labelledby="profile-feedback-dialog-title">
+      <section class="profile-feedback-editor">
+        <header>
+          <div><p class="section-kicker">Your voice</p><h2 id="profile-feedback-dialog-title">Rate UgoTour</h2></div>
+          <button id="profile-feedback-close" class="profile-photo-dialog-close" type="button" aria-label="Close feedback editor">×</button>
+        </header>
+        <div id="profile-rating-picker" class="profile-rating-picker" aria-label="Choose a rating from one to five stars">
+          <button type="button" data-rating="1" aria-label="1 star">★</button><button type="button" data-rating="2" aria-label="2 stars">★</button><button type="button" data-rating="3" aria-label="3 stars">★</button><button type="button" data-rating="4" aria-label="4 stars">★</button><button type="button" data-rating="5" aria-label="5 stars">★</button>
+        </div>
+        <label for="profile-feedback-text" class="sr-only">Tell us about your UgoTour experience</label>
+        <textarea id="profile-feedback-text" maxlength="1200" placeholder="Tell us about your UgoTour experience…"></textarea>
+        <p id="profile-feedback-message" class="form-message" aria-live="polite"></p>
+        <footer><button id="profile-feedback-cancel" class="secondary-button" type="button">Cancel</button><button id="profile-feedback-save" class="primary-button" type="button">Save feedback</button></footer>
+      </section>
+    </dialog>
   </main>
 
   <footer id="site-footer"></footer>
-  <script type="module" src="../js/pages/profile.js"></script>
+  <script type="module" src="../js/pages/profile.js?v=1.19.0"></script>
 </body>
 </html>

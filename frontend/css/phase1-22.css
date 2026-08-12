@@ -1,0 +1,344 @@
+/* ============================================================
+   UgoTour Phase 1.22 — Map interaction + result-card polish
+   ------------------------------------------------------------
+   Focused responsive fixes for:
+   - destination result save-heart clearance
+   - compact live-search suggestion surface
+   - location control beside Leaflet zoom controls
+   - stable responsive map callout + smooth marker connector
+   - unobstructed mouse/touch map movement
+   ============================================================ */
+
+/* ---------- Destination result cards: reserve the heart's hit area ---------- */
+.destinations-page .destination-card-topline {
+  right: 68px !important;
+}
+
+.destinations-page .destination-region {
+  max-width: min(46%, 170px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.destinations-page .place-save-button {
+  z-index: 8 !important;
+}
+
+@media (max-width: 760px) {
+  .destinations-page .destination-card-topline {
+    right: 66px !important;
+  }
+
+  .destinations-page .destination-region {
+    max-width: 44%;
+  }
+}
+
+/* ---------- Map search: keep the field stable and give suggestions room ---------- */
+.map-page .map-command-panel {
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.map-page .map-command-panel .map-search {
+  grid-template-columns: 20px minmax(0, 1fr) 34px !important;
+  contain: layout paint;
+}
+
+.map-page .map-search #map-locate-me {
+  display: none !important;
+}
+
+.map-page .map-inline-location {
+  /* The same working button is moved into Leaflet's bottom-right controls by
+     map-polish.js. These dimensions are deliberately independent of the search. */
+  width: 44px !important;
+  height: 44px !important;
+  border: 1px solid rgba(23, 33, 20, .10) !important;
+  border-radius: 12px !important;
+  background: rgba(251, 250, 246, .97) !important;
+  color: var(--forest-900) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+
+.map-page .map-inline-location svg {
+  width: 19px !important;
+  height: 19px !important;
+}
+
+.map-page .map-inline-location.is-active {
+  background: var(--forest-900) !important;
+  color: #fff !important;
+}
+
+.map-page .map-search-suggestions {
+  position: relative;
+  z-index: 20;
+  max-height: min(330px, 42svh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 48px rgba(13, 24, 12, .20) !important;
+}
+
+.map-page .map-suggestion {
+  min-height: 52px;
+  border-radius: 10px !important;
+}
+
+.map-page .map-suggestion + .map-suggestion {
+  border-top: 1px solid rgba(23, 33, 20, .07);
+}
+
+.map-page .map-suggestion:hover,
+.map-page .map-suggestion:focus-visible {
+  transform: none !important;
+}
+
+.map-page .map-suggestion.is-command-suggestion {
+  background: rgba(125, 151, 92, .10);
+}
+
+.map-page .map-suggestion-command-icon {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(23, 33, 20, .09);
+  color: var(--forest-900);
+  font-size: .67rem;
+  font-weight: 900;
+}
+
+/* ---------- Leaflet control stack: Current location directly above zoom ---------- */
+.uganda-map .ugotour-location-control {
+  overflow: hidden;
+  margin: 0 16px 8px 0 !important;
+  border: 1px solid rgba(23, 33, 20, .10);
+  border-radius: 13px;
+  background: rgba(251, 250, 246, .97);
+  box-shadow: 0 10px 30px rgba(20, 30, 18, .16);
+}
+
+.uganda-map .ugotour-location-control .map-inline-location {
+  display: grid !important;
+  margin: 0 !important;
+}
+
+/* ---------- Map remains directly draggable at every viewport ---------- */
+.map-page .uganda-map {
+  pointer-events: auto;
+}
+
+.map-page .uganda-map.leaflet-container {
+  cursor: grab;
+}
+
+.map-page .uganda-map.leaflet-container.leaflet-dragging,
+.map-page .uganda-map.leaflet-container:active {
+  cursor: grabbing;
+}
+
+.map-page .map-callout-connector {
+  pointer-events: none !important;
+  will-change: opacity;
+}
+
+.map-page .map-callout-connector path {
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Stable responsive place callout ----------
+   Keeping the card in a predictable rail means map dragging moves the marker
+   and connector — not the whole card — eliminating the visible jumping/crush. */
+.map-page .map-place-callout {
+  left: 18px !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: 18px !important;
+  width: min(500px, calc(100% - 36px)) !important;
+  max-width: 500px !important;
+  max-height: min(360px, calc(100svh - 190px));
+  grid-template-columns: minmax(132px, 30%) minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  transform: translateZ(0);
+  animation-duration: 170ms !important;
+  contain: layout paint;
+}
+
+.map-page .map-place-callout > img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  object-position: center;
+}
+
+.map-page .map-place-copy {
+  min-width: 0 !important;
+  overflow: hidden;
+  padding: 17px 42px 16px 17px !important;
+}
+
+.map-page .map-place-copy h2,
+.map-page .map-place-location,
+.map-page .map-place-copy > p,
+.map-page .map-callout-actions {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.map-page .map-place-copy h2 {
+  font-size: clamp(1.22rem, 2vw, 1.72rem) !important;
+}
+
+.map-page .map-place-copy > p:not(.map-place-location) {
+  -webkit-line-clamp: 3 !important;
+}
+
+.map-page .map-callout-actions {
+  gap: 7px !important;
+}
+
+/* The legend is useful during browsing, but it should not sit beneath the
+   anchored decision card once a place has been selected. */
+.map-page:has(.map-place-callout:not([hidden])) .map-pin-key {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .map-page .map-place-callout {
+    width: min(460px, calc(100% - 28px)) !important;
+    left: 14px !important;
+    bottom: 14px !important;
+    grid-template-columns: minmax(124px, 31%) minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .map-page .map-command-panel {
+    left: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 460px;
+  }
+
+  .map-page .map-command-panel .map-search {
+    min-height: 48px !important;
+    grid-template-columns: 18px minmax(0, 1fr) 30px !important;
+    padding: 0 8px 0 13px !important;
+  }
+
+  .map-page .map-command-panel .map-search input {
+    font-size: .82rem !important;
+  }
+
+  .map-page .map-search-suggestions {
+    max-height: min(300px, 38svh);
+    margin-top: 6px !important;
+  }
+
+  .map-page .map-suggestion {
+    min-height: 50px;
+    padding: 9px 10px !important;
+  }
+
+  .uganda-map .ugotour-location-control {
+    margin: 0 10px 7px 0 !important;
+  }
+
+  /* Phone callout becomes image-over-copy instead of squeezing copy beside a
+     fixed-width image. It is lifted above the location/zoom control stack. */
+  .map-page .map-place-callout {
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 112px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: min(44svh, 390px) !important;
+    display: block !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    border-radius: 16px !important;
+  }
+
+  .map-page .map-place-callout > img {
+    width: 100% !important;
+    height: clamp(108px, 16svh, 150px) !important;
+    min-height: 108px !important;
+    display: block;
+  }
+
+  .map-page .map-place-callout.is-no-image > img,
+  .map-page .map-place-callout > img[hidden] {
+    display: none !important;
+  }
+
+  .map-page .map-place-copy {
+    padding: 13px 40px 13px 14px !important;
+  }
+
+  .map-page .map-place-meta {
+    padding-right: 4px;
+  }
+
+  .map-page .map-place-copy h2 {
+    margin-top: 8px !important;
+    font-size: clamp(1.12rem, 5.2vw, 1.42rem) !important;
+  }
+
+  .map-page .map-place-copy > p:not(.map-place-location) {
+    margin: 8px 0 10px !important;
+    font-size: .68rem !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .map-page .map-callout-actions {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .map-page .map-place-callout {
+    bottom: 106px !important;
+    max-height: min(42svh, 350px) !important;
+  }
+
+  .map-page .map-place-callout > img {
+    height: 112px !important;
+  }
+
+  .map-page .map-place-meta span:nth-child(2) {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-height: 650px) and (max-width: 720px) {
+  .map-page .map-place-callout {
+    bottom: 96px !important;
+    max-height: 40svh !important;
+  }
+
+  .map-page .map-place-callout > img {
+    height: 92px !important;
+    min-height: 92px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-page .map-place-callout,
+  .map-page .map-suggestion,
+  .map-page .map-callout-connector {
+    animation: none !important;
+    transition: none !important;
+  }
+}

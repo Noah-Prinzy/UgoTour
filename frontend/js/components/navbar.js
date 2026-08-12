@@ -1,18 +1,38 @@
 import { onInstallAvailability, requestInstall } from "../pwa.js";
 import { getCurrentUser, logoutUser } from "../services/auth-service.js";
 
-// Load the responsive/theme stylesheet as soon as this shared module is
-// evaluated. Pages import navbar.js before they run their async session/API
-// work, so this prevents the old light-theme flash while authentication loads.
-// renderNavbar also awaits the stylesheet before returning; this is important
-// for Leaflet because it must measure the final map container dimensions.
-const mobilePhaseStylesReady = ensureMobilePhaseOneStyles();
+// Load shared responsive/theme styles before async session/API work completes.
+const mobilePhaseStylesReady = ensureStylesheet(
+  'link[data-ugotour-mobile-phase="1"]',
+  "../../css/mobile-phase1.css?v=11.5.1",
+  "ugotourMobilePhase"
+);
+const phase119StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase119="1.19"]',
+  "../../css/phase1-19.css?v=1.19.0",
+  "ugotourPhase119"
+);
+const phase120StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase120="1.20"]',
+  "../../css/phase1-20.css?v=1.20.0",
+  "ugotourPhase120"
+);
+const phase121StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase121="1.21"]',
+  "../../css/phase1-21.css?v=1.21.0",
+  "ugotourPhase121"
+);
+const phase122StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase122="1.22"]',
+  "../../css/phase1-22.css?v=1.22.0",
+  "ugotourPhase122"
+);
 
 export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  await mobilePhaseStylesReady;
+  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady]);
 
   let currentUser = validatedUser;
   if (currentUser === undefined) {
@@ -30,7 +50,7 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
     ? `<a class="nav-admin-link" href="${basePath}/pages/admin.html">Admin</a>`
     : "";
   const drawerAdminLink = currentUser?.role === "admin"
-    ? drawerLink("Admin", `${basePath}/pages/admin.html`, "admin.html")
+    ? drawerLink("Admin", `${basePath}/pages/admin.html`, ["admin.html"])
     : "";
 
   const accountArea = currentUser
@@ -50,12 +70,12 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
     <nav class="site-nav" aria-label="Primary navigation">
       <a class="brand ugotour-brand" href="${basePath}/index.html" aria-label="UgoTour home">${brandMarkup()}</a>
       <div class="nav-links">
-        ${navLink("Home", `${basePath}/index.html`, "index.html")}
-        ${navLink("Destinations", `${basePath}/pages/destinations.html`, "destinations.html")}
-        ${navLink("Map", `${basePath}/pages/map.html`, "map.html")}
-        ${navLink("Saved", `${basePath}/pages/saved.html`, "saved.html")}
-        ${navLink("Trips", `${basePath}/pages/bookings.html`, "bookings.html")}
-        ${navLink("Profile", profileHref, "profile.html")}
+        ${navLink("Home", `${basePath}/index.html`, ["index.html", ""])}
+        ${navLink("Destinations", `${basePath}/pages/destinations.html`, ["destinations.html"])}
+        ${navLink("Map", `${basePath}/pages/map.html`, ["map.html"])}
+        ${navLink("Saved", `${basePath}/pages/saved.html`, ["saved.html"])}
+        ${navLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html"])}
+        ${navLink("Profile", profileHref, ["profile.html", "profile-settings.html"])}
       </div>
       ${accountArea}
       <div class="mobile-nav-actions" aria-label="Mobile quick actions">
@@ -66,8 +86,8 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
       </div>
     </nav>`;
 
-  // Keep the mobile overlay outside #site-header. This avoids inherited
-  // hit-testing/stacking behavior from the header blocking drawer links.
+  // Keep the mobile overlay outside #site-header so the sticky/floating header
+  // cannot interfere with drawer hit testing or touch navigation.
   document.getElementById("mobile-menu-backdrop")?.remove();
   document.getElementById("mobile-menu-drawer")?.remove();
 
@@ -80,12 +100,12 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
       </div>
 
       <nav class="mobile-menu-links" aria-label="Mobile navigation">
-        ${drawerLink("Home", `${basePath}/index.html`, "index.html")}
-        ${drawerLink("Explore", `${basePath}/pages/destinations.html`, "destinations.html")}
-        ${drawerLink("Map", `${basePath}/pages/map.html`, "map.html")}
-        ${drawerLink("Saved", `${basePath}/pages/saved.html`, "saved.html")}
-        ${drawerLink("Trips", `${basePath}/pages/bookings.html`, "bookings.html")}
-        ${drawerLink("Profile", profileHref, "profile.html")}
+        ${drawerLink("Home", `${basePath}/index.html`, ["index.html", ""])}
+        ${drawerLink("Explore", `${basePath}/pages/destinations.html`, ["destinations.html"])}
+        ${drawerLink("Map", `${basePath}/pages/map.html`, ["map.html"])}
+        ${drawerLink("Saved", `${basePath}/pages/saved.html`, ["saved.html"])}
+        ${drawerLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html"])}
+        ${drawerLink("Profile", profileHref, ["profile.html", "profile-settings.html"])}
         ${drawerAdminLink}
       </nav>
 
@@ -118,9 +138,6 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
 
   initialiseMobileDrawer();
 
-  // Phase 1.15: destination cards are progressively enriched after the shared
-  // navbar is ready. Keeping this page-specific module lazy prevents any
-  // destination-catalogue work from affecting Home, Map, Profile, or auth.
   if (document.body.classList.contains("destinations-page")) {
     import("../pages/destination-experience.js").catch((error) => {
       console.error("Could not load destination experience enhancements:", error);
@@ -128,10 +145,8 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   }
 }
 
-function ensureMobilePhaseOneStyles() {
-  const selector = 'link[data-ugotour-mobile-phase="1"]';
+function ensureStylesheet(selector, relativeUrl, datasetKey) {
   const existing = document.querySelector(selector);
-
   if (existing) {
     if (existing.sheet) return Promise.resolve(existing);
     return new Promise((resolve) => {
@@ -142,13 +157,18 @@ function ensureMobilePhaseOneStyles() {
 
   const link = document.createElement("link");
   link.rel = "stylesheet";
-  link.href = new URL("../../css/mobile-phase1.css?v=11.5.1", import.meta.url).href;
-  link.dataset.ugotourMobilePhase = "1";
+  link.href = new URL(relativeUrl, import.meta.url).href;
+  const datasetValues = {
+    ugotourMobilePhase: "1",
+    ugotourPhase119: "1.19",
+    ugotourPhase120: "1.20",
+    ugotourPhase121: "1.21",
+    ugotourPhase122: "1.22"
+  };
+  link.dataset[datasetKey] = datasetValues[datasetKey] || "1";
 
   const ready = new Promise((resolve) => {
     link.addEventListener("load", () => resolve(link), { once: true });
-    // Do not block the application if the optional enhancement stylesheet
-    // cannot load. Base UgoTour styles remain usable.
     link.addEventListener("error", () => resolve(link), { once: true });
   });
 
@@ -202,7 +222,6 @@ function initialiseMobileDrawer() {
     else window.setTimeout(finishClose, 320);
   }
 
-  // Start from an unambiguous closed state.
   drawer.hidden = true;
   backdrop.hidden = true;
 
@@ -223,12 +242,9 @@ function initialiseMobileDrawer() {
     setOpen(false);
   });
 
-  // Explicit navigation is used instead of relying only on the anchor default.
-  // It makes taps reliable in mobile emulation and installed-PWA mode.
   drawer.addEventListener("click", (event) => {
     const link = event.target.closest("a[href]");
     if (!link || !drawer.contains(link)) return;
-
     event.preventDefault();
     event.stopPropagation();
     const destinationUrl = link.href;
@@ -263,7 +279,6 @@ function initialiseMobileDrawer() {
   });
 }
 
-
 function brandMarkup() {
   return `<span class="ugotour-logo-lockup"><span class="ugotour-brand-word"><span class="ugotour-brand-ug">Ug</span><span class="ugotour-flag-o" aria-hidden="true"><span class="ugotour-flag-disc"></span></span><span class="ugotour-brand-tour">Tour</span></span><span class="ugotour-brand-tagline">Explore Uganda</span><span class="ugotour-brand-accent" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>`;
 }
@@ -279,13 +294,17 @@ function currentFile() {
   return file || "index.html";
 }
 
-function navLink(label, href, file) {
-  const active = currentFile() === file;
+function isActiveFile(files) {
+  return files.includes(currentFile()) || (files.includes("") && window.location.pathname.endsWith("/"));
+}
+
+function navLink(label, href, files) {
+  const active = isActiveFile(files);
   return `<a class="${active ? "is-active" : ""}" href="${href}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
 }
 
-function drawerLink(label, href, file) {
-  const active = currentFile() === file;
+function drawerLink(label, href, files) {
+  const active = isActiveFile(files);
   return `<a class="mobile-menu-link${active ? " is-active" : ""}" href="${href}"${active ? ' aria-current="page"' : ""}><span>${label}</span>${arrowIcon()}</a>`;
 }
 

@@ -9,15 +9,9 @@ import { deleteBooking, listBookings, postBooking } from "./controllers/booking-
 import { postContactMessage } from "./controllers/contact-controller.js";
 import { getDestination, listDestinations } from "./controllers/destination-controller.js";
 import { getHealth } from "./controllers/health-controller.js";
-import {
-  getMapCapabilities,
-  listMapLocations,
-  nearbyMapPlaces,
-  routeMap,
-  searchMapPlaces
-} from "./controllers/map-controller.js";
+import { getMapCapabilities, listMapLocations, nearbyMapPlaces, routeMap, searchMapPlaces } from "./controllers/map-controller.js";
 import { confirmReset, requestReset } from "./controllers/password-reset-controller.js";
-import { getProfile, patchPassword, patchProfile, patchProfilePhoto } from "./controllers/profile-controller.js";
+import { getFeedback, getProfile, patchFeedback, patchPassword, patchProfile, patchProfilePhoto } from "./controllers/profile-controller.js";
 import { createSaved, deleteSaved, getSavedStatus, listSaved } from "./controllers/saved-controller.js";
 import { applyCors, enforceTrustedWriteOrigin } from "./middleware/cors.js";
 import { generalRateLimit } from "./middleware/rate-limit.js";
@@ -48,6 +42,8 @@ const routes = [
   { method:"PATCH", pattern:/^\/api\/profile$/, handler:patchProfile },
   { method:"PATCH", pattern:/^\/api\/profile\/photo$/, handler:patchProfilePhoto },
   { method:"PATCH", pattern:/^\/api\/profile\/password$/, handler:patchPassword },
+  { method:"GET", pattern:/^\/api\/profile\/feedback$/, handler:getFeedback },
+  { method:"PATCH", pattern:/^\/api\/profile\/feedback$/, handler:patchFeedback },
 
   { method:"GET", pattern:/^\/api\/bookings$/, handler:listBookings },
   { method:"POST", pattern:/^\/api\/bookings$/, handler:postBooking },
@@ -94,19 +90,8 @@ export async function router(request, response) {
   } catch (error) {
     const statusCode = Number(error.statusCode) || 500;
     if (error.retryAfter) response.setHeader("Retry-After", String(error.retryAfter));
-    console.error(JSON.stringify({
-      level: "error",
-      type: "request_error",
-      requestId: request.requestId,
-      status: statusCode,
-      message: error.message,
-      stack: process.env.APP_ENV === "production" ? undefined : error.stack,
-      at: new Date().toISOString()
-    }));
-    if (!response.headersSent) {
-      sendJson(response, statusCode, { error: statusCode === 500 ? "Internal server error." : error.message });
-    } else if (!response.writableEnded) {
-      response.end();
-    }
+    console.error(JSON.stringify({ level:"error", type:"request_error", requestId:request.requestId, status:statusCode, message:error.message, stack:process.env.APP_ENV === "production" ? undefined : error.stack, at:new Date().toISOString() }));
+    if (!response.headersSent) sendJson(response, statusCode, { error: statusCode === 500 ? "Internal server error." : error.message });
+    else if (!response.writableEnded) response.end();
   }
 }
