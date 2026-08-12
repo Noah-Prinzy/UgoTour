@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/phase1-25.css?v=1.25.0" />
   <title>Sign Up | UgoTour</title>
   <meta name="robots" content="noindex,nofollow" />
 </head>
@@ -32,10 +33,23 @@
         <h2 id="signup-title">Join UgoTour</h2>
         <p class="auth-form-copy">Create one secure travel identity for your profile, saved places and trip plans.</p>
         <form id="signup-form" class="starter-form auth-form">
-          <label>Full name<input id="signup-name" type="text" autocomplete="name" required /></label>
-          <label>Email<input id="signup-email" type="email" autocomplete="email" required /></label>
-          <label>Password<input id="signup-password" type="password" minlength="10" autocomplete="new-password" required /></label>
-          <label>Confirm password<input id="signup-confirm-password" type="password" minlength="10" autocomplete="new-password" required /></label>
+          <label for="signup-name">
+            <span class="auth-field-name">Full name</span>
+            <input id="signup-name" type="text" autocomplete="name" placeholder="e.g. Noah Prinzy" required />
+          </label>
+          <label for="signup-email">
+            <span class="auth-field-name">Email address</span>
+            <input id="signup-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          </label>
+          <label for="signup-password">
+            <span class="auth-field-name">Password</span>
+            <input id="signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="Create at least 10 characters" aria-describedby="signup-password-hint" required />
+            <span id="signup-password-hint" class="auth-field-hint">Use at least 10 characters.</span>
+          </label>
+          <label for="signup-confirm-password">
+            <span class="auth-field-name">Confirm password</span>
+            <input id="signup-confirm-password" type="password" minlength="10" autocomplete="new-password" placeholder="Re-enter your password" required />
+          </label>
           <button class="primary-button auth-submit-button" type="submit">Create account</button>
           <p id="signup-message" class="form-message" aria-live="polite"></p>
         </form>
