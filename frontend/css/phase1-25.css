@@ -1,0 +1,128 @@
+/* ============================================================
+   PHASE 1.25 — Auth form clarity
+   ------------------------------------------------------------
+   Keeps Login / Signup field purpose obvious on dark auth panels
+   without changing authentication behavior or form IDs.
+   ============================================================ */
+
+.auth-visual-page .auth-form > label {
+  display: grid;
+  gap: 8px;
+  color: rgba(248, 246, 238, 0.94) !important;
+}
+
+.auth-visual-page .auth-field-name {
+  display: block;
+  color: rgba(248, 246, 238, 0.92);
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-visual-page .auth-form input {
+  min-height: 56px;
+  padding-inline: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.17) !important;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.075) !important;
+  color: #ffffff !important;
+  caret-color: #c7dc84;
+  text-transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.auth-visual-page .auth-form input::placeholder {
+  color: rgba(244, 243, 233, 0.52) !important;
+  opacity: 1;
+}
+
+.auth-visual-page .auth-form input:hover {
+  border-color: rgba(255, 255, 255, 0.26) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+.auth-visual-page .auth-form input:focus,
+.auth-visual-page .auth-form input:focus-visible {
+  border-color: #b8d06f !important;
+  background: rgba(255, 255, 255, 0.105) !important;
+  box-shadow:
+    0 0 0 3px rgba(184, 208, 111, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  outline: none;
+}
+
+.auth-visual-page .auth-field-hint {
+  display: block;
+  margin-top: -1px;
+  color: rgba(235, 235, 224, 0.58);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.auth-visual-page .password-field-shell {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.auth-visual-page .password-field-shell input {
+  padding-right: 58px;
+}
+
+.auth-visual-page .password-visibility-toggle {
+  color: rgba(250, 248, 239, 0.88) !important;
+}
+
+.auth-visual-page .password-visibility-toggle:hover,
+.auth-visual-page .password-visibility-toggle:focus-visible {
+  color: #c7dc84 !important;
+}
+
+/* Keep Chrome / Edge autofill readable on the dark panel. */
+.auth-visual-page .auth-form input:-webkit-autofill,
+.auth-visual-page .auth-form input:-webkit-autofill:hover,
+.auth-visual-page .auth-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-out 0s;
+  box-shadow:
+    0 0 0 1000px #1d2b1b inset,
+    0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+}
+
+@media (max-width: 720px) {
+  .auth-visual-page .auth-form {
+    gap: 16px;
+  }
+
+  .auth-visual-page .auth-form input {
+    min-height: 54px;
+    font-size: 16px; /* Prevents iOS form zoom while preserving readable type. */
+  }
+
+  .auth-visual-page .auth-field-name {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-visual-page .auth-form input {
+    min-height: 52px;
+    padding-inline: 14px;
+  }
+
+  .auth-visual-page .password-field-shell input {
+    padding-right: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-visual-page .auth-form input {
+    transition: none !important;
+  }
+}
