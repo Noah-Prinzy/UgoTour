@@ -1,47 +1,37 @@
-UgoTour Phase 1.24 — Cinematic Loading + 4-Column Results Gallery
-=================================================================
+UgoTour Phase 1.24.2 — Seamless Responsive Auth Handoff
+=======================================================
 
-Apply this ZIP OVER the current Phase 1.23 project (which should already include
-Phases 1.20–1.22). Replace matching files.
+Apply this overlay AFTER Phase 1.24.1. Replace matching files.
+No backend or database migration is required.
 
-WHAT CHANGED
-------------
-1. Authentication -> Home loading screen
-   - Uses the existing Murchison Falls Home hero photograph as a full-screen
-     loading background (no new external image dependency).
-   - Photo fades/settles into place while the branded UgoTour content enters.
-   - Progress is a smooth one-pass fill rather than a repeating scanner.
-   - Successful Login/Sign Up handoff is slightly longer and fades out more
-     gently so it reads as a transition rather than a flash.
-   - Reduced-motion users still get a stable, immediate presentation.
+FIXES
+-----
+1. Login/Signup -> splash -> Home handoff
+   - Splash no longer fades away while still on Login/Signup.
+   - It remains fully opaque until window.location.replace() begins.
+   - Removes the split-second Login-page flash between splash and Home.
+   - Progress settles to 100% before navigation without exposing the old page.
+   - 5 second redirect fail-safe remains in place.
 
-2. Destinations searched/filtered results
-   - Wide desktop: 4 equal compact cards per row; results wrap into more rows.
-   - Tablet: 2 cards per row.
-   - Phone: 1 card per row.
-   - Cards use image-on-top + information-below instead of very wide/shallow rows.
-   - Destination and attraction cards share the same visual rhythm.
-   - Images use object-fit: cover and controlled aspect ratios.
-   - Titles allow 2 lines; descriptions allow 3 lines; CTA/footer remains visible.
-   - Save hearts retain a dedicated top-right lane and do not cover region text.
-   - Default unfiltered Destinations carousel is NOT changed.
+2. Responsive splash/loading screen
+   - 320px phones through ultra-wide desktop.
+   - Android / iPhone safe-area insets.
+   - Tablet scaling.
+   - Landscape phones/tablets and short browser windows.
+   - Background uses object-fit: cover with responsive focal positioning.
+   - Logo, heading, tagline and progress bar use clamp()-based sizing.
+   - Reduced-motion support retained.
 
-3. PWA
-   - Cache version: ugotour-v1-16-4
-   - Adds phase1-24.css to the app shell.
+3. PWA/cache
+   - phase1-24.css query bumped to v=1.24.2.
+   - cache version bumped to ugotour-v1-16-6.
 
-FILES IN THIS OVERLAY
----------------------
-frontend/css/phase1-24.css
+FILES
+-----
 frontend/js/auth-home-transition.js
 frontend/js/components/navbar.js
+frontend/css/phase1-24.css
 frontend/service-worker.js
 UPGRADE_README.txt
 
-NO backend or database files are changed.
-
-AFTER COPYING
--------------
-Use Ctrl + Shift + R once. If a previously installed PWA remains stale, close
-and reopen it after the refreshed browser page has activated the new service
-worker.
+After copying, use Ctrl + Shift + R once.

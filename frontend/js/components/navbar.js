@@ -30,15 +30,19 @@ const phase122StylesReady = ensureStylesheet(
 const phase123StylesReady = ensureStylesheet(
   'link[data-ugotour-phase123="1.23"]',
   "../../css/phase1-23.css?v=1.23.0",
-  "../../css/phase1-24.css?v=1.24.0",
   "ugotourPhase123"
+);
+const phase124StylesReady = ensureStylesheet(
+  'link[data-ugotour-phase124="1.24"]',
+  "../../css/phase1-24.css?v=1.24.2",
+  "ugotourPhase124"
 );
 
 export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady, phase123StylesReady]);
+  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady, phase123StylesReady, phase124StylesReady]);
 
   let currentUser = validatedUser;
   if (currentUser === undefined) {
@@ -151,15 +155,25 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   }
 }
 
+function waitForStylesheet(link) {
+  if (link.sheet) return Promise.resolve(link);
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve(link);
+    };
+    link.addEventListener("load", finish, { once: true });
+    link.addEventListener("error", finish, { once: true });
+    // A slow/missing stylesheet must never block navbar or page startup forever.
+    window.setTimeout(finish, 2500);
+  });
+}
+
 function ensureStylesheet(selector, relativeUrl, datasetKey) {
   const existing = document.querySelector(selector);
-  if (existing) {
-    if (existing.sheet) return Promise.resolve(existing);
-    return new Promise((resolve) => {
-      existing.addEventListener("load", () => resolve(existing), { once: true });
-      existing.addEventListener("error", () => resolve(existing), { once: true });
-    });
-  }
+  if (existing) return waitForStylesheet(existing);
 
   const link = document.createElement("link");
   link.rel = "stylesheet";
@@ -170,15 +184,12 @@ function ensureStylesheet(selector, relativeUrl, datasetKey) {
     ugotourPhase120: "1.20",
     ugotourPhase121: "1.21",
     ugotourPhase122: "1.22",
-    ugotourPhase123: "1.23"
+    ugotourPhase123: "1.23",
+    ugotourPhase124: "1.24"
   };
   link.dataset[datasetKey] = datasetValues[datasetKey] || "1";
 
-  const ready = new Promise((resolve) => {
-    link.addEventListener("load", () => resolve(link), { once: true });
-    link.addEventListener("error", () => resolve(link), { once: true });
-  });
-
+  const ready = waitForStylesheet(link);
   document.head.appendChild(link);
   return ready;
 }

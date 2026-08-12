@@ -13,9 +13,11 @@ function preloadImage(src) {
       settled = true;
       resolve();
     };
+
     image.onload = finish;
     image.onerror = finish;
     image.src = src;
+
     if (image.complete) finish();
     else image.decode?.().then(finish).catch(() => {});
   });
@@ -64,13 +66,23 @@ function createOverlay(mode) {
 }
 
 /**
- * Runs only after authentication succeeds. It gives the browser a short branded
- * handoff while preloading the first Home hero image, then navigates to Home.
+ * Runs only after authentication succeeds.
+ *
+ * Important handoff rule: the overlay NEVER fades away on the Login/Signup
+ * document. It stays fully covering that page until location.replace() swaps in
+ * Home. This prevents a one-frame Login-page flash between splash and Home.
  */
 export async function transitionToHome(destinationUrl = "../index.html", { mode = "login" } = {}) {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const overlay = createOverlay(mode);
   const preloadUrl = new URL(DEFAULT_HOME_IMAGE, window.location.href).href;
+
+  // Safety net only. Even on a very slow device/network, the user cannot be
+  // trapped on the splash indefinitely. The overlay remains visible until the
+  // replacement navigation starts.
+  const redirectFailsafe = window.setTimeout(() => {
+    window.location.replace(destinationUrl);
+  }, 5000);
 
   try {
     sessionStorage.setItem("ugotour-auth-entry", mode);
@@ -78,11 +90,16 @@ export async function transitionToHome(destinationUrl = "../index.html", { mode 
     // sessionStorage can be unavailable in strict/private browsing contexts.
   }
 
-  const minimumVisible = delay(reduceMotion ? 380 : 1480);
-  const preloadBounded = Promise.race([preloadImage(preloadUrl), delay(1100)]);
+  const minimumVisible = delay(reduceMotion ? 360 : 1550);
+  const preloadBounded = Promise.race([preloadImage(preloadUrl), delay(1200)]);
   await Promise.all([minimumVisible, preloadBounded]);
 
-  overlay.classList.add("is-leaving");
-  await delay(reduceMotion ? 80 : 420);
+  // Let the progress bar visibly settle at 100%, but keep the full-screen
+  // overlay opaque. Navigation then replaces the whole document beneath it.
+  overlay.classList.add("is-ready-to-navigate");
+  overlay.setAttribute("aria-label", "Opening UgoTour home");
+  await delay(reduceMotion ? 40 : 110);
+
+  window.clearTimeout(redirectFailsafe);
   window.location.replace(destinationUrl);
 }

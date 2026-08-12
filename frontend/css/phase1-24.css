@@ -417,3 +417,276 @@
     transform: scaleX(1) !important;
   }
 }
+
+/* ============================================================
+   PHASE 1.24.2 — Seamless auth handoff + all-device splash sizing
+   ------------------------------------------------------------
+   The old document stays fully covered until Home navigation begins.
+   These rules also make the branded loading experience resilient to
+   very small phones, tablets, landscape screens, short-height devices,
+   desktops and ultra-wide displays.
+   ============================================================ */
+
+.auth-home-transition {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 100vh !important;
+  height: 100svh !important;
+  min-height: 100dvh !important;
+  box-sizing: border-box;
+  place-items: center !important;
+  padding:
+    max(18px, env(safe-area-inset-top))
+    clamp(16px, 4vw, 42px)
+    max(18px, env(safe-area-inset-bottom)) !important;
+  opacity: 1;
+  visibility: visible;
+  overflow: hidden !important;
+  background: #071008 !important;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* Do not reveal the Login/Signup page again. The document itself is replaced. */
+.auth-home-transition.is-leaving {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.auth-home-transition__photo {
+  z-index: 0 !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: 50% 48%;
+  transform: scale(1.045);
+}
+
+.auth-home-transition.is-photo-ready .auth-home-transition__photo {
+  opacity: .78;
+  transform: scale(1.01);
+}
+
+.auth-home-transition::before {
+  z-index: 1 !important;
+}
+
+.auth-home-transition::after {
+  z-index: 2 !important;
+}
+
+.auth-home-transition__ambient {
+  z-index: 3 !important;
+  pointer-events: none;
+}
+
+.auth-home-transition__content {
+  z-index: 4 !important;
+  width: min(540px, 92vw) !important;
+  max-height: calc(100svh - 36px);
+  align-content: center;
+  justify-items: center;
+  padding-inline: clamp(0px, 1vw, 8px);
+}
+
+.auth-home-transition__wordmark {
+  font-size: clamp(2.25rem, 7vw, 4.4rem) !important;
+  line-height: .92 !important;
+}
+
+.auth-home-transition__tagline {
+  max-width: 100%;
+  font-size: clamp(.5rem, 1.15vw, .66rem) !important;
+  letter-spacing: clamp(.14em, .8vw, .25em) !important;
+  text-align: center;
+}
+
+.auth-home-transition__copy {
+  width: min(460px, 100%);
+  margin-top: clamp(30px, 7svh, 64px) !important;
+}
+
+.auth-home-transition__copy p {
+  font-size: clamp(.58rem, 1.5vw, .74rem) !important;
+  letter-spacing: clamp(.09em, .45vw, .15em) !important;
+}
+
+.auth-home-transition__copy h1 {
+  max-width: 100% !important;
+  font-size: clamp(1.45rem, 4.6vw, 2.5rem) !important;
+  line-height: 1.04 !important;
+  text-wrap: balance;
+}
+
+.auth-home-transition__progress {
+  width: min(340px, 76vw) !important;
+  margin-top: clamp(22px, 4.5svh, 32px) !important;
+}
+
+.auth-home-transition__content > small {
+  max-width: min(330px, 82vw);
+  margin-top: 12px !important;
+  font-size: clamp(.56rem, 1.25vw, .67rem) !important;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.auth-home-transition.is-ready-to-navigate .auth-home-transition__progress span {
+  transform: scaleX(1) !important;
+}
+
+/* Phones: preserve text space and bias Murchison's action toward the right. */
+@media (max-width: 600px) {
+  .auth-home-transition {
+    padding-inline: max(16px, env(safe-area-inset-left), env(safe-area-inset-right)) !important;
+  }
+
+  .auth-home-transition__photo {
+    object-position: 58% 50% !important;
+  }
+
+  .auth-home-transition__content {
+    width: min(390px, 92vw) !important;
+  }
+
+  .auth-home-transition__wordmark {
+    font-size: clamp(2.2rem, 13vw, 3.3rem) !important;
+  }
+
+  .auth-home-transition__copy {
+    margin-top: clamp(28px, 6svh, 48px) !important;
+  }
+
+  .auth-home-transition__copy h1 {
+    font-size: clamp(1.42rem, 7.3vw, 2rem) !important;
+  }
+}
+
+/* Very narrow phones (320–374px). */
+@media (max-width: 374px) {
+  .auth-home-transition__wordmark {
+    font-size: clamp(2rem, 12.8vw, 2.75rem) !important;
+  }
+
+  .auth-home-transition__tagline {
+    letter-spacing: .13em !important;
+  }
+
+  .auth-home-transition__copy {
+    margin-top: 25px !important;
+  }
+
+  .auth-home-transition__copy h1 {
+    font-size: clamp(1.3rem, 7.4vw, 1.72rem) !important;
+  }
+
+  .auth-home-transition__progress {
+    width: min(270px, 78vw) !important;
+  }
+}
+
+/* Short-height devices and browser windows. */
+@media (max-height: 680px) {
+  .auth-home-transition__content {
+    transform: none !important;
+  }
+
+  .auth-home-transition__wordmark {
+    font-size: clamp(2rem, 8vh, 3.3rem) !important;
+  }
+
+  .auth-home-transition__copy {
+    margin-top: clamp(18px, 4vh, 30px) !important;
+  }
+
+  .auth-home-transition__copy h1 {
+    font-size: clamp(1.28rem, 4.8vh, 1.9rem) !important;
+  }
+
+  .auth-home-transition__progress {
+    margin-top: clamp(16px, 3vh, 24px) !important;
+  }
+}
+
+/* Phones/tablets in landscape: compact vertically without clipping content. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .auth-home-transition {
+    padding-block: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .auth-home-transition__photo {
+    object-position: 50% 46% !important;
+  }
+
+  .auth-home-transition__content {
+    width: min(620px, 88vw) !important;
+    max-height: calc(100svh - 24px);
+  }
+
+  .auth-home-transition__brand {
+    gap: 3px !important;
+  }
+
+  .auth-home-transition__wordmark {
+    font-size: clamp(1.95rem, 9vh, 3rem) !important;
+  }
+
+  .auth-home-transition__tagline {
+    font-size: .5rem !important;
+  }
+
+  .auth-home-transition__copy {
+    margin-top: clamp(12px, 3.5vh, 22px) !important;
+  }
+
+  .auth-home-transition__copy p {
+    margin-bottom: 5px !important;
+  }
+
+  .auth-home-transition__copy h1 {
+    font-size: clamp(1.2rem, 5.2vh, 1.72rem) !important;
+  }
+
+  .auth-home-transition__progress {
+    width: min(320px, 56vw) !important;
+    margin-top: clamp(12px, 3vh, 20px) !important;
+  }
+
+  .auth-home-transition__content > small {
+    margin-top: 7px !important;
+    font-size: .55rem !important;
+  }
+}
+
+/* Large desktop / ultra-wide: prevent the content from becoming oversized. */
+@media (min-width: 1440px) {
+  .auth-home-transition__content {
+    width: min(560px, 40vw) !important;
+  }
+
+  .auth-home-transition__copy h1 {
+    font-size: clamp(2rem, 2.2vw, 2.65rem) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-home-transition,
+  .auth-home-transition__photo,
+  .auth-home-transition__content,
+  .auth-home-transition__ambient {
+    animation: none !important;
+    transition-duration: .01ms !important;
+    transform: none !important;
+  }
+
+  .auth-home-transition__photo {
+    opacity: .78 !important;
+  }
+
+  .auth-home-transition__progress span {
+    animation-duration: 360ms !important;
+  }
+}
