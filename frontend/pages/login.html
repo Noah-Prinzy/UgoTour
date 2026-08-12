@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="../css/components.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/animations.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
+  <link rel="stylesheet" href="../css/phase1-25.css?v=1.25.0" />
   <title>Login | UgoTour</title>
   <meta name="robots" content="noindex,nofollow" />
 </head>
@@ -32,8 +33,14 @@
         <h2 id="login-title">Login to continue</h2>
         <p class="auth-form-copy">Your destinations, saved places, trips and profile are waiting.</p>
         <form id="login-form" class="starter-form auth-form">
-          <label>Email<input id="login-email" type="email" autocomplete="email" required /></label>
-          <label>Password<input id="login-password" type="password" autocomplete="current-password" required /></label>
+          <label for="login-email">
+            <span class="auth-field-name">Email address</span>
+            <input id="login-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+          </label>
+          <label for="login-password">
+            <span class="auth-field-name">Password</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+          </label>
           <div class="auth-password-row"><a href="./forgot-password.html">Forgot password?</a></div>
           <button class="primary-button auth-submit-button" type="submit">Login</button>
           <p id="login-message" class="form-message" aria-live="polite"></p>
