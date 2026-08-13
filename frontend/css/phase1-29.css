@@ -4,12 +4,12 @@
    ============================================================ */
 
 /* ---------- Editorial heroes: keep contained surfaces contained ---------- */
-.static-editorial-page .static-shell {
+body.static-editorial-page:not(.page-home):not(.profile-page) .static-shell {
   overflow: visible !important;
 }
 
-.static-editorial-page .static-hero,
-.static-editorial-page .contact-intro.static-hero {
+body.static-editorial-page:not(.page-home):not(.profile-page) .static-shell > .static-hero,
+body.static-editorial-page:not(.page-home):not(.profile-page) .contact-layout > .contact-intro.static-hero {
   width: 100% !important;
   max-width: 100% !important;
   margin-left: 0 !important;
