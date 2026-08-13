@@ -7,6 +7,8 @@ export async function renderFooter() {
   if (!footer) return;
 
   await footerStylesReady;
+  if (footer.dataset.ugotourFooterReady === "true") return;
+
   const year = new Date().getFullYear();
   const pageDepth = window.location.pathname.includes("/pages/") ? "." : "./pages";
   const href = (name) => `${pageDepth}/${name}.html`.replace("././", "./");
@@ -29,6 +31,7 @@ export async function renderFooter() {
         <button id="update-app-button" class="install-app-button" type="button" hidden>Update available</button>
       </div>
     </div>`;
+  footer.dataset.ugotourFooterReady = "true";
 
   syncFavoritesNavigationCopy();
 
