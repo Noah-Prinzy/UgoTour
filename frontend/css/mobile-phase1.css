@@ -5406,14 +5406,14 @@ body.bookings-page::before {
 body.saved-page::before {
   background:
     linear-gradient(90deg, rgba(5,12,8,.84), rgba(5,12,8,.46) 52%, rgba(5,12,8,.70)),
-    url("../images/backgrounds/saved-kalangala-beach.jpg") center 58% / cover no-repeat !important;
+    url("../images/optimized/backgrounds/saved-kalangala-beach.webp") center 58% / cover no-repeat !important;
 }
 
 /* Bookings uses a journey-oriented Ugandan highland road scene. */
 body.bookings-page::before {
   background:
     linear-gradient(90deg, rgba(5,12,8,.84), rgba(5,12,8,.44) 52%, rgba(5,12,8,.68)),
-    url("../images/backgrounds/bookings-bushenyi-road.jpg") center 54% / cover no-repeat !important;
+    url("../images/optimized/backgrounds/bookings-bushenyi-road.webp") center 54% / cover no-repeat !important;
 }
 
 /* Background-image attribution is required for the CC images, but should not
