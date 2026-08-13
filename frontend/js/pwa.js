@@ -1,14 +1,13 @@
 // ============================================================
-// PWA REGISTRATION, INSTALL PROMPT + UPDATE NOTIFICATION
+// PWA REGISTRATION + UPDATE NOTIFICATION
+// ------------------------------------------------------------
+// Installation is intentionally left to the browser. Chrome / Edge can
+// surface their native install UI, while Safari keeps its own Add to Home
+// Screen flow. UgoTour no longer intercepts beforeinstallprompt.
 // ============================================================
-let deferredInstallPrompt = null;
-const installListeners = new Set();
 let waitingWorker = null;
 const updateListeners = new Set();
 
-function notifyInstallState() {
-  installListeners.forEach((listener) => listener(Boolean(deferredInstallPrompt)));
-}
 function notifyUpdateState() {
   updateListeners.forEach((listener) => listener(Boolean(waitingWorker)));
 }
@@ -46,28 +45,16 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  notifyInstallState();
-});
-window.addEventListener("appinstalled", () => {
-  deferredInstallPrompt = null;
-  notifyInstallState();
-});
-
+// Backward-compatible no-op hooks keep existing navbar code safe while the
+// custom install UI is retired. No beforeinstallprompt listener is registered,
+// so the browser remains free to show its own installation experience.
 export function onInstallAvailability(listener) {
-  installListeners.add(listener);
-  listener(Boolean(deferredInstallPrompt));
-  return () => installListeners.delete(listener);
+  listener(false);
+  return () => {};
 }
+
 export async function requestInstall() {
-  if (!deferredInstallPrompt) return false;
-  await deferredInstallPrompt.prompt();
-  const result = await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  notifyInstallState();
-  return result.outcome === "accepted";
+  return false;
 }
 
 export function onUpdateAvailability(listener) {
@@ -75,6 +62,7 @@ export function onUpdateAvailability(listener) {
   listener(Boolean(waitingWorker));
   return () => updateListeners.delete(listener);
 }
+
 export function applyUpdate() {
   waitingWorker?.postMessage({ type: "SKIP_WAITING" });
 }
