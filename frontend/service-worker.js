@@ -1,7 +1,7 @@
-const CACHE_NAME = "ugotour-v1-16-7";
+const CACHE_NAME = "ugotour-v1-16-8";
 
 const APP_SHELL = [
-  "./", "./index.html", "./offline.html", "./manifest.webmanifest",
+  "./", "./index.html", "./offline.html", "./manifest.webmanifest", "./favicon.svg",
   "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css",
   "./js/app.js", "./js/home-card-routing.js", "./js/auth-home-transition.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
@@ -40,6 +40,23 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
+async function fetchAndCache(request, shouldCache) {
+  const response = await fetch(request);
+  if (!shouldCache || !response.ok) return response;
+
+  // Clone immediately while the body is still untouched. The previous version
+  // cloned only after caches.open() resolved, by which time Chrome could have
+  // started consuming the response stream and thrown "body is already used".
+  const cacheCopy = response.clone();
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.put(request, cacheCopy);
+  } catch {
+    // A cache write must never turn a successful network response into a page error.
+  }
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
@@ -47,23 +64,24 @@ self.addEventListener("fetch", (event) => {
   if (url.hostname === "tile.openstreetmap.org" || url.hostname.endsWith(".tile.openstreetmap.org")) return;
 
   if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).then((response) => {
-      if (response.ok && url.origin === self.location.origin) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-      return response;
-    }).catch(async () => (await caches.match(event.request)) || caches.match("./offline.html")));
+    event.respondWith(
+      fetchAndCache(event.request, url.origin === self.location.origin)
+        .catch(async () => (await caches.match(event.request)) || caches.match("./offline.html"))
+    );
     return;
   }
 
   if (url.origin === self.location.origin && ["style", "script"].includes(event.request.destination)) {
-    event.respondWith(fetch(event.request).then((response) => {
-      if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-      return response;
-    }).catch(() => caches.match(event.request)));
+    event.respondWith(
+      fetchAndCache(event.request, true).catch(() => caches.match(event.request))
+    );
     return;
   }
 
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
-    if (response.ok && url.origin === self.location.origin) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-    return response;
-  })));
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetchAndCache(event.request, url.origin === self.location.origin);
+    })
+  );
 });
