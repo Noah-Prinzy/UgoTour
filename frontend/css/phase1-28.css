@@ -339,6 +339,26 @@
   display: none !important;
 }
 
+/* ---------- Full-screen map + shared footer ---------- */
+.map-page {
+  height: auto !important;
+  min-height: 100svh;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.map-page .map-main,
+.map-page .map-stage {
+  height: 100vh;
+  height: 100svh;
+  min-height: 100svh;
+}
+
+.map-page .site-footer {
+  position: relative;
+  z-index: 1200;
+}
+
 @media (max-width: 900px) {
   .site-footer .footer-main {
     grid-template-columns: 1fr;
