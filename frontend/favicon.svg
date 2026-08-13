@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">UgoTour Flag O</title>
+  <desc id="desc">UgoTour favicon using a Uganda flag inspired O on a forest green background.</desc>
+  <defs>
+    <clipPath id="disc">
+      <circle cx="32" cy="32" r="20"/>
+    </clipPath>
+    <mask id="ring">
+      <rect width="64" height="64" fill="white"/>
+      <circle cx="32" cy="32" r="10.5" fill="black"/>
+    </mask>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#101b0f"/>
+  <circle cx="32" cy="32" r="22" fill="#f7f4ec" opacity="0.98"/>
+  <g clip-path="url(#disc)" mask="url(#ring)">
+    <rect x="12" y="12" width="40" height="6.667" fill="#111111"/>
+    <rect x="12" y="18.667" width="40" height="6.667" fill="#f6d447"/>
+    <rect x="12" y="25.334" width="40" height="6.666" fill="#d8292f"/>
+    <rect x="12" y="32" width="40" height="6.667" fill="#111111"/>
+    <rect x="12" y="38.667" width="40" height="6.667" fill="#f6d447"/>
+    <rect x="12" y="45.334" width="40" height="6.666" fill="#d8292f"/>
+  </g>
+  <circle cx="32" cy="32" r="10.5" fill="#101b0f"/>
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#f7f4ec" stroke-width="1.5"/>
+</svg>
