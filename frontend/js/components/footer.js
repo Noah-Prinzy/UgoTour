@@ -1,4 +1,4 @@
-﻿import { applyUpdate, onUpdateAvailability } from "../pwa.js";
+import { applyUpdate, onUpdateAvailability } from "../pwa.js";
 
 const footerStylesReady = ensureFooterStylesheet();
 
@@ -22,10 +22,10 @@ export async function renderFooter() {
         <p>© ${year} · Discover, Save and Plan.</p>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
-        <a href="${href("about")}">About</a>
-        <a href="${href("help")}">Help</a>
-        <a href="${href("contact")}">Contact</a>
-        <a href="${href("terms")}">Terms</a>
+        ${footerLink("about", "About", href)}
+        ${footerLink("help", "Help", href)}
+        ${footerLink("contact", "Contact", href)}
+        ${footerLink("terms", "Terms", href)}
       </nav>
       <div class="footer-actions">
         <button id="update-app-button" class="install-app-button" type="button" hidden>Update available</button>
@@ -40,6 +40,15 @@ export async function renderFooter() {
     if (update) update.hidden = !available;
   });
   update?.addEventListener("click", () => applyUpdate());
+}
+
+function footerLink(name, label, href) {
+  const active = currentFile() === `${name}.html`;
+  return `<a href="${href(name)}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
+}
+
+function currentFile() {
+  return window.location.pathname.split("/").pop() || "index.html";
 }
 
 function ensureFooterStylesheet() {
