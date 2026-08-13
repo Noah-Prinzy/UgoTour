@@ -85,8 +85,9 @@ function decorateHtml(html) {
   }
 
   // Use the compact Flag-O mark on every HTML page without duplicating the
-  // favicon declaration across each individual source file.
-  if (!/rel=["'][^"']*icon[^"']*["']/i.test(output)) {
+  // favicon declaration across each individual source file. apple-touch-icon
+  // does not count as the browser favicon here.
+  if (!/<link\s+rel=["'](?:shortcut\s+)?icon["'][^>]*>/i.test(output)) {
     if (/<link\s+rel=["']manifest["'][^>]*>/i.test(output)) {
       output = output.replace(
         /(<link\s+rel=["']manifest["'][^>]*>)/i,
