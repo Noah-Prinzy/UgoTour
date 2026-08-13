@@ -3,11 +3,12 @@ import { extname, relative, resolve } from "node:path";
 
 const root = process.cwd();
 const required = [
-  "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js",
+  "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js", "frontend/favicon.svg",
   "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/privacy.html",
   "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
   "frontend/pages/forgot-password.html", "frontend/pages/reset-password.html",
-  "database/migrations/008_phase9_predeployment_features.sql", ".env.example", "scripts/backup-db.ps1"
+  "database/migrations/008_phase9_predeployment_features.sql", "database/migrations/009_profile_editorial_feedback.sql",
+  ".env.example", "scripts/backup-db.ps1"
 ];
 let failed = false;
 function fail(message) { failed = true; console.error(`FAIL ${message}`); }
@@ -38,7 +39,8 @@ for (const file of htmlFiles) {
 
 const sw = await readFile(resolve(root, "frontend/service-worker.js"), "utf8");
 if (/tile\.openstreetmap\.org.*cache\.addAll/s.test(sw)) fail("Map tiles appear in the PWA pre-cache list.");
-if (!/ugotour-v1-0-0/.test(sw)) fail("Final PWA cache version is not active.");
+if (!/const\s+CACHE_NAME\s*=\s*["']ugotour-v\d+-\d+-\d+["']/.test(sw)) fail("Versioned PWA cache name is missing or malformed.");
+if (!/favicon\.svg/.test(sw)) fail("Flag-O favicon is missing from the PWA app shell.");
 
 const api = await readFile(resolve(root, "frontend/js/api.js"), "utf8");
 if (/setItem\([^\n]*auth_token|sessionStorage\.[^(]*\([^\n]*token/i.test(api)) fail("Browser authentication token storage detected.");
