@@ -1,8 +1,8 @@
-const CACHE_NAME = "ugotour-v1-16-10";
+const CACHE_NAME = "ugotour-v1-16-11";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest", "./favicon.svg",
-  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css",
+  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css",
   "./js/app.js", "./js/home-card-routing.js", "./js/auth-home-transition.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
   "./js/services/auth-service.js", "./js/services/session-guard.js", "./js/services/booking-service.js",
@@ -15,7 +15,7 @@ const APP_SHELL = [
   "./pages/destinations.html", "./pages/map.html", "./pages/destination-details.html", "./pages/bookings.html",
   "./pages/login.html", "./pages/signup.html", "./pages/profile.html", "./pages/profile-settings.html", "./pages/saved.html",
   "./pages/forgot-password.html", "./pages/reset-password.html", "./pages/about.html", "./pages/help.html",
-  "./pages/contact.html", "./pages/privacy.html", "./pages/terms.html", "./pages/admin.html",
+  "./pages/contact.html", "./pages/terms.html", "./pages/admin.html",
   "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
   "./images/optimized/uganda-forest-fallback.webp", "./images/optimized/profile-page-background.webp",
   "./images/optimized/backgrounds/saved-kalangala-beach.webp", "./images/optimized/backgrounds/bookings-bushenyi-road.webp",
@@ -44,9 +44,6 @@ async function fetchAndCache(request, shouldCache) {
   const response = await fetch(request);
   if (!shouldCache || !response.ok) return response;
 
-  // Clone immediately while the body is still untouched. The previous version
-  // cloned only after caches.open() resolved, by which time Chrome could have
-  // started consuming the response stream and thrown "body is already used".
   const cacheCopy = response.clone();
   try {
     const cache = await caches.open(CACHE_NAME);
