@@ -4,7 +4,7 @@
 // Railway runs the PWA and REST API from one Node.js process so browser
 // sessions remain same-origin. Only files inside /frontend are exposed.
 
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -73,6 +73,36 @@ function setStaticSecurityHeaders(response) {
   response.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
 }
 
+function decorateHtml(html) {
+  let output = html;
+
+  // Chromium recommends the generic capability meta alongside the Apple tag.
+  if (/name=["']apple-mobile-web-app-capable["']/i.test(output) && !/name=["']mobile-web-app-capable["']/i.test(output)) {
+    output = output.replace(
+      /(<meta\s+name=["']apple-mobile-web-app-capable["'][^>]*>)/i,
+      '<meta name="mobile-web-app-capable" content="yes" />\n  $1'
+    );
+  }
+
+  // Use the compact Flag-O mark on every HTML page without duplicating the
+  // favicon declaration across each individual source file.
+  if (!/rel=["'][^"']*icon[^"']*["']/i.test(output)) {
+    if (/<link\s+rel=["']manifest["'][^>]*>/i.test(output)) {
+      output = output.replace(
+        /(<link\s+rel=["']manifest["'][^>]*>)/i,
+        '$1\n  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />'
+      );
+    } else {
+      output = output.replace(
+        /<\/head>/i,
+        '  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />\n</head>'
+      );
+    }
+  }
+
+  return output;
+}
+
 export function serveStaticSite(request, response, url) {
   if (!["GET", "HEAD"].includes(request.method)) {
     response.writeHead(405, { Allow: "GET, HEAD", "Content-Type": "text/plain; charset=utf-8" });
@@ -115,9 +145,26 @@ export function serveStaticSite(request, response, url) {
   const extension = extname(filePath).toLowerCase();
   setStaticSecurityHeaders(response);
   response.setHeader("Content-Type", CONTENT_TYPES.get(extension) || "application/octet-stream");
-  response.setHeader("Content-Length", String(stats.size));
   response.setHeader("Cache-Control", cachePolicy(filePath));
 
+  if (extension === ".html") {
+    let html;
+    try {
+      html = decorateHtml(readFileSync(filePath, "utf8"));
+    } catch {
+      response.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+      response.end("Could not read page");
+      return;
+    }
+
+    response.setHeader("Content-Length", String(Buffer.byteLength(html)));
+    response.writeHead(200);
+    if (request.method === "HEAD") response.end();
+    else response.end(html);
+    return;
+  }
+
+  response.setHeader("Content-Length", String(stats.size));
   if (request.method === "HEAD") {
     response.writeHead(200);
     response.end();
