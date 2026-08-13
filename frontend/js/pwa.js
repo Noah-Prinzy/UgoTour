@@ -1,5 +1,7 @@
 import "./shared-navigation-copy.js";
 
+ensurePhase129Stylesheet();
+
 // ============================================================
 // PWA REGISTRATION + UPDATE NOTIFICATION
 // ------------------------------------------------------------
@@ -9,6 +11,18 @@ import "./shared-navigation-copy.js";
 // ============================================================
 let waitingWorker = null;
 const updateListeners = new Set();
+
+function ensurePhase129Stylesheet() {
+  const existing = document.querySelector('link[data-ugotour-phase129="1.29"]');
+  if (existing) return existing;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = new URL("../css/phase1-29.css?v=1.29.0", import.meta.url).href;
+  link.dataset.ugotourPhase129 = "1.29";
+  document.head.appendChild(link);
+  return link;
+}
 
 function notifyUpdateState() {
   updateListeners.forEach((listener) => listener(Boolean(waitingWorker)));
