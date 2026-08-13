@@ -1,0 +1,499 @@
+/* ============================================================
+   UgoTour Phase 1.29A — Responsive & Visual Stability
+   Confirmed production-audit fixes only.
+   ============================================================ */
+
+/* ---------- Editorial heroes: keep contained surfaces contained ---------- */
+.static-editorial-page .static-shell {
+  overflow: visible !important;
+}
+
+.static-editorial-page .static-hero,
+.static-editorial-page .contact-intro.static-hero {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* ---------- Tablet navigation: no dead zone between desktop and mobile ---------- */
+@media (min-width: 721px) and (max-width: 980px) {
+  #site-header {
+    z-index: 900;
+    padding-inline: 16px;
+  }
+
+  .site-nav {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 12px !important;
+    padding: 8px 10px 8px 18px !important;
+  }
+
+  .nav-links,
+  .nav-account {
+    display: none !important;
+  }
+
+  .mobile-nav-actions {
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .mobile-profile-button,
+  .mobile-menu-toggle,
+  .mobile-menu-close {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    display: inline-grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: var(--forest-900);
+    background: transparent;
+    text-decoration: none;
+  }
+
+  .mobile-profile-button .nav-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+  }
+
+  .mobile-profile-button .nav-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .mobile-profile-button-guest svg,
+  .mobile-menu-toggle svg,
+  .mobile-menu-close svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 990;
+    display: block;
+    opacity: 0;
+    background: rgba(5, 10, 5, 0.52);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    transition: opacity 260ms ease;
+    pointer-events: none;
+  }
+
+  .mobile-menu-backdrop.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-drawer {
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(78vw, 390px);
+    display: flex;
+    flex-direction: column;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    color: #f8f6ee;
+    background:
+      radial-gradient(circle at 100% 0, rgba(139, 164, 76, 0.18), transparent 24rem),
+      linear-gradient(160deg, #172415, #0e180e 78%);
+    box-shadow: -28px 0 60px rgba(6, 13, 5, 0.24);
+    transform: translate3d(105%, 0, 0);
+    visibility: hidden;
+    transition: transform 320ms cubic-bezier(.2,.82,.2,1), visibility 320ms step-end;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+  }
+
+  .mobile-menu-drawer.is-open {
+    transform: translate3d(0, 0, 0);
+    visibility: visible;
+    transition: transform 320ms cubic-bezier(.2,.82,.2,1), visibility 0s step-start;
+  }
+
+  .mobile-menu-drawer[hidden],
+  .mobile-menu-backdrop[hidden] {
+    display: none !important;
+  }
+
+  .mobile-menu-drawer-head {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 2px 2px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  }
+
+  .mobile-menu-brand {
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .mobile-menu-close {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .mobile-menu-links {
+    display: grid;
+    gap: 2px;
+    padding: 22px 0;
+  }
+
+  .mobile-menu-link {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 15px;
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 1.03rem;
+    font-weight: 760;
+    text-decoration: none;
+  }
+
+  .mobile-menu-link:hover,
+  .mobile-menu-link:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .mobile-menu-link.is-active {
+    color: #172114;
+    background: #c7dc84;
+  }
+
+  .mobile-menu-link-arrow {
+    width: 19px;
+    height: 19px;
+    opacity: 0.65;
+  }
+
+  .mobile-menu-drawer-footer {
+    display: grid;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.11);
+  }
+
+  .mobile-drawer-session-button,
+  .mobile-drawer-auth-actions a {
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 15px;
+    font: inherit;
+    font-weight: 760;
+    text-decoration: none;
+  }
+
+  .mobile-drawer-auth-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 8px;
+  }
+}
+
+/* ---------- Mobile drawer: make guest authentication unmistakable ---------- */
+@media (max-width: 980px) {
+  .mobile-menu-drawer .mobile-drawer-auth-actions a:not(.mobile-drawer-signup) {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.11) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  }
+
+  .mobile-menu-drawer .mobile-drawer-auth-actions .mobile-drawer-signup {
+    color: #172114 !important;
+    background: #c7dc84 !important;
+    border: 1px solid #c7dc84 !important;
+  }
+
+  .mobile-menu-drawer .mobile-drawer-auth-actions a:focus-visible {
+    outline: 3px solid rgba(199, 220, 132, 0.62);
+    outline-offset: 3px;
+  }
+}
+
+/* ---------- Auth: prioritize the task on small and short screens ---------- */
+@media (max-width: 430px) {
+  .auth-visual-page .auth-photo-panel {
+    min-height: 180px !important;
+    max-height: 180px !important;
+  }
+
+  .auth-visual-page .auth-photo-copy {
+    left: 18px !important;
+    right: 18px !important;
+    bottom: 16px !important;
+  }
+
+  .auth-visual-page .auth-photo-copy p,
+  .auth-visual-page .auth-photo-copy span {
+    display: none;
+  }
+
+  .auth-visual-page .auth-photo-copy h1 {
+    margin: 0 !important;
+    max-width: 340px;
+    font-size: clamp(1.75rem, 9vw, 2.3rem) !important;
+    line-height: 0.96 !important;
+  }
+
+  .auth-visual-page .auth-entry .auth-form-panel {
+    padding: 24px 18px 32px !important;
+  }
+
+  .auth-visual-page .auth-brand {
+    margin-bottom: 18px !important;
+  }
+
+  .auth-visual-page .auth-entry .auth-form-panel h2 {
+    font-size: clamp(1.85rem, 9vw, 2.35rem) !important;
+  }
+
+  .auth-visual-page .auth-entry .auth-form {
+    margin-top: 16px !important;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .auth-visual-page .auth-entry-main,
+  .auth-visual-page .auth-entry {
+    min-height: 100dvh !important;
+  }
+
+  .auth-visual-page .auth-entry {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .auth-visual-page .auth-photo-panel {
+    display: none !important;
+  }
+
+  .auth-visual-page .auth-entry .auth-form-panel {
+    width: min(560px, 100%);
+    margin: 0 auto;
+    align-self: start !important;
+    padding: 14px 28px 20px !important;
+  }
+
+  .auth-visual-page .auth-brand {
+    margin-bottom: 8px !important;
+  }
+
+  .auth-visual-page .section-kicker {
+    font-size: 0.65rem;
+  }
+
+  .auth-visual-page .auth-entry .auth-form-panel h2 {
+    margin: 5px 0 6px !important;
+    font-size: clamp(1.55rem, 5vh, 2rem) !important;
+  }
+
+  .auth-visual-page .auth-form-copy {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .auth-visual-page .auth-entry .auth-form {
+    margin-top: 9px !important;
+    gap: 8px !important;
+  }
+
+  .auth-visual-page .auth-entry .starter-form label {
+    gap: 4px !important;
+  }
+
+  .auth-visual-page .auth-entry .starter-form input {
+    min-height: 42px !important;
+  }
+
+  .auth-visual-page .auth-password-row,
+  .auth-visual-page .auth-switch-copy {
+    margin-block: 4px !important;
+  }
+
+  .auth-visual-page .auth-session-note {
+    display: none !important;
+  }
+}
+
+/* ---------- Footer: fully self-contained brand and current-route state ---------- */
+.site-footer .footer-brand .ugotour-logo-lockup {
+  min-width: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 0;
+}
+
+.site-footer .footer-brand .ugotour-brand-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.025em;
+  color: #fff;
+  font-size: 1.32rem !important;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.052em;
+  white-space: nowrap;
+}
+
+.site-footer .footer-brand .ugotour-brand-ug {
+  color: #fff !important;
+}
+
+.site-footer .footer-brand .ugotour-brand-tour {
+  color: #c7dc84 !important;
+}
+
+.site-footer .footer-brand .ugotour-flag-o {
+  width: 0.8em !important;
+  height: 0.8em !important;
+  margin-inline: 0.03em;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 0.8em;
+  overflow: hidden;
+  border-radius: 50%;
+  background: linear-gradient(
+    to bottom,
+    #111 0 16.66%,
+    #fcdc04 16.66% 33.33%,
+    #d7261e 33.33% 50%,
+    #111 50% 66.66%,
+    #fcdc04 66.66% 83.33%,
+    #d7261e 83.33% 100%
+  );
+  box-shadow: 0 0.08em 0.22em rgba(0, 0, 0, 0.28);
+}
+
+.site-footer .footer-brand .ugotour-flag-disc {
+  width: 43%;
+  height: 43%;
+  display: block;
+  border-radius: 50%;
+  background: #f8f6ee;
+  box-shadow: 0 0 0 1px rgba(23, 33, 20, 0.28);
+}
+
+.site-footer .footer-brand .ugotour-brand-tagline {
+  display: block;
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 0.4rem !important;
+  font-weight: 760;
+  line-height: 1;
+  letter-spacing: 0.24em !important;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.site-footer .footer-brand .ugotour-brand-accent {
+  width: 100%;
+  height: 2px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  overflow: hidden;
+}
+
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(1),
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(4) { background: #111; }
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(2),
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(5) { background: #fcdc04; }
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(3),
+.site-footer .footer-brand .ugotour-brand-accent i:nth-child(6) { background: #d7261e; }
+
+.site-footer .footer-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+.site-footer .footer-links a[aria-current="page"] {
+  color: #c7dc84;
+}
+
+.site-footer .footer-links a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 5px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+/* ---------- Touch targets for quiet auth/recovery links ---------- */
+@media (max-width: 720px) {
+  .auth-password-row a,
+  .auth-switch-copy a,
+  .dev-reset-link a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ---------- Terms: readable long-form measure ---------- */
+.static-terms-page .legal-copy > h2,
+.static-terms-page .legal-copy > p:not(.static-note) {
+  max-width: 72ch;
+}
+
+/* ---------- Offline: footer reaches the viewport edge ---------- */
+.offline-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.offline-page #main-content {
+  width: 100%;
+  min-height: 0;
+  flex: 1 0 auto;
+  display: grid;
+  align-items: center;
+}
+
+.offline-page .static-shell {
+  width: min(860px, calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.offline-page .site-footer {
+  margin-top: auto;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 560px) {
+  .offline-page .static-shell {
+    width: calc(100% - 28px);
+  }
+}
