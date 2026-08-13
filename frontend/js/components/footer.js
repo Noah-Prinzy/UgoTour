@@ -1,4 +1,4 @@
-import { applyUpdate, onUpdateAvailability } from "../pwa.js";
+﻿import { applyUpdate, onUpdateAvailability } from "../pwa.js";
 
 const footerStylesReady = ensureFooterStylesheet();
 
@@ -19,7 +19,7 @@ export async function renderFooter() {
     <div class="footer-main">
       <div>
         <strong class="footer-brand ugotour-brand" aria-label="UgoTour">${brandMarkup()}</strong>
-        <p>© ${year} · Discover, favorite and plan Uganda journeys.</p>
+        <p>© ${year} · Discover, Save and Plan.</p>
       </div>
       <nav class="footer-links" aria-label="Footer navigation">
         <a href="${href("about")}">About</a>
@@ -36,7 +36,9 @@ export async function renderFooter() {
   syncFavoritesNavigationCopy();
 
   const update = document.getElementById("update-app-button");
-  onUpdateAvailability((available) => { if (update) update.hidden = !available; });
+  onUpdateAvailability((available) => {
+    if (update) update.hidden = !available;
+  });
   update?.addEventListener("click", () => applyUpdate());
 }
 
@@ -55,11 +57,15 @@ function ensureFooterStylesheet() {
 function syncFavoritesNavigationCopy() {
   document.querySelectorAll('a[href*="saved.html"]').forEach((link) => {
     const label = link.querySelector("span");
+
     if (label && label.textContent.trim() === "Saved") {
       label.textContent = "Favorites";
       return;
     }
-    if (link.textContent.trim() === "Saved") link.textContent = "Favorites";
+
+    if (link.textContent.trim() === "Saved") {
+      link.textContent = "Favorites";
+    }
   });
 }
 
