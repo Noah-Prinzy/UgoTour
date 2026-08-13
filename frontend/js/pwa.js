@@ -47,6 +47,24 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+async function ensureSharedFooter() {
+  let footer = document.getElementById("site-footer");
+  if (!footer) {
+    footer = document.createElement("footer");
+    footer.id = "site-footer";
+    document.body.appendChild(footer);
+  }
+
+  const { renderFooter } = await import("./components/footer.js");
+  await renderFooter();
+}
+
+queueMicrotask(() => {
+  ensureSharedFooter().catch((error) => {
+    console.error("Could not render shared footer:", error);
+  });
+});
+
 // Backward-compatible no-op hooks keep existing navbar code safe while the
 // custom install UI is retired. No beforeinstallprompt listener is registered,
 // so the browser remains free to show its own installation experience.
