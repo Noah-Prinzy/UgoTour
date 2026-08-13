@@ -4,7 +4,7 @@ import { extname, relative, resolve } from "node:path";
 const root = process.cwd();
 const required = [
   "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js", "frontend/favicon.svg",
-  "frontend/css/phase1-28.css", "frontend/js/shared-navigation-copy.js",
+  "frontend/css/phase1-28.css", "frontend/css/phase1-29.css", "frontend/js/shared-navigation-copy.js",
   "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
   "frontend/pages/forgot-password.html", "frontend/pages/reset-password.html",
   "database/migrations/008_phase9_predeployment_features.sql", "database/migrations/009_profile_editorial_feedback.sql",
@@ -49,7 +49,19 @@ if (/tile\.openstreetmap\.org.*cache\.addAll/s.test(sw)) fail("Map tiles appear 
 if (!/const\s+CACHE_NAME\s*=\s*["']ugotour-v\d+-\d+-\d+["']/.test(sw)) fail("Versioned PWA cache name is missing or malformed.");
 if (!/favicon\.svg/.test(sw)) fail("Flag-O favicon is missing from the PWA app shell.");
 if (!/phase1-28\.css/.test(sw)) fail("Phase 1.28 stylesheet is missing from the PWA app shell.");
+if (!/phase1-29\.css/.test(sw)) fail("Phase 1.29 stylesheet is missing from the PWA app shell.");
 if (/pages\/privacy\.html/.test(sw)) fail("Retired Privacy page remains in the PWA app shell.");
+
+const pwa = await readFile(resolve(root, "frontend/js/pwa.js"), "utf8");
+if (!/phase1-29\.css/.test(pwa)) fail("Phase 1.29 stylesheet is not loaded by the shared PWA bootstrap.");
+
+const terms = await readFile(resolve(root, "frontend/pages/terms.html"), "utf8");
+if (/pre-deployment template/i.test(terms)) fail("Internal pre-deployment copy remains visible on Terms.");
+
+for (const authPage of ["login.html", "signup.html"]) {
+  const source = await readFile(resolve(root, "frontend/pages", authPage), "utf8");
+  if (/saved places/i.test(source)) fail(`${authPage} still exposes retired Saved Places terminology.`);
+}
 
 const api = await readFile(resolve(root, "frontend/js/api.js"), "utf8");
 if (/setItem\([^\n]*auth_token|sessionStorage\.[^(]*\([^\n]*token/i.test(api)) fail("Browser authentication token storage detected.");
