@@ -80,7 +80,11 @@ export function serveStaticSite(request, response, url) {
     return;
   }
 
-  const filePath = safeFrontendPath(url.pathname);
+  // Browsers still probe the conventional /favicon.ico path even when the
+  // application uses an SVG favicon. Serve the branded Flag-O asset centrally
+  // so every UgoTour page gets a valid icon instead of a noisy 404.
+  const requestedPath = url.pathname === "/favicon.ico" ? "/favicon.svg" : url.pathname;
+  const filePath = safeFrontendPath(requestedPath);
   if (!filePath) {
     response.writeHead(400, { "Content-Type": "text/plain; charset=utf-8" });
     response.end("Invalid path");
