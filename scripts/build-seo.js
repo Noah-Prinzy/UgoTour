@@ -9,7 +9,7 @@ if (!rawBase) {
 const base = rawBase.replace(/\/$/, "");
 const paths = [
   "/index.html", "/pages/destinations.html", "/pages/map.html", "/pages/about.html",
-  "/pages/help.html", "/pages/contact.html", "/pages/privacy.html", "/pages/terms.html"
+  "/pages/help.html", "/pages/contact.html", "/pages/terms.html"
 ];
 const today = new Date().toISOString().slice(0,10);
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${paths.map((path)=>`  <url><loc>${base}${path}</loc><lastmod>${today}</lastmod></url>`).join("\n")}\n</urlset>\n`;
