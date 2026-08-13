@@ -4,8 +4,8 @@ import { extname, relative, resolve } from "node:path";
 const root = process.cwd();
 const required = [
   "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js", "frontend/favicon.svg",
-  "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/privacy.html",
-  "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
+  "frontend/css/phase1-28.css", "frontend/js/shared-navigation-copy.js",
+  "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
   "frontend/pages/forgot-password.html", "frontend/pages/reset-password.html",
   "database/migrations/008_phase9_predeployment_features.sql", "database/migrations/009_profile_editorial_feedback.sql",
   ".env.example", "scripts/backup-db.ps1"
@@ -37,10 +37,19 @@ for (const file of htmlFiles) {
   if (!/id=["']main-content["']/.test(source)) fail(`${name} has no main-content landmark.`);
 }
 
+try {
+  await access(resolve(root, "frontend/pages/privacy.html"));
+  fail("Retired Privacy page is still present.");
+} catch {
+  // Expected: Privacy was intentionally removed in Phase 1.28.
+}
+
 const sw = await readFile(resolve(root, "frontend/service-worker.js"), "utf8");
 if (/tile\.openstreetmap\.org.*cache\.addAll/s.test(sw)) fail("Map tiles appear in the PWA pre-cache list.");
 if (!/const\s+CACHE_NAME\s*=\s*["']ugotour-v\d+-\d+-\d+["']/.test(sw)) fail("Versioned PWA cache name is missing or malformed.");
 if (!/favicon\.svg/.test(sw)) fail("Flag-O favicon is missing from the PWA app shell.");
+if (!/phase1-28\.css/.test(sw)) fail("Phase 1.28 stylesheet is missing from the PWA app shell.");
+if (/pages\/privacy\.html/.test(sw)) fail("Retired Privacy page remains in the PWA app shell.");
 
 const api = await readFile(resolve(root, "frontend/js/api.js"), "utf8");
 if (/setItem\([^\n]*auth_token|sessionStorage\.[^(]*\([^\n]*token/i.test(api)) fail("Browser authentication token storage detected.");
@@ -49,7 +58,6 @@ if (!/window\.location\.origin}\/api/.test(api)) fail("Production API client doe
 const docs = (await readdir(resolve(root, "docs"))).filter((name) => name.toLowerCase().endsWith(".md"));
 if (docs.length !== 1 || docs[0] !== "PROJECT_PROGRESS.md") fail("docs/ must contain only PROJECT_PROGRESS.md.");
 
-// Every raster source image should have a browser-optimized WebP counterpart.
 const imageRoot = resolve(root, "frontend/images");
 const optimizedRoot = resolve(imageRoot, "optimized");
 const sourceImages = (await walk(imageRoot)).filter((file) => {
