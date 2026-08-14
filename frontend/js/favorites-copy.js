@@ -1,6 +1,8 @@
 // Phase 1.29B — user-facing Favorites terminology only.
 // Internal saved-service/API names intentionally remain unchanged.
 
+const favoriteSelector = ".place-save-button, #details-favorite, #map-place-save";
+
 function setText(element, value) {
   if (element && element.textContent !== value) element.textContent = value;
 }
@@ -23,7 +25,7 @@ function destinationNameFromLabel(button) {
 }
 
 function syncFavoriteButton(button) {
-  if (!button) return;
+  if (!(button instanceof Element) || !button.matches(favoriteSelector)) return;
   const isPressed = pressed(button);
 
   if (button.id === "map-place-save") {
@@ -40,29 +42,35 @@ function syncFavoriteButton(button) {
   if (button.classList.contains("place-save-button")) {
     const name = destinationNameFromLabel(button);
     const action = isPressed ? "Remove" : "Add";
-    setLabel(button, name ? `${action} ${name} ${isPressed ? "from" : "to"} Favorites` : `${action} ${isPressed ? "from" : "to"} Favorites`);
+    const direction = isPressed ? "from" : "to";
+    setLabel(button, name ? `${action} ${name} ${direction} Favorites` : `${action} ${direction} Favorites`);
   }
 }
 
+function syncAddedNode(node) {
+  if (!(node instanceof Element)) return;
+  syncFavoriteButton(node);
+  node.querySelectorAll?.(favoriteSelector).forEach(syncFavoriteButton);
+}
+
 export function syncFavoritesCopy(root = document) {
-  root.querySelectorAll?.(".place-save-button, #details-favorite, #map-place-save").forEach(syncFavoriteButton);
+  root.querySelectorAll?.(favoriteSelector).forEach(syncFavoriteButton);
 }
 
 syncFavoritesCopy();
 
 const observer = new MutationObserver((mutations) => {
-  let shouldSync = false;
-  for (const mutation of mutations) {
-    if (mutation.type === "attributes" && mutation.attributeName === "aria-pressed") {
-      shouldSync = true;
-      break;
+  mutations.forEach((mutation) => {
+    if (mutation.type === "attributes") {
+      syncFavoriteButton(mutation.target);
+      return;
     }
+
     if (mutation.type === "childList") {
-      shouldSync = true;
-      break;
+      syncFavoriteButton(mutation.target);
+      mutation.addedNodes.forEach(syncAddedNode);
     }
-  }
-  if (shouldSync) syncFavoritesCopy();
+  });
 });
 
 observer.observe(document.documentElement, {
