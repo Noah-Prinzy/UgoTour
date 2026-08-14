@@ -4,8 +4,10 @@ import { extname, relative, resolve } from "node:path";
 const root = process.cwd();
 const required = [
   "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js", "frontend/favicon.svg",
-  "frontend/css/phase1-28.css", "frontend/css/phase1-29.css", "frontend/js/shared-navigation-copy.js",
-  "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
+  "frontend/css/phase1-28.css", "frontend/css/phase1-29.css", "frontend/css/phase1-29b.css",
+  "frontend/js/shared-navigation-copy.js", "frontend/js/favorites-copy.js", "frontend/js/route-alias.js",
+  "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/favorites.html", "frontend/pages/bookings.html", "frontend/pages/trips.html",
+  "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
   "frontend/pages/forgot-password.html", "frontend/pages/reset-password.html",
   "database/migrations/008_phase9_predeployment_features.sql", "database/migrations/009_profile_editorial_feedback.sql",
   ".env.example", "scripts/backup-db.ps1"
@@ -50,10 +52,28 @@ if (!/const\s+CACHE_NAME\s*=\s*["']ugotour-v\d+-\d+-\d+["']/.test(sw)) fail("Ver
 if (!/favicon\.svg/.test(sw)) fail("Flag-O favicon is missing from the PWA app shell.");
 if (!/phase1-28\.css/.test(sw)) fail("Phase 1.28 stylesheet is missing from the PWA app shell.");
 if (!/phase1-29\.css/.test(sw)) fail("Phase 1.29 stylesheet is missing from the PWA app shell.");
+if (!/phase1-29b\.css/.test(sw)) fail("Phase 1.29B stylesheet is missing from the PWA app shell.");
+if (!/favorites-copy\.js/.test(sw)) fail("Favorites terminology helper is missing from the PWA app shell.");
+if (!/pages\/favorites\.html/.test(sw) || !/pages\/trips\.html/.test(sw)) fail("User-friendly compatibility routes are missing from the PWA app shell.");
 if (/pages\/privacy\.html/.test(sw)) fail("Retired Privacy page remains in the PWA app shell.");
 
 const pwa = await readFile(resolve(root, "frontend/js/pwa.js"), "utf8");
 if (!/phase1-29\.css/.test(pwa)) fail("Phase 1.29 stylesheet is not loaded by the shared PWA bootstrap.");
+if (!/phase1-29b\.css/.test(pwa)) fail("Phase 1.29B stylesheet is not loaded by the shared PWA bootstrap.");
+if (!/favorites-copy\.js/.test(pwa)) fail("Favorites terminology helper is not loaded by the shared PWA bootstrap.");
+
+const phase129b = await readFile(resolve(root, "frontend/css/phase1-29b.css"), "utf8");
+if (!/\.password-visibility-toggle[\s\S]*?width:\s*44px/.test(phase129b)) fail("Password visibility control is not guaranteed a 44px touch target.");
+if (!/static-terms-page[\s\S]*?overflow-wrap:\s*anywhere/.test(phase129b)) fail("Terms overflow protection is missing from Phase 1.29B.");
+
+const navbar = await readFile(resolve(root, "frontend/js/components/navbar.js"), "utf8");
+if (/navLink\(["']Saved["']|drawerLink\(["']Saved["']/.test(navbar)) fail("Navbar source still exposes Saved instead of Favorites.");
+if (!/\binert\b/.test(navbar)) fail("Mobile drawer does not use inert state management.");
+
+const favoritesAlias = await readFile(resolve(root, "frontend/pages/favorites.html"), "utf8");
+if (!/data-route-alias=["']\.\/saved\.html["']/.test(favoritesAlias)) fail("favorites.html does not point to saved.html.");
+const tripsAlias = await readFile(resolve(root, "frontend/pages/trips.html"), "utf8");
+if (!/data-route-alias=["']\.\/bookings\.html["']/.test(tripsAlias)) fail("trips.html does not point to bookings.html.");
 
 const terms = await readFile(resolve(root, "frontend/pages/terms.html"), "utf8");
 if (/pre-deployment template/i.test(terms)) fail("Internal pre-deployment copy remains visible on Terms.");
