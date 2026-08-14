@@ -1,9 +1,9 @@
-const CACHE_NAME = "ugotour-v1-16-12";
+const CACHE_NAME = "ugotour-v1-16-13";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest", "./favicon.svg",
-  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css", "./css/phase1-29.css",
-  "./js/app.js", "./js/home-card-routing.js", "./js/auth-home-transition.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/shared-navigation-copy.js", "./js/footer-boot.js", "./js/ui-motion.js",
+  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css", "./css/phase1-29.css", "./css/phase1-29b.css",
+  "./js/app.js", "./js/home-card-routing.js", "./js/auth-home-transition.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/shared-navigation-copy.js", "./js/favorites-copy.js", "./js/route-alias.js", "./js/footer-boot.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
   "./js/services/auth-service.js", "./js/services/session-guard.js", "./js/services/booking-service.js",
   "./js/services/destination-service.js", "./js/services/attraction-service.js", "./js/services/map-service.js",
@@ -12,8 +12,8 @@ const APP_SHELL = [
   "./js/pages/destinations.js", "./js/pages/destination-experience.js", "./js/pages/map.js", "./js/pages/map-search-intent.js", "./js/pages/map-polish.js", "./js/pages/destination-details.js", "./js/pages/bookings.js",
   "./js/pages/login.js", "./js/pages/signup.js", "./js/pages/profile.js", "./js/pages/profile-settings.js", "./js/pages/saved.js",
   "./js/pages/forgot-password.js", "./js/pages/reset-password.js", "./js/pages/contact.js", "./js/pages/admin.js", "./js/pages/static-page.js", "./js/pages/offline.js",
-  "./pages/destinations.html", "./pages/map.html", "./pages/destination-details.html", "./pages/bookings.html",
-  "./pages/login.html", "./pages/signup.html", "./pages/profile.html", "./pages/profile-settings.html", "./pages/saved.html",
+  "./pages/destinations.html", "./pages/map.html", "./pages/destination-details.html", "./pages/bookings.html", "./pages/trips.html",
+  "./pages/login.html", "./pages/signup.html", "./pages/profile.html", "./pages/profile-settings.html", "./pages/saved.html", "./pages/favorites.html",
   "./pages/forgot-password.html", "./pages/reset-password.html", "./pages/about.html", "./pages/help.html",
   "./pages/contact.html", "./pages/terms.html", "./pages/admin.html",
   "./assets/icons/icon-192.png", "./assets/icons/icon-512.png",
