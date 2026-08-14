@@ -1,5 +1,13 @@
+// ============================================================
+// REUSABLE DESTINATION CARD COMPONENT — PHASE 1.29B
+// Builds the destination cards used by discovery views. The whole card remains
+// the navigation target, while the Favorite heart is the only separate action.
+// This file also owns the compact 44px accessible touch target used by that heart.
+// ============================================================
+
 import { resolveAssetPath } from "../utils/assets.js";
 
+// Inject the small visual rules that support the compact Favorite control once.
 ensureCompactCardActionStyles();
 
 // Reusable destination card. Discovery pages can opt into a database-backed
@@ -8,6 +16,8 @@ export function createDestinationCard(
   destination,
   { detailsPagePath = null, linkUrl = null, assetBasePath = ".", showSaveButton = false, saved = false, onToggleSave = null } = {}
 ) {
+  // Work out where the card should navigate and resolve its primary/secondary
+  // images through the shared optimized-asset helper.
   const detailsUrl = linkUrl || (detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null);
   const gallery = Array.isArray(destination.galleryImages) ? destination.galleryImages : [];
   const primaryPhoto = gallery[0]?.url || destination.imageUrl;
@@ -15,6 +25,7 @@ export function createDestinationCard(
   const imageUrl = resolveAssetPath(primaryPhoto, assetBasePath);
   const secondaryImageUrl = resolveAssetPath(secondaryPhoto, assetBasePath);
 
+  // Non-saveable cards are a simple link/article with no independent button.
   if (!showSaveButton) {
     const card = document.createElement(detailsUrl ? "a" : "article");
     card.className = "destination-card destination-card-overlay";
@@ -25,6 +36,8 @@ export function createDestinationCard(
     return card;
   }
 
+  // Saveable cards use an outer article so the heart button is not nested inside
+  // the anchor. This keeps the markup valid and preserves separate keyboard/touch actions.
   const shell = document.createElement("article");
   shell.className = "destination-card destination-card-saveable destination-card-overlay";
   shell.dataset.destinationId = destination.id;
@@ -35,8 +48,11 @@ export function createDestinationCard(
     <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${escapeAttribute(favoriteLabel(destination.name, saved))}">${saved ? "♥" : "♡"}</button>
   `;
 
+  // Apply the compact positioning/touch-target treatment after the markup exists.
   applyCompactCardActions(shell);
 
+  // Toggle the persisted Favorite state through the callback supplied by the page.
+  // While the request is running the button is disabled to prevent duplicate writes.
   const button = shell.querySelector(".place-save-button");
   button?.addEventListener("click", async () => {
     if (!onToggleSave || button.disabled) return;
@@ -53,6 +69,8 @@ export function createDestinationCard(
   return shell;
 }
 
+// Keep the card highlight readable and reserve a 44px accessible hit target for
+// the heart. The visible chip is drawn smaller with ::before, but the tap area stays large.
 function applyCompactCardActions(card) {
   const footer = card.querySelector(".destination-card-footer");
   const favorite = card.querySelector(":scope > .place-save-button");
@@ -81,6 +99,8 @@ function applyCompactCardActions(card) {
   }
 }
 
+// Inject the compact-action visual treatment dynamically so every consumer of
+// this component gets the same Favorite chip without duplicating CSS per page.
 function ensureCompactCardActionStyles() {
   if (document.querySelector("style[data-ugotour-compact-card-actions]")) return;
   const style = document.createElement("style");
@@ -119,12 +139,15 @@ function ensureCompactCardActionStyles() {
   document.head.appendChild(style);
 }
 
+// Accessible copy changes depending on whether the destination is already saved.
 function favoriteLabel(name, saved) {
   return saved
     ? `Remove ${name} from Favorites`
     : `Add ${name} to Favorites`;
 }
 
+// Shared inner HTML for both saveable and non-saveable cards. Navigation and the
+// Favorite button are intentionally handled outside this function.
 function cardMarkup(destination, imageUrl, secondaryImageUrl) {
   return `
     <div class="destination-card-media">
@@ -135,5 +158,6 @@ function cardMarkup(destination, imageUrl, secondaryImageUrl) {
     <div class="destination-card-content"><h3>${escapeHtml(destination.name)}</h3><p>${escapeHtml(destination.description)}</p><div class="destination-card-footer"><span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span></div></div>`;
 }
 
+// Escape database/API text before inserting it into generated markup or attributes.
 function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 function escapeAttribute(value) { return escapeHtml(value); }
