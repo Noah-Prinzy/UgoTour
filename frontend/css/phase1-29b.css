@@ -1,0 +1,204 @@
+/* ============================================================
+   UgoTour Phase 1.29B — Stability & Accessibility
+   Authenticated audit fixes only. No backend/API contract changes.
+   ============================================================ */
+
+/* ---------- Static/editorial pages: hard containment at every width ---------- */
+html,
+body.static-editorial-page {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body.static-editorial-page .static-main {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: 0 !important;
+  overflow-x: clip;
+}
+
+body.static-editorial-page:not(.page-home):not(.profile-page) .static-shell,
+body.static-editorial-page:not(.page-home):not(.profile-page) .legal-copy {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  width: min(1120px, calc(100% - 40px)) !important;
+  max-width: min(1120px, calc(100% - 40px)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  transform: none !important;
+  translate: none !important;
+}
+
+body.static-terms-page:not(.page-home):not(.profile-page) .legal-copy {
+  width: min(980px, calc(100% - 40px)) !important;
+  max-width: min(980px, calc(100% - 40px)) !important;
+}
+
+body.static-editorial-page:not(.page-home):not(.profile-page) .static-shell > .static-hero,
+body.static-editorial-page:not(.page-home):not(.profile-page) .contact-layout > .contact-intro.static-hero {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: none !important;
+  translate: none !important;
+  box-sizing: border-box !important;
+}
+
+.static-terms-page .legal-copy > h2,
+.static-terms-page .legal-copy > p,
+.static-terms-page .legal-copy > .static-hero {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.static-terms-page .legal-copy > h2,
+.static-terms-page .legal-copy > p:not(.static-note) {
+  max-width: 72ch;
+}
+
+@media (max-width: 560px) {
+  body.static-editorial-page:not(.page-home):not(.profile-page) .static-shell,
+  body.static-editorial-page:not(.page-home):not(.profile-page) .legal-copy,
+  body.static-terms-page:not(.page-home):not(.profile-page) .legal-copy {
+    width: calc(100% - 28px) !important;
+    max-width: calc(100% - 28px) !important;
+  }
+
+  body.static-editorial-page .static-hero {
+    padding-inline: 20px !important;
+  }
+
+  .static-terms-page .legal-copy > h2,
+  .static-terms-page .legal-copy > p:not(.static-note) {
+    max-width: 100%;
+  }
+}
+
+/* ---------- Password visibility: one real 44px control on every form ---------- */
+.password-field-shell {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.password-field-shell > input {
+  width: 100%;
+  padding-right: 58px !important;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 6px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  color: #263522;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.password-visibility-toggle svg {
+  width: 21px;
+  height: 21px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.password-visibility-toggle:hover {
+  background: rgba(23, 33, 20, 0.07);
+}
+
+.password-visibility-toggle:focus-visible {
+  outline: 3px solid rgba(143, 160, 129, 0.38);
+  outline-offset: 1px;
+  background: rgba(23, 33, 20, 0.07);
+}
+
+.profile-settings-page .password-field-shell {
+  align-self: stretch;
+}
+
+.profile-settings-page .password-visibility-toggle {
+  color: var(--forest-900, #172114);
+}
+
+.profile-settings-page .profile-form label:has(.password-field-shell) {
+  min-width: 0;
+}
+
+.auth-visual-page .password-visibility-toggle {
+  color: rgba(250, 248, 239, 0.88);
+}
+
+.auth-visual-page .password-visibility-toggle:hover,
+.auth-visual-page .password-visibility-toggle:focus-visible {
+  color: #c7dc84;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Favorite terminology: icon controls stay compact but unambiguous ---------- */
+.place-save-button,
+#details-favorite,
+#map-place-save,
+.saved-remove {
+  touch-action: manipulation;
+}
+
+.place-save-button,
+#details-favorite,
+.saved-remove {
+  min-width: 44px !important;
+  min-height: 44px !important;
+}
+
+/* ---------- Mobile drawer focus/inert state ---------- */
+.mobile-menu-drawer[inert] {
+  pointer-events: none !important;
+}
+
+/* ---------- Narrow-page resilience ---------- */
+@media (max-width: 430px) {
+  .profile-settings-page .profile-settings-main,
+  .profile-settings-page .profile-settings-grid,
+  .profile-settings-page .profile-settings-card,
+  .profile-settings-page .profile-form,
+  .profile-settings-page .profile-form label,
+  .profile-settings-page .password-field-shell {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .profile-settings-page input,
+  .profile-settings-page textarea {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .password-visibility-toggle {
+    transition: none !important;
+  }
+}
