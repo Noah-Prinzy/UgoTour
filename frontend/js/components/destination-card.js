@@ -27,7 +27,7 @@ export function createDestinationCard(
   shell.dataset.destinationId = destination.id;
   shell.innerHTML = `
     <a class="destination-card-anchor" href="${escapeAttribute(detailsUrl || "#")}" aria-label="Find ${escapeAttribute(destination.name)} on the Uganda map">
-      ${cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl))}
+      ${cardMarkup(destination, imageUrl, secondaryImageUrl, false)}
     </a>
     <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${saved ? "Remove" : "Save"} ${escapeAttribute(destination.name)}">${saved ? "♥" : "♡"}</button>
   `;
