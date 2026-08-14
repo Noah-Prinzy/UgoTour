@@ -15,7 +15,7 @@ export function createDestinationCard(
 
   if (!showSaveButton) {
     const card = document.createElement(detailsUrl ? "a" : "article");
-    card.className = "destination-card";
+    card.className = "destination-card destination-card-overlay";
     card.dataset.destinationId = destination.id;
     if (detailsUrl) card.href = detailsUrl;
     card.innerHTML = cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl));
@@ -23,7 +23,7 @@ export function createDestinationCard(
   }
 
   const shell = document.createElement("article");
-  shell.className = "destination-card destination-card-saveable";
+  shell.className = "destination-card destination-card-saveable destination-card-overlay";
   shell.dataset.destinationId = destination.id;
   shell.innerHTML = `
     <a class="destination-card-anchor" href="${escapeAttribute(detailsUrl || "#")}" aria-label="Find ${escapeAttribute(destination.name)} on the Uganda map">
