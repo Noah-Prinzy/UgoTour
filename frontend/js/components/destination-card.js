@@ -1,7 +1,7 @@
 import { resolveAssetPath } from "../utils/assets.js";
 
 // Reusable destination card. Discovery pages can opt into a database-backed
-// save button without nesting a button inside an anchor.
+// favorite button without nesting a button inside an anchor.
 export function createDestinationCard(
   destination,
   { detailsPagePath = null, linkUrl = null, assetBasePath = ".", showSaveButton = false, saved = false, onToggleSave = null } = {}
@@ -29,7 +29,7 @@ export function createDestinationCard(
     <a class="destination-card-anchor" href="${escapeAttribute(detailsUrl || "#")}" aria-label="Find ${escapeAttribute(destination.name)} on the Uganda map">
       ${cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl))}
     </a>
-    <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${saved ? "Remove" : "Save"} ${escapeAttribute(destination.name)}">${saved ? "♥" : "♡"}</button>
+    <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${favoriteLabel(destination.name, saved)}">${saved ? "♥" : "♡"}</button>
   `;
 
   const button = shell.querySelector(".place-save-button");
@@ -40,12 +40,18 @@ export function createDestinationCard(
       const nextSaved = await onToggleSave(destination, button.getAttribute("aria-pressed") === "true");
       button.textContent = nextSaved ? "♥" : "♡";
       button.setAttribute("aria-pressed", String(nextSaved));
-      button.setAttribute("aria-label", `${nextSaved ? "Remove" : "Save"} ${destination.name}`);
+      button.setAttribute("aria-label", favoriteLabel(destination.name, nextSaved));
     } finally {
       button.disabled = false;
     }
   });
   return shell;
+}
+
+function favoriteLabel(name, saved) {
+  return saved
+    ? `Remove ${escapeAttribute(name)} from Favorites`
+    : `Add ${escapeAttribute(name)} to Favorites`;
 }
 
 function cardMarkup(destination, imageUrl, secondaryImageUrl, hasLink) {
