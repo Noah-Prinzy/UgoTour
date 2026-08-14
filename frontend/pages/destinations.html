@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Page metadata, Content Security Policy and installable-PWA configuration. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://upload.wikimedia.org https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -8,6 +9,8 @@
   <meta name="theme-color" content="#101711" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Browse Uganda destinations with UgoTour." />
+
+  <!-- Shared visual system. Later phase styles progressively override earlier rules. -->
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
@@ -20,9 +23,12 @@
   <title>Destinations | UgoTour</title>
 </head>
 <body class="destinations-page editorial-page home-reference-page" data-destinations-redesign="search-switch-v1">
+  <!-- destinations.js/navbar.js render the shared account-aware navigation here. -->
   <header id="site-header"></header>
 
   <main id="main-content" class="dashboard-main destinations-main">
+    <!-- Full-page discovery stage. The background remains visually independent
+         from the catalogue so scrolling/filtering can happen over the image. -->
     <section class="discovery-dashboard destinations-stage" aria-labelledby="catalog-heading">
       <div class="destinations-stage-media" aria-hidden="true">
         <img id="destinations-parallax-image" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Africa_Lake_Victoria_10_006.jpg" alt="" decoding="async" fetchpriority="high" />
@@ -30,6 +36,7 @@
       <div class="destinations-stage-shade" aria-hidden="true"></div>
 
       <div class="destinations-stage-content">
+        <!-- Editorial heading above the interactive catalogue. -->
         <section class="destinations-intro" aria-label="Discover Uganda">
           <div class="dashboard-heading-row destinations-heading-row">
             <div>
@@ -40,10 +47,14 @@
           </div>
         </section>
 
+        <!-- Main destination/attraction results area. destinations.js fills the
+             empty track with API-backed cards and controls carousel/list modes. -->
         <div class="dashboard-discovery-layout destinations-catalog-layer">
           <section class="dashboard-results destination-carousel-column" aria-labelledby="all-destinations-heading">
             <div class="dashboard-section-heading destinations-section-heading">
               <div><p id="destination-section-kicker" class="section-kicker">One continuous collection</p><h2 id="all-destinations-heading">My destinations</h2></div>
+
+              <!-- Search and filter buttons open the overlay farther down this page. -->
               <div class="destination-carousel-toolbar">
                 <button id="destination-search-toggle" class="destination-search-toggle" type="button" aria-haspopup="dialog" aria-controls="destination-filter-overlay">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
@@ -53,8 +64,10 @@
               </div>
             </div>
 
+            <!-- This badge is shown when Home/search navigation requests results mode. -->
             <p class="destination-results-badge" id="destination-results-badge">Search results</p>
 
+            <!-- JavaScript creates all destination and attraction cards inside this track. -->
             <div class="destination-carousel-shell" aria-roledescription="carousel" aria-label="Uganda destinations, attractions, sites and experiences">
               <div id="destination-list" class="experience-grid destination-grid destination-carousel-track"></div>
               <div class="destination-carousel-controls">
@@ -64,6 +77,7 @@
               </div>
             </div>
 
+            <!-- Fallback state when the active search/category has no matching places. -->
             <div id="destination-empty-state" class="empty-state" hidden>
               <h3>No matching place found.</h3>
               <p>Try another search or reset your filters.</p>
@@ -71,6 +85,8 @@
           </section>
         </div>
 
+        <!-- Modal-style search/filter panel. destinations.js keeps a draft state
+             here and applies it to the catalogue only when the user confirms. -->
         <div id="destination-filter-overlay" class="destination-filter-overlay" hidden aria-hidden="true">
           <button class="destination-filter-backdrop" type="button" data-filter-cancel aria-label="Close filters"></button>
           <section id="destination-filter-panel" class="destination-filter-panel" role="dialog" aria-modal="true" aria-labelledby="destination-filter-heading" tabindex="-1">
@@ -79,6 +95,7 @@
               <button id="destination-filter-close" class="destination-filter-close" type="button" aria-label="Close filters">✕</button>
             </header>
 
+            <!-- Free-text search matches names, regions, descriptions and other API fields. -->
             <details class="destination-filter-group" open>
               <summary>Search</summary>
               <div class="destination-filter-body">
@@ -89,22 +106,30 @@
               </div>
             </details>
 
+            <!-- Category buttons are generated from the categories returned by the API. -->
             <details class="destination-filter-group" open>
               <summary>Travel style</summary>
               <div id="category-filters" class="category-filters destination-filter-options" aria-label="Filter places by category"></div>
             </details>
 
+            <!-- Reset returns to the default discovery state; Show places applies the draft. -->
             <div class="destination-filter-actions">
               <button id="reset-filters" class="secondary-button destination-filter-reset" type="button">Reset all filters</button>
               <button id="destination-filter-apply" class="primary-button destination-filter-apply" type="button">Show places</button>
             </div>
           </section>
         </div>
+
+        <!-- Source credit for the fixed destination-page background photograph. -->
         <p class="page-background-credit destinations-background-credit">Background: <a href="https://commons.wikimedia.org/wiki/File:Africa_Lake_Victoria_10_006.jpg" target="_blank" rel="noreferrer">Lake Victoria, Munyonyo · Michael Shade · public domain</a></p>
       </div>
     </section>
   </main>
+
+  <!-- Shared footer is populated by the frontend component/PWA bootstrap. -->
   <footer id="site-footer"></footer>
+
+  <!-- Page controller: authentication, API loading, Favorite state, filters and carousel. -->
   <script type="module" src="../js/pages/destinations.js?v=14.0.0"></script>
 </body>
 </html>
