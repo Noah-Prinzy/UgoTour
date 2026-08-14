@@ -37,12 +37,20 @@ const phase124StylesReady = ensureStylesheet(
   "../../css/phase1-24.css?v=1.24.2",
   "ugotourPhase124"
 );
+// Destination cards have accumulated several historical layouts. Keep their
+// current skin last in the cascade so old carousel/result rules cannot split
+// the image and copy back into separate panels.
+const destinationCardStylesReady = ensureStylesheet(
+  'link[data-ugotour-destination-cards="1.29B"]',
+  "../../css/phase1-29b-destination-cards.css?v=1.29.2",
+  "ugotourDestinationCards"
+);
 
 export async function renderNavbar(basePath = ".", validatedUser = undefined) {
   const header = document.getElementById("site-header");
   if (!header) return;
 
-  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady, phase123StylesReady, phase124StylesReady]);
+  await Promise.all([mobilePhaseStylesReady, phase119StylesReady, phase120StylesReady, phase121StylesReady, phase122StylesReady, phase123StylesReady, phase124StylesReady, destinationCardStylesReady]);
 
   let currentUser = validatedUser;
   if (currentUser === undefined) {
@@ -185,7 +193,8 @@ function ensureStylesheet(selector, relativeUrl, datasetKey) {
     ugotourPhase121: "1.21",
     ugotourPhase122: "1.22",
     ugotourPhase123: "1.23",
-    ugotourPhase124: "1.24"
+    ugotourPhase124: "1.24",
+    ugotourDestinationCards: "1.29B"
   };
   link.dataset[datasetKey] = datasetValues[datasetKey] || "1";
 
