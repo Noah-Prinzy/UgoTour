@@ -19,6 +19,7 @@ export function createDestinationCard(
     card.dataset.destinationId = destination.id;
     if (detailsUrl) card.href = detailsUrl;
     card.innerHTML = cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl));
+    applyCompactCardActions(card);
     return card;
   }
 
@@ -31,6 +32,8 @@ export function createDestinationCard(
     </a>
     <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${escapeAttribute(favoriteLabel(destination.name, saved))}">${saved ? "♥" : "♡"}</button>
   `;
+
+  applyCompactCardActions(shell);
 
   const button = shell.querySelector(".place-save-button");
   button?.addEventListener("click", async () => {
@@ -46,6 +49,31 @@ export function createDestinationCard(
     }
   });
   return shell;
+}
+
+function applyCompactCardActions(card) {
+  const footer = card.querySelector(".destination-card-footer");
+  const details = card.querySelector(".destination-details-button");
+  const favorite = card.querySelector(":scope > .place-save-button");
+
+  // Keep the lower-right action cluster visually compact and aligned while
+  // preserving clear separation from the destination highlight copy.
+  footer?.style.setProperty("padding-right", "98px", "important");
+
+  [details, favorite].filter(Boolean).forEach((control) => {
+    control.style.setProperty("width", "38px", "important");
+    control.style.setProperty("min-width", "38px", "important");
+    control.style.setProperty("max-width", "38px", "important");
+    control.style.setProperty("height", "38px", "important");
+    control.style.setProperty("min-height", "38px", "important");
+    control.style.setProperty("max-height", "38px", "important");
+    control.style.setProperty("bottom", "14px", "important");
+    control.style.setProperty("border-radius", "9px", "important");
+    control.style.setProperty("box-shadow", "0 7px 18px rgba(0, 0, 0, 0.20)", "important");
+  });
+
+  details?.style.setProperty("right", "60px", "important");
+  favorite?.style.setProperty("right", "14px", "important");
 }
 
 function favoriteLabel(name, saved) {
