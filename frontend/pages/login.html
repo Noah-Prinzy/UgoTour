@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Login metadata/security, PWA links and visual-system styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -8,6 +9,7 @@
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Login to your UgoTour account." />
+  <meta name="robots" content="noindex,nofollow" />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
@@ -16,31 +18,29 @@
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/phase1-25.css?v=1.25.0" />
   <title>Login | UgoTour</title>
-  <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="auth-visual-page login-page">
+  <!-- Shared navigation; login.js renders it in guest mode when no session exists. -->
   <header id="site-header"></header>
+
   <main id="main-content" class="auth-entry-main">
     <section class="auth-entry" aria-labelledby="login-title">
+      <!-- Editorial travel image/brand panel beside the account form. -->
       <div class="auth-photo-panel">
         <img src="../images/optimized/destinations/rwenzori/rwenzori-01.webp" alt="Rwenzori Mountains landscape" />
         <div class="auth-photo-shade" aria-hidden="true"></div>
         <div class="auth-photo-copy"><p>Explore Uganda</p><h1>Journeys begin with a place that moves you.</h1><span>Rwenzori Mountains · Western Uganda</span></div>
       </div>
+
+      <!-- login.js reads these credential fields and POSTs them through auth-service.js. -->
       <div class="auth-form-panel">
         <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
         <p class="section-kicker">Welcome back</p>
         <h2 id="login-title">Login to continue</h2>
         <p class="auth-form-copy">Your destinations, Favorites, trips and profile are waiting.</p>
         <form id="login-form" class="starter-form auth-form">
-          <label for="login-email">
-            <span class="auth-field-name">Email address</span>
-            <input id="login-email" type="email" autocomplete="email" placeholder="you@example.com" required />
-          </label>
-          <label for="login-password">
-            <span class="auth-field-name">Password</span>
-            <input id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
-          </label>
+          <label for="login-email"><span class="auth-field-name">Email address</span><input id="login-email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
+          <label for="login-password"><span class="auth-field-name">Password</span><input id="login-password" type="password" autocomplete="current-password" placeholder="Enter your password" required /></label>
           <div class="auth-password-row"><a href="./forgot-password.html">Forgot password?</a></div>
           <button class="primary-button auth-submit-button" type="submit">Login</button>
           <p id="login-message" class="form-message" aria-live="polite"></p>
@@ -50,6 +50,8 @@
       </div>
     </section>
   </main>
+
+  <!-- login.js owns authentication; password-visibility.js enhances the password input. -->
   <footer id="site-footer" hidden></footer>
   <script type="module" src="../js/pages/login.js"></script>
   <script type="module" src="../js/auth-password-visibility.js"></script>

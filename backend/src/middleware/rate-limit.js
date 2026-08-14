@@ -1,5 +1,13 @@
+// ============================================================
+// IN-MEMORY RATE LIMITING MIDDLEWARE
+// Tracks request counts per client IP for general API traffic and stricter
+// authentication/contact endpoints.
+// ============================================================
+
+// Each bucket stores a request count and the time when that counting window resets.
 const buckets = new Map();
 
+// Use the proxy-forwarded client IP only when TRUST_PROXY has explicitly been enabled.
 function clientIp(request) {
   if (String(process.env.TRUST_PROXY || "").toLowerCase() === "true") {
     const forwarded = request.headers["x-forwarded-for"];
@@ -8,6 +16,8 @@ function clientIp(request) {
   return request.socket?.remoteAddress || "unknown";
 }
 
+// Generic limiter used by the named policies below. Exceeding the limit throws
+// a 429 error that the central router converts into a JSON response.
 export function enforceRateLimit(request, scope, { limit, windowMs }) {
   const now = Date.now();
   const key = `${scope}:${clientIp(request)}`;
@@ -25,6 +35,7 @@ export function enforceRateLimit(request, scope, { limit, windowMs }) {
   }
 }
 
+// Default limit applied to every routed API request.
 export function generalRateLimit(request) {
   enforceRateLimit(request, "general", {
     limit: Number(process.env.GENERAL_RATE_LIMIT_PER_MINUTE || 180),
@@ -32,6 +43,7 @@ export function generalRateLimit(request) {
   });
 }
 
+// Tighter policy for login/signup/password-reset attempts.
 export function authRateLimit(request) {
   enforceRateLimit(request, "auth", {
     limit: Number(process.env.AUTH_RATE_LIMIT_PER_15_MINUTES || 20),
@@ -39,6 +51,7 @@ export function authRateLimit(request) {
   });
 }
 
+// Contact submissions have a long window to discourage spam.
 export function contactRateLimit(request) {
   enforceRateLimit(request, "contact", {
     limit: Number(process.env.CONTACT_RATE_LIMIT_PER_HOUR || 10),
@@ -46,6 +59,7 @@ export function contactRateLimit(request) {
   });
 }
 
+// Periodically remove expired buckets so this in-memory Map does not grow forever.
 setInterval(() => {
   const now = Date.now();
   for (const [key, bucket] of buckets) {

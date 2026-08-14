@@ -1,16 +1,27 @@
+// ============================================================
+// PASSWORD RESET SERVICE
+// Creates short-lived reset tokens, delivers reset links, verifies a submitted
+// token inside a transaction, changes the password and invalidates old sessions.
+// ============================================================
+
 import { createHash, randomBytes } from "node:crypto";
 import database from "../database/connection.js";
 import { hashPassword } from "../utils/password.js";
 
+// Only a SHA-256 hash of the reset token is stored in PostgreSQL. The raw token
+// exists only in the link delivered to the user.
 function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
+// Build the browser URL that opens reset-password.html with the one-time token.
 function publicResetUrl(token) {
   const base = String(process.env.PUBLIC_APP_URL || "http://127.0.0.1:5500").replace(/\/$/, "");
   return `${base}/pages/reset-password.html?token=${encodeURIComponent(token)}`;
 }
 
+// Send through Resend in production when configured. In development, print the
+// reset URL to the backend terminal so the flow can be tested without email.
 async function deliverResetEmail(email, resetUrl) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.PASSWORD_RESET_FROM;
@@ -46,6 +57,8 @@ async function deliverResetEmail(email, resetUrl) {
   return { delivered: false, provider: "development-console" };
 }
 
+// Begin recovery without revealing whether the supplied email exists. Existing
+// unused/expired tokens are cleaned up before a new 30-minute token is created.
 export async function requestPasswordReset(email) {
   const normalized = String(email || "").trim().toLowerCase();
   const result = await database.query("SELECT id,email FROM users WHERE email=$1", [normalized]);
@@ -78,11 +91,15 @@ export async function requestPasswordReset(email) {
   };
 }
 
+// Complete recovery inside one transaction so password update, token consumption
+// and old-session deletion either all succeed or all roll back together.
 export async function confirmPasswordReset(token, newPassword) {
   const tokenHash = hashToken(String(token || ""));
   const client = await database.connect();
   try {
     await client.query("BEGIN");
+
+    // Lock the token row to prevent two simultaneous requests using it twice.
     const result = await client.query(`
       SELECT prt.id, prt.user_id
       FROM password_reset_tokens prt
@@ -99,6 +116,7 @@ export async function confirmPasswordReset(token, newPassword) {
       throw error;
     }
 
+    // Save the new password hash, consume the token and sign out old sessions.
     const passwordHash = await hashPassword(newPassword);
     await client.query("UPDATE users SET password_hash=$2,updated_at=NOW() WHERE id=$1", [reset.user_id, passwordHash]);
     await client.query("UPDATE password_reset_tokens SET used_at=NOW() WHERE id=$1", [reset.id]);

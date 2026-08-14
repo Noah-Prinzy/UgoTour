@@ -1,9 +1,18 @@
+// ============================================================
+// SAVED PLACES SERVICE
+// Implements Favorites for both destinations and attractions while presenting a
+// single unified saved-place model to the frontend.
+// ============================================================
+
 import database from "../database/connection.js";
 
+// Convert external place-type input into one of the two database-supported types.
 function normalizeType(value) {
   return value === "attraction" ? "attraction" : value === "destination" ? "destination" : null;
 }
 
+// Join saved_places to either destinations or attractions and normalize both
+// record types into the same object shape for saved.html.
 export async function listSavedPlaces(userId) {
   const result = await database.query(`
     SELECT
@@ -46,6 +55,8 @@ export async function listSavedPlaces(userId) {
   }));
 }
 
+// Validate the requested place, verify that it is active, then INSERT it. The
+// partial unique indexes make saving an already-saved place safely idempotent.
 export async function savePlace(userId, placeType, placeId) {
   const type = normalizeType(placeType);
   const id = Number(placeId);
@@ -79,6 +90,7 @@ export async function savePlace(userId, placeType, placeId) {
   return true;
 }
 
+// Delete the correct foreign-key column according to the saved place type.
 export async function removeSavedPlace(userId, placeType, placeId) {
   const type = normalizeType(placeType);
   const id = Number(placeId);
@@ -92,6 +104,7 @@ export async function removeSavedPlace(userId, placeType, placeId) {
   return result.rowCount > 0;
 }
 
+// Fast yes/no lookup used to draw the correct Favorites heart state.
 export async function isPlaceSaved(userId, placeType, placeId) {
   const type = normalizeType(placeType);
   const id = Number(placeId);

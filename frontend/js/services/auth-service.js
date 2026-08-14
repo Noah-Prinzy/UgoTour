@@ -1,6 +1,13 @@
+// ============================================================
+// FRONTEND AUTH + PROFILE SERVICE
+// Validates common form input and translates page actions (signup, login, profile
+// edits, feedback, password recovery) into calls to the central api.js client.
+// ============================================================
+
 import { ApiError, apiRequest } from "../api.js";
 import { isNotEmpty, isValidEmail, isValidPassword } from "../utils/validation.js";
 
+// Ask GET /profile who is logged in. A 401 is a normal "no current user" result.
 export async function getCurrentUser() {
   try {
     const payload = await apiRequest("/profile", { authenticated: true });
@@ -11,6 +18,8 @@ export async function getCurrentUser() {
   }
 }
 
+// Validate signup fields in the browser for fast feedback, then let the backend
+// perform authoritative validation/account creation.
 export async function createAccount({ name, email, password }) {
   const cleanName = String(name).trim();
   const cleanEmail = String(email).trim().toLowerCase();
@@ -23,6 +32,7 @@ export async function createAccount({ name, email, password }) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Submit login credentials. The backend sets the HttpOnly cookie on success.
 export async function loginUser({ email, password }) {
   const cleanEmail = String(email).trim().toLowerCase();
   if (!isValidEmail(cleanEmail) || !isNotEmpty(password)) return { success:false, message:"Enter your email and password." };
@@ -32,11 +42,13 @@ export async function loginUser({ email, password }) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Ask the backend to delete the current session. Cookie clearing happens server-side.
 export async function logoutUser() {
   try { await apiRequest("/auth/logout", { method:"POST", authenticated:true }); }
   catch (error) { console.error("Backend logout failed:", error); }
 }
 
+// Begin password recovery. Development may also return a local reset URL for testing.
 export async function requestPasswordReset(email) {
   try {
     const payload = await apiRequest("/auth/password-reset/request", { method:"POST", body:{ email:String(email).trim().toLowerCase() } });
@@ -44,6 +56,7 @@ export async function requestPasswordReset(email) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Submit the one-time reset token with the user's new password.
 export async function resetPassword(token, newPassword) {
   try {
     const payload = await apiRequest("/auth/password-reset/confirm", { method:"POST", body:{ token, newPassword } });
@@ -51,6 +64,7 @@ export async function resetPassword(token, newPassword) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Update editable text fields on the authenticated user's profile.
 export async function updateCurrentUserProfile({ name, email, bio = "" }) {
   const cleanName = String(name).trim();
   const cleanEmail = String(email).trim().toLowerCase();
@@ -64,6 +78,7 @@ export async function updateCurrentUserProfile({ name, email, bio = "" }) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Store or remove the processed data-URL profile image.
 export async function updateCurrentUserProfileImage(imageData) {
   try {
     const payload = await apiRequest("/profile/photo", { method:"PATCH", authenticated:true, body:{ imageData } });
@@ -71,11 +86,13 @@ export async function updateCurrentUserProfileImage(imageData) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Load the signed-in user's current star rating/review.
 export async function getCurrentUserFeedback() {
   const payload = await apiRequest("/profile/feedback", { authenticated:true });
   return payload.data;
 }
 
+// Create or replace the signed-in user's feedback row.
 export async function updateCurrentUserFeedback({ rating, review }) {
   try {
     const payload = await apiRequest("/profile/feedback", { method:"PATCH", authenticated:true, body:{ rating:Number(rating), review:String(review).trim() } });
@@ -83,6 +100,8 @@ export async function updateCurrentUserFeedback({ rating, review }) {
   } catch (error) { return { success:false, message:error.message }; }
 }
 
+// Change the password after local basic validation. The backend verifies the
+// current password and invalidates sessions on success.
 export async function changeCurrentUserPassword(currentPassword, newPassword) {
   if (!isNotEmpty(currentPassword)) return { success:false, message:"Enter your current password." };
   if (!isValidPassword(newPassword, 10)) return { success:false, message:"New password must contain at least 10 characters." };

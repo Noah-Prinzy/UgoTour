@@ -1,18 +1,28 @@
+// ============================================================
+// SHARED FOOTER COMPONENT
+// Renders the same footer on every page, keeps Favorites terminology consistent
+// and connects the "Update available" button to the PWA service-worker flow.
+// ============================================================
+
 import { applyUpdate, onUpdateAvailability } from "../pwa.js";
 
+// Start loading the footer's late-phase stylesheet as soon as this module imports.
 const footerStylesReady = ensureFooterStylesheet();
 
 export async function renderFooter() {
   const footer = document.getElementById("site-footer");
   if (!footer) return;
 
+  // Wait for styling and avoid rendering the same footer twice on one document.
   await footerStylesReady;
   if (footer.dataset.ugotourFooterReady === "true") return;
 
+  // Pages inside /pages need different relative links from the root index page.
   const year = new Date().getFullYear();
   const pageDepth = window.location.pathname.includes("/pages/") ? "." : "./pages";
   const href = (name) => `${pageDepth}/${name}.html`.replace("././", "./");
 
+  // Build the shared footer markup.
   footer.hidden = false;
   footer.className = "site-footer";
   footer.innerHTML = `
@@ -33,8 +43,10 @@ export async function renderFooter() {
     </div>`;
   footer.dataset.ugotourFooterReady = "true";
 
+  // Older markup may still say "Saved"; the product-facing label is "Favorites".
   syncFavoritesNavigationCopy();
 
+  // PWA code tells this button when a new service worker is waiting to activate.
   const update = document.getElementById("update-app-button");
   onUpdateAvailability((available) => {
     if (update) update.hidden = !available;
@@ -42,15 +54,18 @@ export async function renderFooter() {
   update?.addEventListener("click", () => applyUpdate());
 }
 
+// Create one footer link and mark it as the current page when appropriate.
 function footerLink(name, label, href) {
   const active = currentFile() === `${name}.html`;
   return `<a href="${href(name)}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
 }
 
+// Return the current HTML filename for active-link checks.
 function currentFile() {
   return window.location.pathname.split("/").pop() || "index.html";
 }
 
+// Late-inject Phase 1.28 footer styles on pages that did not include them directly.
 function ensureFooterStylesheet() {
   const existing = document.querySelector('link[data-ugotour-phase128="1.28"]');
   if (existing) return Promise.resolve(existing);
@@ -63,6 +78,7 @@ function ensureFooterStylesheet() {
   return Promise.resolve(link);
 }
 
+// Rename any legacy Saved navigation label without changing saved.html or API paths.
 function syncFavoritesNavigationCopy() {
   document.querySelectorAll('a[href*="saved.html"]').forEach((link) => {
     const label = link.querySelector("span");
@@ -78,6 +94,7 @@ function syncFavoritesNavigationCopy() {
   });
 }
 
+// Shared UgoTour wordmark/flag markup used inside the footer.
 function brandMarkup() {
   return `<span class="ugotour-logo-lockup"><span class="ugotour-brand-word"><span class="ugotour-brand-ug">Ug</span><span class="ugotour-flag-o" aria-hidden="true"><span class="ugotour-flag-disc"></span></span><span class="ugotour-brand-tour">Tour</span></span><span class="ugotour-brand-tagline">Explore Uganda</span><span class="ugotour-brand-accent" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></span>`;
 }

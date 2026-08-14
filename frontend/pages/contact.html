@@ -1,3 +1,47 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Public Contact page metadata, CSP, PWA manifest and shared styles. -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" /><meta name="theme-color" content="#172114"/><meta name="description" content="Contact UgoTour."/><link rel="manifest" href="../manifest.webmanifest"/><link rel="stylesheet" href="../css/main.css?v=9.0.0"/><link rel="stylesheet" href="../css/components.css?v=9.0.0"/><link rel="stylesheet" href="../css/responsive.css?v=9.0.0"/><title>Contact | UgoTour</title></head><body class="dashboard-page static-editorial-page static-contact-page"><header id="site-header"></header><main id="main-content" class="static-main"><section class="static-shell contact-layout"><div class="contact-intro static-hero"><p class="section-kicker">Contact</p><h1>Tell us what you need.</h1><p class="static-lead">Questions, tourism-information corrections, accessibility feedback and ideas for improving UgoTour are all welcome.</p><p class="static-note">For travel-critical information such as permits, fees or opening status, confirm the latest details with the relevant operator or authority as well.</p></div><form id="contact-form" class="starter-form contact-form"><label>Name<input id="contact-name" maxlength="120" autocomplete="name" required/></label><label>Email<input id="contact-email" type="email" autocomplete="email" required/></label><label>Subject<input id="contact-subject" maxlength="180" required/></label><label>Message<textarea id="contact-message" minlength="10" maxlength="4000" rows="7" required></textarea></label><button class="primary-button" type="submit">Send message</button><p id="contact-status" class="form-message" aria-live="polite"></p></form></section></main><footer id="site-footer"></footer><script type="module" src="../js/pages/contact.js"></script></body></html>
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#172114"/>
+  <meta name="description" content="Contact UgoTour."/>
+  <link rel="manifest" href="../manifest.webmanifest"/>
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0"/>
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0"/>
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0"/>
+  <title>Contact | UgoTour</title>
+</head>
+<body class="dashboard-page static-editorial-page static-contact-page">
+  <!-- Shared navigation placeholder. Contact remains available to guests. -->
+  <header id="site-header"></header>
+
+  <main id="main-content" class="static-main">
+    <section class="static-shell contact-layout">
+      <!-- Editorial explanation and travel-critical information disclaimer. -->
+      <div class="contact-intro static-hero">
+        <p class="section-kicker">Contact</p>
+        <h1>Tell us what you need.</h1>
+        <p class="static-lead">Questions, tourism-information corrections, accessibility feedback and ideas for improving UgoTour are all welcome.</p>
+        <p class="static-note">For travel-critical information such as permits, fees or opening status, confirm the latest details with the relevant operator or authority as well.</p>
+      </div>
+
+      <!-- contact.js validates/submits these fields to POST /api/contact. -->
+      <form id="contact-form" class="starter-form contact-form">
+        <label>Name<input id="contact-name" maxlength="120" autocomplete="name" required/></label>
+        <label>Email<input id="contact-email" type="email" autocomplete="email" required/></label>
+        <label>Subject<input id="contact-subject" maxlength="180" required/></label>
+        <label>Message<textarea id="contact-message" minlength="10" maxlength="4000" rows="7" required></textarea></label>
+        <button class="primary-button" type="submit">Send message</button>
+        <p id="contact-status" class="form-message" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <!-- Shared footer + Contact form controller. -->
+  <footer id="site-footer"></footer>
+  <script type="module" src="../js/pages/contact.js"></script>
+</body>
+</html>

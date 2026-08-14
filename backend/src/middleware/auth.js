@@ -1,6 +1,14 @@
+// ============================================================
+// AUTHENTICATION / AUTHORIZATION MIDDLEWARE
+// Resolves an HttpOnly session cookie to a database user and provides a stricter
+// admin guard for privileged endpoints.
+// ============================================================
+
 import database from "../database/connection.js";
 import { getSessionToken } from "../utils/cookies.js";
 
+// Read the browser's session token, verify that it exists and has not expired,
+// then return a safe user object. Returning null means "not authenticated".
 export async function getAuthenticatedUser(request) {
   const token = getSessionToken(request);
   if (!token) return null;
@@ -14,6 +22,8 @@ export async function getAuthenticatedUser(request) {
 
   const user = result.rows[0];
   if (!user) return null;
+
+  // Convert database column names/types into the frontend-friendly user shape.
   return {
     id: Number(user.id),
     name: user.name,
@@ -26,6 +36,8 @@ export async function getAuthenticatedUser(request) {
   };
 }
 
+// Admin endpoints call this guard. It distinguishes "not logged in" (401) from
+// "logged in but not an administrator" (403).
 export async function requireAdmin(request) {
   const user = await getAuthenticatedUser(request);
   if (!user) {

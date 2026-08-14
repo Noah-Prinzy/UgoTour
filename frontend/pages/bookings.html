@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Private My Trips page metadata, security policy, PWA assets and shared styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://upload.wikimedia.org https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -18,9 +19,12 @@
   <title>My Trips | UgoTour</title>
 </head>
 <body class="bookings-page home-reference-page">
+  <!-- Shared navigation; bookings.js protects this page with the current session. -->
   <header id="site-header"></header>
+
   <main id="main-content" class="dashboard-main bookings-main">
     <section class="bookings-content-shell bookings-editorial-shell">
+      <!-- Page title, planned-visit count and shortcut back to discovery. -->
       <div class="page-content-intro">
         <div class="page-content-titlebar bookings-titlebar">
           <div class="page-content-title">
@@ -35,16 +39,24 @@
         </div>
         <p id="booking-status" class="catalog-summary booking-status-line" aria-live="polite"></p>
       </div>
+
+      <!-- bookings.js dynamically inserts trip cards into this list. -->
       <div id="booking-list" class="booking-list"></div>
+
+      <!-- Alternative states used if authentication is missing or the trip list is empty. -->
       <div id="booking-auth-state" class="empty-state" hidden>
         <h3>Login required.</h3><p>Your trips are linked to your UgoTour account.</p><a class="primary-button inline-button" href="./login.html">Login</a>
       </div>
       <div id="booking-empty-state" class="empty-state" hidden>
         <h3>No trips planned yet.</h3><p>Choose a destination and create your first trip plan.</p><a class="primary-button inline-button" href="./destinations.html">Browse destinations</a>
       </div>
+
+      <!-- Visible attribution for the editorial page background. -->
       <p class="page-background-credit">Background: <a href="https://commons.wikimedia.org/wiki/File:A_road_through_a_green_hilly_landscape_in_Bushenyi_District.jpg" target="_blank" rel="noreferrer">Bushenyi highland road · BalukuBrian · CC BY-SA 4.0</a></p>
     </section>
   </main>
+
+  <!-- Shared footer + My Trips controller. -->
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/bookings.js"></script>
 </body>

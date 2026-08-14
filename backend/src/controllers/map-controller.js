@@ -1,3 +1,9 @@
+// ============================================================
+// MAP CONTROLLER
+// Exposes UgoTour's map/search/nearby/routing API. It validates browser input
+// before forwarding valid map requests to the discovery and map services.
+// ============================================================
+
 import {
   getMapCapabilities as loadMapCapabilities,
   getNearbyMapPlaces,
@@ -7,14 +13,18 @@ import {
 import { getMapLocations } from "../services/map-service.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 
+// GET /api/map/locations — return curated destination + attraction GeoJSON.
 export async function listMapLocations(_request, response) {
   sendJson(response, 200, { data: await getMapLocations() });
 }
 
+// GET /api/map/capabilities — tell the frontend which discovery/routing features are available.
 export async function getMapCapabilities(_request, response) {
   sendJson(response, 200, { data: loadMapCapabilities() });
 }
 
+// GET /api/map/search?q=...
+// Protect provider calls from empty or excessively long search terms.
 export async function searchMapPlaces(_request, response, _params, url) {
   const query = String(url.searchParams.get("q") || "").trim();
   if (query.length < 2) {
@@ -30,6 +40,7 @@ export async function searchMapPlaces(_request, response, _params, url) {
   sendJson(response, 200, { data: await searchMapDiscovery(query) });
 }
 
+// GET /api/map/nearby — validate coordinates, radius and category before discovery.
 export async function nearbyMapPlaces(_request, response, _params, url) {
   const latitude = numberParam(url, "lat", -90, 90);
   const longitude = numberParam(url, "lng", -180, 180);
@@ -49,14 +60,15 @@ export async function nearbyMapPlaces(_request, response, _params, url) {
   });
 }
 
+// GET or POST /api/map/route
+// Route calculation is read-only. GET is preferred, while POST remains for
+// compatibility with an earlier UgoTour frontend implementation.
 export async function routeMap(request, response, _params, url) {
-  // Route calculation is a read-only operation. Phase 1.12 accepts GET so the
-  // browser can request directions without triggering write-origin safeguards,
-  // while POST remains supported for compatibility with Phase 1.11 clients.
   let from;
   let to;
   let mode;
 
+  // GET routes encode both endpoints in the query string.
   if (request.method === "GET") {
     from = {
       lat: numberParam(url, "fromLat", -90, 90),
@@ -68,12 +80,14 @@ export async function routeMap(request, response, _params, url) {
     };
     mode = String(url.searchParams.get("mode") || "driving").toLowerCase();
   } else {
+    // POST compatibility requests carry the route endpoints inside JSON.
     const body = await readJsonBody(request);
     from = readCoordinate(body.from, "from");
     to = readCoordinate(body.to, "to");
     mode = String(body.mode || "driving").toLowerCase();
   }
 
+  // Only routing modes understood by the providers are accepted.
   const allowedModes = new Set(["driving", "walking", "cycling"]);
   if (!allowedModes.has(mode)) {
     const error = new Error("Route mode must be driving, walking or cycling.");
@@ -86,6 +100,7 @@ export async function routeMap(request, response, _params, url) {
   });
 }
 
+// Read and validate a required numeric query-string value.
 function numberParam(url, key, min, max) {
   const raw = url.searchParams.get(key);
   const value = raw === null || raw === "" ? Number.NaN : Number(raw);
@@ -97,6 +112,7 @@ function numberParam(url, key, min, max) {
   return value;
 }
 
+// Read an optional numeric query value, falling back when the caller omitted it.
 function optionalNumberParam(url, key, fallback, min, max) {
   const raw = url.searchParams.get(key);
   if (raw === null || raw === "") return fallback;
@@ -109,6 +125,7 @@ function optionalNumberParam(url, key, fallback, min, max) {
   return value;
 }
 
+// Validate a coordinate object supplied in a POST body.
 function readCoordinate(value, label) {
   const latitude = Number(value?.lat);
   const longitude = Number(value?.lng);

@@ -1,6 +1,14 @@
+// ============================================================
+// TRIP-PLAN / BOOKING SERVICE
+// Stores and reads a user's planned visits. The database table is named
+// `bookings` for historical reasons, but the UI deliberately presents them as
+// personal trip plans rather than paid/confirmed reservations.
+// ============================================================
+
 import database from "../database/connection.js";
 import { getDestinationById } from "./destination-service.js";
 
+// Convert joined SQL fields into the object shape expected by the My Trips UI.
 function mapBooking(row) {
   if (!row) return null;
   return {
@@ -12,6 +20,7 @@ function mapBooking(row) {
   };
 }
 
+// Verify the destination exists before creating the user's planned visit.
 export async function createBooking(userId, input) {
   const destination = await getDestinationById(input.destinationId);
   if (!destination) { const error = new Error("Destination not found."); error.statusCode = 404; throw error; }
@@ -19,6 +28,8 @@ export async function createBooking(userId, input) {
   return mapBooking({ ...result.rows[0], destination_name: destination.name, destination_category: destination.category, destination_region: destination.region, destination_image_url: destination.imageUrl });
 }
 
+// Join destination presentation data onto each trip so the frontend does not need
+// a second API request for the place name/category/image.
 export async function getBookingsForUser(userId) {
   const result = await database.query(`
     SELECT b.id,b.user_id,b.destination_id,d.name AS destination_name,d.category AS destination_category,
@@ -28,6 +39,7 @@ export async function getBookingsForUser(userId) {
   return result.rows.map(mapBooking);
 }
 
+// Include user_id in the DELETE condition so an account can remove only its own trip.
 export async function deleteBookingForUser(userId, bookingId) {
   const result = await database.query(`DELETE FROM bookings WHERE id=$1 AND user_id=$2 RETURNING id`, [Number(bookingId), Number(userId)]);
   return result.rowCount > 0;
