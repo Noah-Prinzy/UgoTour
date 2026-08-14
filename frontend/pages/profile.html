@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Private profile metadata/security, PWA assets and profile visual styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -19,17 +20,18 @@
   <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="dashboard-page profile-page">
+  <!-- Shared account-aware navbar; profile.js requires a valid session. -->
   <header id="site-header"></header>
 
   <main id="main-content" class="dashboard-main">
     <div id="profile-account-content" class="profile-dashboard">
       <section id="profile-logged-in">
+        <!-- Main traveller identity: avatar/photo, display name, bio and settings link. -->
         <header class="profile-editorial-identity">
           <div class="profile-photo-shell profile-photo-shell-editorial">
             <div id="profile-avatar" class="profile-avatar">UG</div>
             <button id="profile-photo-edit" class="profile-photo-edit" type="button" aria-label="Edit profile picture" aria-haspopup="dialog" aria-controls="profile-photo-dialog">+</button>
           </div>
-
           <div class="profile-editorial-copy">
             <p class="section-kicker">Traveller profile</p>
             <h1 id="profile-display-name">UgoTour User</h1>
@@ -41,74 +43,45 @@
           </div>
         </header>
 
+        <!-- Account story panels: past trips become visited places; feedback shows one rating/review. -->
         <div class="profile-story-grid">
           <section class="profile-story-panel" aria-labelledby="visited-heading">
-            <p class="section-kicker">Journey history</p>
-            <h2 id="visited-heading">Places visited</h2>
+            <p class="section-kicker">Journey history</p><h2 id="visited-heading">Places visited</h2>
             <div id="profile-visited-list" class="visited-places-grid"></div>
             <p id="profile-visited-empty" class="profile-feedback-empty" hidden>No completed trips yet. Past trip dates will appear here as visited places.</p>
           </section>
-
           <section class="profile-story-panel" aria-labelledby="feedback-heading">
-            <p class="section-kicker">Your experience</p>
-            <h2 id="feedback-heading">UgoTour feedback</h2>
-            <div id="profile-feedback-display">
-              <div id="profile-feedback-stars" class="profile-feedback-stars" aria-label="No rating yet">☆☆☆☆☆</div>
-              <p id="profile-feedback-review" class="profile-feedback-review profile-feedback-empty">You have not reviewed UgoTour yet.</p>
-            </div>
+            <p class="section-kicker">Your experience</p><h2 id="feedback-heading">UgoTour feedback</h2>
+            <div id="profile-feedback-display"><div id="profile-feedback-stars" class="profile-feedback-stars" aria-label="No rating yet">☆☆☆☆☆</div><p id="profile-feedback-review" class="profile-feedback-review profile-feedback-empty">You have not reviewed UgoTour yet.</p></div>
             <button id="profile-feedback-edit" class="secondary-button profile-feedback-edit-button" type="button">Share feedback</button>
           </section>
         </div>
       </section>
     </div>
 
+    <!-- Profile-photo editor: file selection, crop/zoom preview, remove and save controls. -->
     <dialog id="profile-photo-dialog" class="profile-photo-dialog" aria-labelledby="profile-photo-dialog-title">
       <section class="profile-photo-editor">
-        <header class="profile-photo-editor-header">
-          <div><p class="section-kicker">Profile picture</p><h2 id="profile-photo-dialog-title">Edit your photo</h2></div>
-          <button id="profile-photo-dialog-close" class="profile-photo-dialog-close" type="button" aria-label="Close profile picture editor">×</button>
-        </header>
-
-        <div class="profile-photo-preview-wrap">
-          <div id="profile-photo-preview" class="profile-photo-preview" aria-live="polite">UG</div>
-          <span class="profile-photo-preview-label">Preview</span>
-        </div>
-
+        <header class="profile-photo-editor-header"><div><p class="section-kicker">Profile picture</p><h2 id="profile-photo-dialog-title">Edit your photo</h2></div><button id="profile-photo-dialog-close" class="profile-photo-dialog-close" type="button" aria-label="Close profile picture editor">×</button></header>
+        <div class="profile-photo-preview-wrap"><div id="profile-photo-preview" class="profile-photo-preview" aria-live="polite">UG</div><span class="profile-photo-preview-label">Preview</span></div>
         <div class="profile-crop-stage" id="profile-crop-stage">
-          <div id="profile-crop-frame" class="profile-crop-frame" aria-label="Drag the image to position the crop">
-            <img id="profile-crop-image" src="" alt="Crop preview" draggable="false" />
-          </div>
-          <div class="profile-crop-controls">
-            <span aria-hidden="true">−</span>
-            <input id="profile-crop-zoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Photo zoom" />
-            <span aria-hidden="true">+</span>
-          </div>
+          <div id="profile-crop-frame" class="profile-crop-frame" aria-label="Drag the image to position the crop"><img id="profile-crop-image" src="" alt="Crop preview" draggable="false" /></div>
+          <div class="profile-crop-controls"><span aria-hidden="true">−</span><input id="profile-crop-zoom" type="range" min="1" max="3" step="0.01" value="1" aria-label="Photo zoom" /><span aria-hidden="true">+</span></div>
           <p class="profile-crop-help">Drag to position your photo and use the slider to zoom before saving.</p>
         </div>
-
         <p class="profile-photo-editor-copy">Choose a JPEG, PNG or WebP image up to 6 MB. You can crop and resize it before saving.</p>
         <input id="profile-photo-input" type="file" accept="image/jpeg,image/png,image/webp" hidden />
-        <div class="profile-photo-editor-tools">
-          <button id="profile-photo-choose" class="secondary-button" type="button">Choose / change photo</button>
-          <button id="profile-photo-remove" class="secondary-button profile-photo-remove" type="button">Remove photo</button>
-        </div>
+        <div class="profile-photo-editor-tools"><button id="profile-photo-choose" class="secondary-button" type="button">Choose / change photo</button><button id="profile-photo-remove" class="secondary-button profile-photo-remove" type="button">Remove photo</button></div>
         <p id="profile-photo-message" class="form-message profile-photo-editor-message" aria-live="polite"></p>
-        <footer class="profile-photo-editor-footer">
-          <button id="profile-photo-cancel" class="secondary-button" type="button">Cancel</button>
-          <button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button>
-        </footer>
+        <footer class="profile-photo-editor-footer"><button id="profile-photo-cancel" class="secondary-button" type="button">Cancel</button><button id="profile-photo-save" class="primary-button" type="button" disabled>Save photo</button></footer>
       </section>
     </dialog>
 
+    <!-- Feedback editor: one-to-five-star selection plus written review. -->
     <dialog id="profile-feedback-dialog" class="profile-feedback-dialog" aria-labelledby="profile-feedback-dialog-title">
       <section class="profile-feedback-editor">
-        <header>
-          <div><p class="section-kicker">Your voice</p><h2 id="profile-feedback-dialog-title">Rate UgoTour</h2></div>
-          <button id="profile-feedback-close" class="profile-photo-dialog-close" type="button" aria-label="Close feedback editor">×</button>
-        </header>
-        <div id="profile-rating-picker" class="profile-rating-picker" aria-label="Choose a rating from one to five stars">
-          <button type="button" data-rating="1" aria-label="1 star">★</button><button type="button" data-rating="2" aria-label="2 stars">★</button><button type="button" data-rating="3" aria-label="3 stars">★</button><button type="button" data-rating="4" aria-label="4 stars">★</button><button type="button" data-rating="5" aria-label="5 stars">★</button>
-        </div>
+        <header><div><p class="section-kicker">Your voice</p><h2 id="profile-feedback-dialog-title">Rate UgoTour</h2></div><button id="profile-feedback-close" class="profile-photo-dialog-close" type="button" aria-label="Close feedback editor">×</button></header>
+        <div id="profile-rating-picker" class="profile-rating-picker" aria-label="Choose a rating from one to five stars"><button type="button" data-rating="1" aria-label="1 star">★</button><button type="button" data-rating="2" aria-label="2 stars">★</button><button type="button" data-rating="3" aria-label="3 stars">★</button><button type="button" data-rating="4" aria-label="4 stars">★</button><button type="button" data-rating="5" aria-label="5 stars">★</button></div>
         <label for="profile-feedback-text" class="sr-only">Tell us about your UgoTour experience</label>
         <textarea id="profile-feedback-text" maxlength="1200" placeholder="Tell us about your UgoTour experience…"></textarea>
         <p id="profile-feedback-message" class="form-message" aria-live="polite"></p>
@@ -117,6 +90,7 @@
     </dialog>
   </main>
 
+  <!-- Shared footer + full profile controller (photo crop, trips, feedback and profile rendering). -->
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/profile.js?v=1.19.0"></script>
 </body>

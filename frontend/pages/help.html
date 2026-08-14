@@ -1,3 +1,47 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Help-centre metadata/security, PWA manifest and shared editorial styles. -->
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" /><meta name="theme-color" content="#172114"/><meta name="description" content="Help and frequently asked questions for UgoTour."/><link rel="manifest" href="../manifest.webmanifest"/><link rel="stylesheet" href="../css/main.css?v=9.0.0"/><link rel="stylesheet" href="../css/components.css?v=9.0.0"/><link rel="stylesheet" href="../css/responsive.css?v=9.0.0"/><title>Help | UgoTour</title></head><body class="dashboard-page static-editorial-page static-help-page"><header id="site-header"></header><main id="main-content" class="static-main"><article class="static-shell"><div class="static-hero"><p class="section-kicker">Help centre</p><h1>Find your way around UgoTour.</h1><p class="static-lead">Quick answers for discovering places, using the map, managing favorites and planning trips across Uganda.</p></div><div class="faq-list"><details open><summary>How do I explore a place?</summary><p>Open Destinations, choose a destination or attraction, then UgoTour can focus it on the Map. Use the map callout to continue to details.</p></details><details><summary>What is a planned trip?</summary><p>Trips in UgoTour are personal travel plans stored in your account. They are not paid reservations with a hotel or tour company.</p></details><details><summary>How do Favorites work?</summary><p>Use the heart controls to favorite destinations and attractions. Open Favorites from the navigation to return to them later.</p></details><details><summary>Why does the map need internet?</summary><p>UgoTour can cache parts of the PWA, but live map tiles and external discovery still require a network connection.</p></details><details><summary>How do I reset my password?</summary><p>Use “Forgot password?” on Login. A time-limited reset link will be sent when production email delivery is configured.</p></details></div><a class="primary-button inline-button" href="./contact.html">Contact UgoTour</a></article></main><footer id="site-footer"></footer><script type="module" src="../js/pages/static-page.js"></script></body></html>
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#172114"/>
+  <meta name="description" content="Help and frequently asked questions for UgoTour."/>
+  <link rel="manifest" href="../manifest.webmanifest"/>
+  <link rel="stylesheet" href="../css/main.css?v=9.0.0"/>
+  <link rel="stylesheet" href="../css/components.css?v=9.0.0"/>
+  <link rel="stylesheet" href="../css/responsive.css?v=9.0.0"/>
+  <title>Help | UgoTour</title>
+</head>
+<body class="dashboard-page static-editorial-page static-help-page">
+  <!-- Shared navigation placeholder. -->
+  <header id="site-header"></header>
+
+  <main id="main-content" class="static-main">
+    <article class="static-shell">
+      <!-- Help-page introduction. -->
+      <div class="static-hero">
+        <p class="section-kicker">Help centre</p>
+        <h1>Find your way around UgoTour.</h1>
+        <p class="static-lead">Quick answers for discovering places, using the map, managing favorites and planning trips across Uganda.</p>
+      </div>
+
+      <!-- Native details/summary elements create the expandable FAQ without JavaScript. -->
+      <div class="faq-list">
+        <details open><summary>How do I explore a place?</summary><p>Open Destinations, choose a destination or attraction, then UgoTour can focus it on the Map. Use the map callout to continue to details.</p></details>
+        <details><summary>What is a planned trip?</summary><p>Trips in UgoTour are personal travel plans stored in your account. They are not paid reservations with a hotel or tour company.</p></details>
+        <details><summary>How do Favorites work?</summary><p>Use the heart controls to favorite destinations and attractions. Open Favorites from the navigation to return to them later.</p></details>
+        <details><summary>Why does the map need internet?</summary><p>UgoTour can cache parts of the PWA, but live map tiles and external discovery still require a network connection.</p></details>
+        <details><summary>How do I reset my password?</summary><p>Use “Forgot password?” on Login. A time-limited reset link will be sent when production email delivery is configured.</p></details>
+      </div>
+
+      <a class="primary-button inline-button" href="./contact.html">Contact UgoTour</a>
+    </article>
+  </main>
+
+  <!-- Shared footer and static-page controller. -->
+  <footer id="site-footer"></footer>
+  <script type="module" src="../js/pages/static-page.js"></script>
+</body>
+</html>

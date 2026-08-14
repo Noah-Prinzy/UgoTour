@@ -1,12 +1,22 @@
+// ============================================================
+// AUTHENTICATION SERVICE
+// Owns account creation, credential verification and server-side sessions.
+// Password hashing is delegated to utils/password.js; session rows live in
+// PostgreSQL and the controller sends their token through an HttpOnly cookie.
+// ============================================================
+
 import { randomBytes } from "node:crypto";
 import database from "../database/connection.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 
+// Read the configured session lifetime while enforcing a safe 1-30 day range.
 function sessionTtlDays() {
   const value = Number(process.env.SESSION_TTL_DAYS || 7);
   return Number.isFinite(value) && value > 0 ? Math.min(value, 30) : 7;
 }
 
+// Strip private database-only fields (especially password_hash) before a user
+// object is returned to controllers/frontend code.
 export function toPublicUser(user) {
   if (!user) return null;
   return {
@@ -21,8 +31,11 @@ export function toPublicUser(user) {
   };
 }
 
+// Create a unique account, hash the password, then immediately issue a session.
 export async function createAccount({ name, email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
+
+  // Fail with 409 instead of relying on a raw database unique-constraint error.
   const duplicate = await database.query("SELECT id FROM users WHERE email=$1", [normalizedEmail]);
   if (duplicate.rowCount > 0) {
     const error = new Error("An account already exists with this email.");
@@ -30,6 +43,7 @@ export async function createAccount({ name, email, password }) {
     throw error;
   }
 
+  // Plain-text passwords are never stored; only the derived hash reaches PostgreSQL.
   const passwordHash = await hashPassword(password);
   const result = await database.query(`
     INSERT INTO users (name,email,password_hash)
@@ -42,6 +56,7 @@ export async function createAccount({ name, email, password }) {
   return { user: toPublicUser(user), ...session };
 }
 
+// Look up the account by normalized email and verify the supplied password hash.
 export async function login({ email, password }) {
   const normalizedEmail = email.trim().toLowerCase();
   const result = await database.query(`
@@ -49,6 +64,8 @@ export async function login({ email, password }) {
     FROM users WHERE email=$1
   `, [normalizedEmail]);
   const user = result.rows[0];
+
+  // Use one generic message so callers cannot learn whether email or password failed.
   if (!user || !(await verifyPassword(password, user.password_hash))) {
     const error = new Error("Email or password is incorrect.");
     error.statusCode = 401;
@@ -59,14 +76,17 @@ export async function login({ email, password }) {
   return { user: toPublicUser(user), ...session };
 }
 
+// Logging out invalidates the exact server-side session represented by the cookie.
 export async function logout(token) {
   if (token) await database.query("DELETE FROM sessions WHERE token=$1", [token]);
 }
 
+// Used by security-sensitive account changes to invalidate every device/session.
 export async function logoutAllUserSessions(userId) {
   await database.query("DELETE FROM sessions WHERE user_id=$1", [Number(userId)]);
 }
 
+// Generate a cryptographically random token and save it with an expiry timestamp.
 export async function createSession(userId) {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + sessionTtlDays() * 24 * 60 * 60 * 1000);

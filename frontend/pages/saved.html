@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Private Favorites page metadata/security, PWA assets and shared styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://upload.wikimedia.org https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -18,9 +19,12 @@
   <title>Favorites | UgoTour</title>
 </head>
 <body class="saved-page favorites-page home-reference-page">
+  <!-- Shared navigation; saved.js requires an authenticated user. -->
   <header id="site-header"></header>
+
   <main id="main-content" class="dashboard-main saved-main">
     <section class="saved-editorial-shell">
+      <!-- Page title, Map shortcut and dynamic favorite-count/status line. -->
       <div class="saved-content-intro">
         <div class="page-content-titlebar saved-titlebar">
           <div>
@@ -33,15 +37,21 @@
         <p id="saved-status" class="catalog-summary saved-status-line" aria-live="polite"></p>
       </div>
 
+      <!-- saved.js inserts server-backed destination/attraction cards here. -->
       <div id="saved-list" class="saved-grid"></div>
+
+      <!-- Empty state shown when the account has no Favorites. -->
       <div id="saved-empty" class="empty-state" hidden>
         <h2>No favorites yet.</h2>
         <p>Use the heart on a destination, attraction or map callout to build your favorites collection.</p>
         <a class="primary-button inline-button" href="./destinations.html">Discover Uganda</a>
       </div>
+
       <p class="page-background-credit">Background: <a href="https://commons.wikimedia.org/wiki/File:Africa_Uganda_Scenic_Kalangala_Beach.jpg" target="_blank" rel="noreferrer">Kalangala, Lake Victoria · Frederick Noronha · CC BY-SA 3.0</a></p>
     </section>
   </main>
+
+  <!-- Shared footer + Favorites controller. -->
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/saved.js"></script>
 </body>

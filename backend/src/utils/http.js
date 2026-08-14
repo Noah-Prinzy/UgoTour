@@ -1,20 +1,30 @@
+// ============================================================
+// HTTP UTILITY HELPERS
+// Small framework-free helpers for sending JSON/204 responses and safely reading
+// JSON request bodies with an explicit size limit.
+// ============================================================
+
 import { getSessionToken } from "./cookies.js";
 
+// Serialize a JavaScript value as a JSON HTTP response.
 export function sendJson(response, statusCode, data) {
   response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   response.end(JSON.stringify(data));
 }
 
+// 204 means the operation succeeded but has no response body.
 export function sendNoContent(response) {
   response.writeHead(204);
   response.end();
 }
 
+// Read an incoming request stream, enforce the body-size limit and parse JSON.
 export async function readJsonBody(request) {
   let body = "";
   const maxBytes = Math.max(16_384, Number(process.env.MAX_JSON_BODY_BYTES || 900_000));
   let byteLength = 0;
 
+  // Node HTTP request bodies arrive as chunks rather than as one ready-made string.
   for await (const chunk of request) {
     byteLength += chunk.length;
     if (byteLength > maxBytes) {

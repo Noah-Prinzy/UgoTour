@@ -1,7 +1,13 @@
+// ============================================================
+// FRONTEND SESSION GUARD
+// Protects pages without ever reading the HttpOnly cookie itself. GET /api/profile
+// is the source of truth: a returned user means the cookie/session is valid.
+// ============================================================
+
 import { getCurrentUser } from "./auth-service.js";
 
-// Protected application pages validate the HttpOnly cookie session through GET /api/profile.
-// The API remains the source of truth; frontend JavaScript never reads the session token.
+// Use on protected pages. Anonymous/expired sessions are redirected to login;
+// the never-resolving Promise prevents the protected page from continuing setup.
 export async function requireAuthenticatedUser(basePath = ".") {
   const user = await getCurrentUser().catch((error) => {
     console.error("Could not validate the UgoTour session:", error);
@@ -14,6 +20,7 @@ export async function requireAuthenticatedUser(basePath = ".") {
   return new Promise(() => {});
 }
 
+// Use on login/signup pages so an already-authenticated user is sent back Home.
 export async function redirectAuthenticatedUser(homePath = "../index.html") {
   const user = await getCurrentUser().catch((error) => {
     console.error("Could not validate the UgoTour session:", error);

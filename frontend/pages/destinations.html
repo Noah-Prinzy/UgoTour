@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Destinations metadata/security, PWA assets and layered responsive styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://upload.wikimedia.org https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -17,67 +18,56 @@
   <link rel="stylesheet" href="../css/mobile-phase1.css?v=11.5.1" />
   <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
   <link rel="stylesheet" href="../css/phase1-20.css?v=1.20.0" data-ugotour-phase120="1.20" />
+
+  <!-- Page-scoped destination-card override from the recent UI change: remove the
+       redundant arrow and position the Favorite heart below the region label. -->
   <style>
     /* Destination cards already open from the full card surface, so the extra
        arrow indicator is redundant. Keep Favorites as the only floating action
        and place it directly beneath the top-right region label. These rules are
        deliberately destination-only; attraction cards keep their existing UI. */
-    .destinations-page .destination-card.destination-card-saveable .destination-details-button {
-      display: none !important;
-    }
-
-    .destinations-page .destination-card.destination-card-saveable .destination-card-footer {
-      padding-right: 0 !important;
-    }
-
-    .destinations-page .destination-card.destination-card-saveable .destination-card-topline {
-      right: 14px !important;
-    }
-
-    .destinations-page .destination-card.destination-card-saveable .place-save-button {
-      top: 40px !important;
-      right: 14px !important;
-      bottom: auto !important;
-    }
+    .destinations-page .destination-card.destination-card-saveable .destination-details-button { display: none !important; }
+    .destinations-page .destination-card.destination-card-saveable .destination-card-footer { padding-right: 0 !important; }
+    .destinations-page .destination-card.destination-card-saveable .destination-card-topline { right: 14px !important; }
+    .destinations-page .destination-card.destination-card-saveable .place-save-button { top: 40px !important; right: 14px !important; bottom: auto !important; }
   </style>
   <title>Destinations | UgoTour</title>
 </head>
 <body class="destinations-page editorial-page home-reference-page" data-destinations-redesign="search-switch-v1">
+  <!-- Shared navigation; this page is currently account-protected by destinations.js. -->
   <header id="site-header"></header>
 
   <main id="main-content" class="dashboard-main destinations-main">
     <section class="discovery-dashboard destinations-stage" aria-labelledby="catalog-heading">
+      <!-- Fixed/parallax editorial background behind the catalogue. -->
       <div class="destinations-stage-media" aria-hidden="true">
         <img id="destinations-parallax-image" src="https://upload.wikimedia.org/wikipedia/commons/e/ec/Africa_Lake_Victoria_10_006.jpg" alt="" decoding="async" fetchpriority="high" />
       </div>
       <div class="destinations-stage-shade" aria-hidden="true"></div>
 
       <div class="destinations-stage-content">
+        <!-- Page introduction. -->
         <section class="destinations-intro" aria-label="Discover Uganda">
           <div class="dashboard-heading-row destinations-heading-row">
-            <div>
-              <p class="section-kicker">Travel discovery</p>
-              <h1 id="catalog-heading">Discover Uganda</h1>
-              <p>Wild landscapes, living culture and journeys shaped by the people and places that make Uganda distinct.</p>
-            </div>
+            <div><p class="section-kicker">Travel discovery</p><h1 id="catalog-heading">Discover Uganda</h1><p>Wild landscapes, living culture and journeys shaped by the people and places that make Uganda distinct.</p></div>
           </div>
         </section>
 
+        <!-- Catalogue/carousel. destinations.js fills #destination-list with API-backed
+             destination and attraction cards and switches to grid mode for searches. -->
         <div class="dashboard-discovery-layout destinations-catalog-layer">
           <section class="dashboard-results destination-carousel-column" aria-labelledby="all-destinations-heading">
             <div class="dashboard-section-heading destinations-section-heading">
               <div><p id="destination-section-kicker" class="section-kicker">One continuous collection</p><h2 id="all-destinations-heading">My destinations</h2></div>
               <div class="destination-carousel-toolbar">
                 <button id="destination-search-toggle" class="destination-search-toggle" type="button" aria-haspopup="dialog" aria-controls="destination-filter-overlay">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-                  <span>Search places…</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Search places…</span>
                 </button>
                 <button id="destination-filter-toggle" class="destination-filter-toggle" type="button" aria-expanded="false" aria-controls="destination-filter-overlay"><span aria-hidden="true">☰</span> <span id="destination-filter-label">Filters</span></button>
               </div>
             </div>
 
             <p class="destination-results-badge" id="destination-results-badge">Search results</p>
-
             <div class="destination-carousel-shell" aria-roledescription="carousel" aria-label="Uganda destinations, attractions, sites and experiences">
               <div id="destination-list" class="experience-grid destination-grid destination-carousel-track"></div>
               <div class="destination-carousel-controls">
@@ -87,13 +77,12 @@
               </div>
             </div>
 
-            <div id="destination-empty-state" class="empty-state" hidden>
-              <h3>No matching place found.</h3>
-              <p>Try another search or reset your filters.</p>
-            </div>
+            <!-- Shown only when the current search/filter combination matches no place. -->
+            <div id="destination-empty-state" class="empty-state" hidden><h3>No matching place found.</h3><p>Try another search or reset your filters.</p></div>
           </section>
         </div>
 
+        <!-- Search/filter dialog. draft selections are only applied when Show places is clicked. -->
         <div id="destination-filter-overlay" class="destination-filter-overlay" hidden aria-hidden="true">
           <button class="destination-filter-backdrop" type="button" data-filter-cancel aria-label="Close filters"></button>
           <section id="destination-filter-panel" class="destination-filter-panel" role="dialog" aria-modal="true" aria-labelledby="destination-filter-heading" tabindex="-1">
@@ -101,32 +90,22 @@
               <div><p class="section-kicker">Shape the journey</p><h2 id="destination-filter-heading">Search &amp; filters</h2></div>
               <button id="destination-filter-close" class="destination-filter-close" type="button" aria-label="Close filters">✕</button>
             </header>
-
             <details class="destination-filter-group" open>
               <summary>Search</summary>
-              <div class="destination-filter-body">
-                <label class="catalog-search" for="catalog-search-input">
-                  <span class="sr-only">Search places</span>
-                  <input id="catalog-search-input" type="search" placeholder="Destination, site or experience" autocomplete="off" />
-                </label>
-              </div>
+              <div class="destination-filter-body"><label class="catalog-search" for="catalog-search-input"><span class="sr-only">Search places</span><input id="catalog-search-input" type="search" placeholder="Destination, site or experience" autocomplete="off" /></label></div>
             </details>
-
-            <details class="destination-filter-group" open>
-              <summary>Travel style</summary>
-              <div id="category-filters" class="category-filters destination-filter-options" aria-label="Filter places by category"></div>
-            </details>
-
-            <div class="destination-filter-actions">
-              <button id="reset-filters" class="secondary-button destination-filter-reset" type="button">Reset all filters</button>
-              <button id="destination-filter-apply" class="primary-button destination-filter-apply" type="button">Show places</button>
-            </div>
+            <details class="destination-filter-group" open><summary>Travel style</summary><div id="category-filters" class="category-filters destination-filter-options" aria-label="Filter places by category"></div></details>
+            <div class="destination-filter-actions"><button id="reset-filters" class="secondary-button destination-filter-reset" type="button">Reset all filters</button><button id="destination-filter-apply" class="primary-button destination-filter-apply" type="button">Show places</button></div>
           </section>
         </div>
+
+        <!-- Required background photo attribution. -->
         <p class="page-background-credit destinations-background-credit">Background: <a href="https://commons.wikimedia.org/wiki/File:Africa_Lake_Victoria_10_006.jpg" target="_blank" rel="noreferrer">Lake Victoria, Munyonyo · Michael Shade · public domain</a></p>
       </div>
     </section>
   </main>
+
+  <!-- Shared footer + destinations page controller. -->
   <footer id="site-footer"></footer>
   <script type="module" src="../js/pages/destinations.js?v=14.0.0"></script>
 </body>

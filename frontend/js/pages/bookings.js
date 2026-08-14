@@ -1,3 +1,9 @@
+// ============================================================
+// MY TRIPS PAGE CONTROLLER
+// Protects the page with the current session, loads planned visits from the API,
+// renders their destination details and lets the user remove a trip plan.
+// ============================================================
+
 import "../ui-motion.js";
 import { ApiError } from "../api.js";
 import { renderNavbar } from "../components/navbar.js";
@@ -6,6 +12,7 @@ import { cancelBooking, getBookings } from "../services/booking-service.js";
 import { resolveAssetPath } from "../utils/assets.js";
 import { requireAuthenticatedUser } from "../services/session-guard.js";
 
+// Validate the HttpOnly-cookie session before showing personal trip data.
 let currentUser = await requireAuthenticatedUser("..");
 await renderNavbar("..", currentUser);
 renderFooter();
@@ -17,6 +24,7 @@ const bookingTotal = document.getElementById("booking-total");
 const bookingStatus = document.getElementById("booking-status");
 let bookings = [];
 
+// Fetch the current user's planned visits and hand the results to the renderer.
 async function loadBookings() {
   if (bookingStatus) bookingStatus.textContent = "Loading your trips…";
   try {
@@ -30,6 +38,7 @@ async function loadBookings() {
   }
 }
 
+// Fallback UI if the session expires while this page is already open.
 function showAuthenticationState() {
   if (bookingList) bookingList.hidden = true;
   if (emptyState) emptyState.hidden = true;
@@ -38,6 +47,7 @@ function showAuthenticationState() {
   if (bookingStatus) bookingStatus.textContent = "Login to see your planned trips.";
 }
 
+// Rebuild the trip list from the local `bookings` array and keep empty/count UI in sync.
 function renderBookings() {
   if (!bookingList || !emptyState || !bookingTotal || !authState) return;
   bookingList.innerHTML = "";
@@ -48,6 +58,7 @@ function renderBookings() {
   bookings.forEach((booking) => bookingList.appendChild(createBookingCard(booking)));
 }
 
+// Convert one trip-plan object into the card displayed on bookings.html.
 function createBookingCard(booking) {
   const article = document.createElement("article");
   article.className = "booking-card";
@@ -71,22 +82,35 @@ function createBookingCard(booking) {
   return article;
 }
 
-function formatDate(value) { return new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${value}T00:00:00`)); }
+// Format the YYYY-MM-DD database value as a reader-friendly calendar date.
+function formatDate(value) {
+  return new Intl.DateTimeFormat("en", { day: "numeric", month: "long", year: "numeric" })
+    .format(new Date(`${value}T00:00:00`));
+}
 
+// Event delegation lets one listener handle the Remove button on every rendered card.
 bookingList?.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-cancel-booking]");
   if (!button) return;
-  button.disabled = true; button.textContent = "Cancelling…";
+
+  button.disabled = true;
+  button.textContent = "Cancelling…";
   try {
     await cancelBooking(button.dataset.cancelBooking);
     bookings = bookings.filter((booking) => booking.id !== Number(button.dataset.cancelBooking));
     renderBookings();
     if (bookingStatus) bookingStatus.textContent = "Trip removed.";
   } catch (error) {
-    button.disabled = false; button.textContent = "Remove trip";
+    button.disabled = false;
+    button.textContent = "Remove trip";
     if (bookingStatus) bookingStatus.textContent = error.message;
   }
 });
 
-function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
+// Escape values before placing API text inside innerHTML card templates.
+function escapeHtml(value) {
+  return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+// Initial page data load.
 await loadBookings();

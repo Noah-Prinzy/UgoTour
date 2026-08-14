@@ -1,11 +1,16 @@
+// ============================================================
+// REUSABLE DESTINATION CARD COMPONENT
+// Builds the destination cards used across UgoTour. The component can render a
+// simple linked card or a saveable card whose heart button talks to Favorites.
+// ============================================================
+
 import { resolveAssetPath } from "../utils/assets.js";
 
-// Reusable destination card. Discovery pages can opt into a database-backed
-// save button without nesting a button inside an anchor.
 export function createDestinationCard(
   destination,
   { detailsPagePath = null, linkUrl = null, assetBasePath = ".", showSaveButton = false, saved = false, onToggleSave = null } = {}
 ) {
+  // Work out where clicking the card should navigate and which gallery images to use.
   const detailsUrl = linkUrl || (detailsPagePath ? `${detailsPagePath}?id=${destination.id}` : null);
   const gallery = Array.isArray(destination.galleryImages) ? destination.galleryImages : [];
   const primaryPhoto = gallery[0]?.url || destination.imageUrl;
@@ -13,6 +18,7 @@ export function createDestinationCard(
   const imageUrl = resolveAssetPath(primaryPhoto, assetBasePath);
   const secondaryImageUrl = resolveAssetPath(secondaryPhoto, assetBasePath);
 
+  // Pages that do not need Favorites can use one anchor/article as the whole card.
   if (!showSaveButton) {
     const card = document.createElement(detailsUrl ? "a" : "article");
     card.className = "destination-card";
@@ -22,6 +28,8 @@ export function createDestinationCard(
     return card;
   }
 
+  // Saveable cards use an outer article so the heart button is NOT nested inside
+  // the navigation anchor. Nesting a button inside an anchor is invalid/inaccessible.
   const shell = document.createElement("article");
   shell.className = "destination-card destination-card-saveable";
   shell.dataset.destinationId = destination.id;
@@ -32,6 +40,8 @@ export function createDestinationCard(
     <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${saved ? "Remove" : "Save"} ${escapeAttribute(destination.name)}">${saved ? "♥" : "♡"}</button>
   `;
 
+  // Toggle the server-backed Favorite state while preventing repeated clicks during
+  // the async request. The callback is supplied by the page using this component.
   const button = shell.querySelector(".place-save-button");
   button?.addEventListener("click", async () => {
     if (!onToggleSave || button.disabled) return;
@@ -48,6 +58,7 @@ export function createDestinationCard(
   return shell;
 }
 
+// Shared HTML template for destination image, metadata, description and highlight.
 function cardMarkup(destination, imageUrl, secondaryImageUrl, hasLink) {
   return `
     <div class="destination-card-media">
@@ -58,5 +69,6 @@ function cardMarkup(destination, imageUrl, secondaryImageUrl, hasLink) {
     <div class="destination-card-content"><h3>${escapeHtml(destination.name)}</h3><p>${escapeHtml(destination.description)}</p><div class="destination-card-footer"><span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span>${hasLink ? `<span class="destination-details-button" aria-hidden="true">→</span>` : ""}</div></div>`;
 }
 
+// Escape database/user-facing text before placing it into innerHTML templates.
 function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
 function escapeAttribute(value) { return escapeHtml(value); }

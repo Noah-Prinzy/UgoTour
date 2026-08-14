@@ -1,8 +1,17 @@
+// ============================================================
+// PASSWORD RESET CONTROLLER
+// Validates password-recovery requests and delegates token creation/verification
+// to the password-reset service.
+// ============================================================
+
 import { authRateLimit } from "../middleware/rate-limit.js";
 import { confirmPasswordReset, requestPasswordReset } from "../services/password-reset-service.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
 
+// POST /api/auth/password-reset/request
+// Always use a neutral response message so the API does not reveal whether an
+// email address belongs to an UgoTour account.
 export async function requestReset(request, response) {
   authRateLimit(request);
   const body = await readJsonBody(request);
@@ -15,6 +24,8 @@ export async function requestReset(request, response) {
   });
 }
 
+// POST /api/auth/password-reset/confirm
+// Validate the reset token/new password before the service changes the password.
 export async function confirmReset(request, response) {
   authRateLimit(request);
   const body = await readJsonBody(request);

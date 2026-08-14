@@ -1,21 +1,30 @@
+// ============================================================
+// FRONTEND MAP API SERVICE
+// Translates map-page actions into backend endpoints for curated GeoJSON, smart
+// search, nearby discovery and directions.
+// ============================================================
+
 import { apiRequest } from "../api.js";
 
-// The base GeoJSON endpoint remains the fast source of UgoTour-verified places.
+// The base GeoJSON endpoint is the fast source of UgoTour-verified places.
 export async function getMapLocations() {
   const payload = await apiRequest("/map/locations");
   return payload.data;
 }
 
+// Ask the backend which map/routing providers and fallbacks are currently available.
 export async function getMapCapabilities() {
   const payload = await apiRequest("/map/capabilities");
   return payload.data;
 }
 
+// Search UgoTour + live map discovery by a human-readable place/query string.
 export async function searchMapPlaces(query) {
   const payload = await apiRequest(`/map/search?q=${encodeURIComponent(query)}`);
   return payload.data;
 }
 
+// Serialize a nearby-search request into query parameters understood by the backend.
 export async function getNearbyMapPlaces({ lat, lng, category = "attractions", radiusKm = 8, context = "" }) {
   const params = new URLSearchParams({
     lat: String(lat),
@@ -28,6 +37,8 @@ export async function getNearbyMapPlaces({ lat, lng, category = "attractions", r
   return payload.data;
 }
 
+// Request road directions. GET is the current route API; the nested POST request
+// preserves compatibility with a previously-running Phase 1.11 backend.
 export async function getMapRoute({ from, to, mode = "driving" }) {
   const params = new URLSearchParams({
     fromLat: String(from.lat),

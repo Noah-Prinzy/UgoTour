@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Signup metadata/security, PWA links and authentication-page styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -8,6 +9,7 @@
   <meta name="theme-color" content="#172114" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="description" content="Create your UgoTour account." />
+  <meta name="robots" content="noindex,nofollow" />
   <link rel="manifest" href="../manifest.webmanifest" />
   <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
   <link rel="stylesheet" href="../css/main.css?v=9.0.0" />
@@ -16,40 +18,35 @@
   <link rel="stylesheet" href="../css/responsive.css?v=9.0.0" />
   <link rel="stylesheet" href="../css/phase1-25.css?v=1.25.0" />
   <title>Sign Up | UgoTour</title>
-  <meta name="robots" content="noindex,nofollow" />
 </head>
 <body class="auth-visual-page signup-page">
+  <!-- Shared navigation is rendered in guest mode unless an existing session redirects Home. -->
   <header id="site-header"></header>
+
   <main id="main-content" class="auth-entry-main">
     <section class="auth-entry" aria-labelledby="signup-title">
+      <!-- Travel imagery gives the account flow the same tourism identity as the app. -->
       <div class="auth-photo-panel">
         <img src="../images/optimized/destinations/sipi-falls/sipi-falls-01.webp" alt="Sipi Falls landscape" />
         <div class="auth-photo-shade" aria-hidden="true"></div>
         <div class="auth-photo-copy"><p>Travel deeper</p><h1>Create your Uganda story.</h1><span>Sipi Falls · Eastern Uganda</span></div>
       </div>
+
+      <!-- signup.js validates matching passwords and sends account data to /api/auth/signup. -->
       <div class="auth-form-panel">
         <a class="auth-brand" href="../index.html">Ugo<span>Tour</span></a>
         <p class="section-kicker">Create account</p>
         <h2 id="signup-title">Join UgoTour</h2>
         <p class="auth-form-copy">Create one secure travel identity for your profile, Favorites and trip plans.</p>
         <form id="signup-form" class="starter-form auth-form">
-          <label for="signup-name">
-            <span class="auth-field-name">Full name</span>
-            <input id="signup-name" type="text" autocomplete="name" placeholder="e.g. Noah Prinzy" required />
-          </label>
-          <label for="signup-email">
-            <span class="auth-field-name">Email address</span>
-            <input id="signup-email" type="email" autocomplete="email" placeholder="you@example.com" required />
-          </label>
+          <label for="signup-name"><span class="auth-field-name">Full name</span><input id="signup-name" type="text" autocomplete="name" placeholder="e.g. Noah Prinzy" required /></label>
+          <label for="signup-email"><span class="auth-field-name">Email address</span><input id="signup-email" type="email" autocomplete="email" placeholder="you@example.com" required /></label>
           <label for="signup-password">
             <span class="auth-field-name">Password</span>
             <input id="signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="Create at least 10 characters" aria-describedby="signup-password-hint" required />
             <span id="signup-password-hint" class="auth-field-hint">Use at least 10 characters.</span>
           </label>
-          <label for="signup-confirm-password">
-            <span class="auth-field-name">Confirm password</span>
-            <input id="signup-confirm-password" type="password" minlength="10" autocomplete="new-password" placeholder="Re-enter your password" required />
-          </label>
+          <label for="signup-confirm-password"><span class="auth-field-name">Confirm password</span><input id="signup-confirm-password" type="password" minlength="10" autocomplete="new-password" placeholder="Re-enter your password" required /></label>
           <button class="primary-button auth-submit-button" type="submit">Create account</button>
           <p id="signup-message" class="form-message" aria-live="polite"></p>
         </form>
@@ -57,6 +54,8 @@
       </div>
     </section>
   </main>
+
+  <!-- Signup controller + reusable password visibility enhancement. -->
   <footer id="site-footer" hidden></footer>
   <script type="module" src="../js/pages/signup.js"></script>
   <script type="module" src="../js/auth-password-visibility.js"></script>

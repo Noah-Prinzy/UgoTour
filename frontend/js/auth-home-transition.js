@@ -1,9 +1,19 @@
+// ============================================================
+// AUTHENTICATION -> HOME TRANSITION
+// Creates the full-screen branded loading handoff shown after a successful login
+// or signup, preloads the first Home image, then replaces the auth page with Home.
+// ============================================================
+
+// The transition deliberately preloads the same image Home uses first.
 const DEFAULT_HOME_IMAGE = "../images/optimized/destinations/murchison-falls/murchison-01.webp";
 
+// Promise-based delay keeps the animation sequence readable with async/await.
 function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+// Resolve whether the image loads successfully or fails; either outcome must allow
+// navigation to continue so a broken image cannot trap the user on the splash.
 function preloadImage(src) {
   return new Promise((resolve) => {
     const image = new Image();
@@ -23,6 +33,7 @@ function preloadImage(src) {
   });
 }
 
+// Build and reveal the branded transition overlay for login or signup mode.
 function createOverlay(mode) {
   document.querySelector(".auth-home-transition")?.remove();
 
@@ -52,6 +63,7 @@ function createOverlay(mode) {
   document.body.appendChild(overlay);
   document.body.classList.add("auth-home-transition-open");
 
+  // Reveal the photo as soon as it is decoded/available, but tolerate image errors.
   const photo = overlay.querySelector(".auth-home-transition__photo");
   const revealPhoto = () => overlay.classList.add("is-photo-ready");
   if (photo?.complete) revealPhoto();
@@ -85,11 +97,15 @@ export async function transitionToHome(destinationUrl = "../index.html", { mode 
   }, 5000);
 
   try {
+    // Home can inspect this one-tab session value if it needs to know how the
+    // visitor entered; failure is harmless in strict/private browsing modes.
     sessionStorage.setItem("ugotour-auth-entry", mode);
   } catch {
     // sessionStorage can be unavailable in strict/private browsing contexts.
   }
 
+  // Keep the splash visible long enough to feel intentional while bounding image
+  // preload time so a slow network does not delay navigation indefinitely.
   const minimumVisible = delay(reduceMotion ? 360 : 1550);
   const preloadBounded = Promise.race([preloadImage(preloadUrl), delay(1200)]);
   await Promise.all([minimumVisible, preloadBounded]);

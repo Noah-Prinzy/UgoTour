@@ -1,6 +1,15 @@
+// ============================================================
+// ADMIN SERVICE
+// Contains administrator-only database operations for tourism records and
+// contact-message management. Controllers authorize the admin; this layer does
+// the SQL work.
+// ============================================================
+
 import database from "../database/connection.js";
 import { listContactMessages, updateContactMessageStatus } from "./contact-service.js";
 
+// These maps translate frontend camelCase field names into PostgreSQL column names.
+// They also act as an allowlist so arbitrary request keys cannot become SQL columns.
 const destinationFields = {
   name: "name", category: "category", region: "region", district: "district",
   description: "description", highlight: "highlight", activities: "activities",
@@ -14,12 +23,14 @@ const attractionFields = {
   imageUrl: "image_url", latitude: "latitude", longitude: "longitude", isActive: "is_active"
 };
 
+// Keep only fields that were actually supplied in a PATCH request.
 function cleanPayload(payload, map) {
   return Object.entries(map)
     .filter(([key]) => payload[key] !== undefined)
     .map(([key, column]) => ({ column, value: payload[key] }));
 }
 
+// Build the totals shown on the admin dashboard.
 export async function getAdminSummary() {
   const result = await database.query(`
     SELECT
@@ -34,6 +45,8 @@ export async function getAdminSummary() {
   return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, Number(value)]));
 }
 
+// Load either attractions or destinations for the admin editor and map database
+// snake_case columns into the camelCase shape used by frontend JavaScript.
 export async function listAdminPlaces(type) {
   if (type === "attraction") {
     const result = await database.query(`
@@ -64,6 +77,7 @@ export async function listAdminPlaces(type) {
   }));
 }
 
+// Validate the minimum destination fields, insert the record, and return its new id.
 export async function createAdminDestination(payload) {
   const required = ["name","category","region","description"];
   for (const key of required) {
@@ -84,10 +98,12 @@ export async function createAdminDestination(payload) {
   return Number(result.rows[0].id);
 }
 
+// Destination PATCH requests share the safe dynamic-update helper below.
 export async function updateAdminDestination(id, payload) {
   return updatePlace("destinations", id, payload, destinationFields);
 }
 
+// Validate required attraction fields and create one attraction row.
 export async function createAdminAttraction(payload) {
   const required = ["name","category","region","description","latitude","longitude"];
   for (const key of required) {
@@ -102,10 +118,13 @@ export async function createAdminAttraction(payload) {
   return Number(result.rows[0].id);
 }
 
+// Attraction PATCH requests use the same allowlisted update helper.
 export async function updateAdminAttraction(id, payload) {
   return updatePlace("attractions", id, payload, attractionFields);
 }
 
+// Build a parameterized UPDATE statement only from fields in the allowlist.
+// Values still use PostgreSQL placeholders ($1, $2, ...) instead of interpolation.
 async function updatePlace(table, id, payload, fieldMap) {
   const entries = cleanPayload(payload, fieldMap);
   if (!entries.length) return false;
@@ -116,4 +135,5 @@ async function updatePlace(table, id, payload, fieldMap) {
   return result.rowCount > 0;
 }
 
+// Re-export contact helpers so the admin controller has one admin-service import surface.
 export { listContactMessages, updateContactMessageStatus };

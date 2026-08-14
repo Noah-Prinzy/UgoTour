@@ -1,10 +1,17 @@
+// ============================================================
+// PASSWORD HASHING UTILITIES
+// Password hashing and verification happen only on the backend. UgoTour uses
+// Node's built-in scrypt plus a unique random salt for each stored password.
+// ============================================================
+
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 
+// Convert callback-style crypto.scrypt into an awaitable Promise function.
 const scrypt = promisify(scryptCallback);
 
-// Password hashing belongs on the backend.
-// We use Node's built-in scrypt so Phase 5 stays framework/package-light.
+// Create a new random salt, derive a 64-byte key and store both pieces as
+// `salt:derivedKey`. The original plain-text password is never stored.
 export async function hashPassword(password) {
   const salt = randomBytes(16).toString("hex");
   const derivedKey = await scrypt(password, salt, 64);
@@ -12,6 +19,8 @@ export async function hashPassword(password) {
   return `${salt}:${Buffer.from(derivedKey).toString("hex")}`;
 }
 
+// Re-derive the key using the saved salt and compare it using timingSafeEqual to
+// reduce information leakage through ordinary string-comparison timing.
 export async function verifyPassword(password, storedPasswordHash) {
   const [salt, storedKeyHex] = storedPasswordHash.split(":");
 

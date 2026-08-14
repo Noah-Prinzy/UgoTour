@@ -1,5 +1,13 @@
+// ============================================================
+// CONTACT SERVICE
+// Persists visitor messages and provides the admin-facing read/status operations
+// for those messages.
+// ============================================================
+
 import database from "../database/connection.js";
 
+// Insert a validated Contact form submission. userId is optional because guests
+// are allowed to contact UgoTour too.
 export async function createContactMessage({ userId = null, name, email, subject, message }) {
   const result = await database.query(`
     INSERT INTO contact_messages (user_id,name,email,subject,message)
@@ -13,6 +21,7 @@ export async function createContactMessage({ userId = null, name, email, subject
   };
 }
 
+// Load the newest contact messages for the admin dashboard, capped at 250 rows.
 export async function listContactMessages() {
   const result = await database.query(`
     SELECT id,user_id,name,email,subject,message,status,created_at,updated_at
@@ -33,6 +42,7 @@ export async function listContactMessages() {
   }));
 }
 
+// Only the three workflow states allowed by the database/UI may be written.
 export async function updateContactMessageStatus(id, status) {
   const allowed = new Set(["new", "read", "closed"]);
   if (!allowed.has(status)) {

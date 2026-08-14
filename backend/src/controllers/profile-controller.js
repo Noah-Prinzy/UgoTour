@@ -1,3 +1,9 @@
+// ============================================================
+// PROFILE CONTROLLER
+// Handles authenticated profile data, profile photos, traveller feedback and
+// password changes. Validation happens here before services touch PostgreSQL.
+// ============================================================
+
 import { getAuthenticatedUser } from "../middleware/auth.js";
 import {
   changePassword,
@@ -10,12 +16,14 @@ import { clearSessionCookie } from "../utils/cookies.js";
 import { readJsonBody, sendJson } from "../utils/http.js";
 import { isEmail, isNonEmptyString } from "../utils/validation.js";
 
+// GET /api/profile — also acts as the frontend's session-validity check.
 export async function getProfile(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
   sendJson(response, 200, { data: user });
 }
 
+// PATCH /api/profile — validate optional account fields and save allowed changes.
 export async function patchProfile(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
@@ -28,6 +36,7 @@ export async function patchProfile(request, response) {
   sendJson(response, 200, { data: updated });
 }
 
+// PATCH /api/profile/photo — accept processed browser image data within a size limit.
 export async function patchProfilePhoto(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
@@ -41,12 +50,14 @@ export async function patchProfilePhoto(request, response) {
   sendJson(response, 200, { data: updated });
 }
 
+// GET /api/profile/feedback — retrieve this user's current rating/review, if any.
 export async function getFeedback(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
   sendJson(response, 200, { data: await getProfileFeedback(user.id) });
 }
 
+// PATCH /api/profile/feedback — validate and create/update a user's single review.
 export async function patchFeedback(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });
@@ -58,6 +69,9 @@ export async function patchFeedback(request, response) {
   sendJson(response, 200, { data: await upsertProfileFeedback(user.id, { rating, review }) });
 }
 
+// PATCH /api/profile/password
+// A successful password change invalidates all existing sessions, so this
+// response clears the current cookie and asks the frontend to log in again.
 export async function patchPassword(request, response) {
   const user = await getAuthenticatedUser(request);
   if (!user) return sendJson(response, 401, { error: "Authentication required." });

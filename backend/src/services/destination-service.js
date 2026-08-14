@@ -1,5 +1,12 @@
+// ============================================================
+// DESTINATION SERVICE
+// Reads active destinations from PostgreSQL and maps database rows into the
+// camelCase destination objects used throughout the UgoTour API/frontend.
+// ============================================================
+
 import database from "../database/connection.js";
 
+// Normalize the JSONB destination gallery into a predictable array of images.
 function mapGalleryImages(value) {
   if (!Array.isArray(value)) return [];
 
@@ -12,6 +19,8 @@ function mapGalleryImages(value) {
     }));
 }
 
+// Convert PostgreSQL's snake_case columns and numeric strings into the public
+// JavaScript model expected by the frontend.
 function mapDestination(row) {
   if (!row) return null;
 
@@ -41,6 +50,7 @@ function mapDestination(row) {
   };
 }
 
+// Keep the destination column list in one place so list/detail queries stay aligned.
 const destinationColumns = `
   id,
   name,
@@ -64,11 +74,13 @@ const destinationColumns = `
   updated_at
 `;
 
+// Return all active destinations in their stable database id order.
 export async function getAllDestinations() {
   const result = await database.query(`SELECT ${destinationColumns} FROM destinations WHERE is_active=TRUE ORDER BY id`);
   return result.rows.map(mapDestination);
 }
 
+// Return one active destination by id, or null when no matching row exists.
 export async function getDestinationById(destinationId) {
   const result = await database.query(
     `SELECT ${destinationColumns} FROM destinations WHERE id = $1 AND is_active=TRUE`,

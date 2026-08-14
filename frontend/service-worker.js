@@ -1,5 +1,16 @@
+// ============================================================
+// UGOTOUR PWA SERVICE WORKER
+// Pre-caches the application shell, manages cache-version upgrades, provides an
+// offline navigation fallback and uses different fetch strategies for pages,
+// scripts/styles and ordinary same-origin assets.
+// ============================================================
+
+// Changing this version gives a deployment a fresh cache and lets activate remove
+// older UgoTour caches that may contain outdated HTML/CSS/JavaScript.
 const CACHE_NAME = "ugotour-v1-16-12";
 
+// Core files required for the installable PWA experience. Live API responses and
+// OpenStreetMap tiles are intentionally NOT pre-cached here.
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest", "./favicon.svg",
   "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css", "./css/phase1-29.css",
@@ -27,19 +38,27 @@ const APP_SHELL = [
   "./data/uganda-boundary.geojson"
 ];
 
+// During installation, download the entire app shell into the named cache. If a
+// required shell file is missing, installation fails rather than activating a
+// deliberately incomplete offline shell.
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
 });
 
+// After a new worker activates, remove every older cache version and immediately
+// take control of already-open UgoTour tabs.
 self.addEventListener("activate", (event) => {
   event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))));
   self.clients.claim();
 });
 
+// pwa.js sends SKIP_WAITING when the user accepts an available application update.
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
+// Network helper used by the strategies below. When requested, a successful
+// same-origin response is cloned into the current cache before being returned.
 async function fetchAndCache(request, shouldCache) {
   const response = await fetch(request);
   if (!shouldCache || !response.ok) return response;
@@ -54,12 +73,18 @@ async function fetchAndCache(request, shouldCache) {
   return response;
 }
 
+// Intercept safe GET requests and choose a cache/network strategy by request type.
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
+
+  // Account/API data must stay live and cookie-aware. Map tiles are also excluded
+  // from this application cache because they are a large external live dataset.
   if (url.pathname.startsWith("/api/") || url.port === "3000") return;
   if (url.hostname === "tile.openstreetmap.org" || url.hostname.endsWith(".tile.openstreetmap.org")) return;
 
+  // Page navigations are network-first so deployed HTML stays fresh. Offline falls
+  // back to a previously cached page and finally to the dedicated offline screen.
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetchAndCache(event.request, url.origin === self.location.origin)
@@ -68,6 +93,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // JavaScript and CSS are also network-first, which reduces stale-code problems
+  // after deployment while retaining a cached copy for offline use.
   if (url.origin === self.location.origin && ["style", "script"].includes(event.request.destination)) {
     event.respondWith(
       fetchAndCache(event.request, true).catch(() => caches.match(event.request))
@@ -75,6 +102,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Images/fonts/other assets use cache-first for speed; a cache miss goes to the
+  // network and stores same-origin responses for the next request.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

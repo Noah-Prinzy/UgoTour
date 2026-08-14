@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Private profile-settings metadata/security, PWA links and shared styles. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' http://localhost:* http://127.0.0.1:*; font-src 'self' data: https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
@@ -17,14 +18,18 @@
   <title>Edit Profile | UgoTour</title>
 </head>
 <body class="profile-settings-page">
+  <!-- Shared navigation; profile-settings.js validates the current session. -->
   <header id="site-header"></header>
+
   <main id="main-content" class="profile-settings-main">
+    <!-- Page title and navigation back to the main profile view. -->
     <header class="profile-settings-header">
       <div><p class="section-kicker">Profile settings</p><h1>Edit your profile</h1></div>
       <a class="profile-settings-back" href="./profile.html">← Back to profile</a>
     </header>
 
     <div class="profile-settings-grid">
+      <!-- Identity form: updates name, email and editorial bio via PATCH /api/profile. -->
       <section class="profile-settings-card">
         <p class="section-kicker">Identity</p>
         <h2>Name, email &amp; bio</h2>
@@ -37,6 +42,7 @@
         </form>
       </section>
 
+      <!-- Security form: verifies the current password before replacing it. -->
       <section class="profile-settings-card">
         <p class="section-kicker">Security</p>
         <h2>Change password</h2>
@@ -50,6 +56,8 @@
       </section>
     </div>
   </main>
+
+  <!-- Shared footer, password visibility enhancement and settings controller. -->
   <footer id="site-footer"></footer>
   <script src="../js/auth-password-visibility.js"></script>
   <script type="module" src="../js/pages/profile-settings.js?v=1.19.0"></script>
