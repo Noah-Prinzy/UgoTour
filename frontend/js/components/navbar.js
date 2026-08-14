@@ -83,8 +83,8 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
         ${navLink("Home", `${basePath}/index.html`, ["index.html", ""])}
         ${navLink("Destinations", `${basePath}/pages/destinations.html`, ["destinations.html"])}
         ${navLink("Map", `${basePath}/pages/map.html`, ["map.html"])}
-        ${navLink("Saved", `${basePath}/pages/saved.html`, ["saved.html"])}
-        ${navLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html"])}
+        ${navLink("Favorites", `${basePath}/pages/saved.html`, ["saved.html", "favorites.html"])}
+        ${navLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html", "trips.html"])}
         ${navLink("Profile", profileHref, ["profile.html", "profile-settings.html"])}
       </div>
       ${accountArea}
@@ -103,7 +103,7 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
 
   header.insertAdjacentHTML("afterend", `
     <div id="mobile-menu-backdrop" class="mobile-menu-backdrop" hidden></div>
-    <aside id="mobile-menu-drawer" class="mobile-menu-drawer" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title" aria-hidden="true" tabindex="-1">
+    <aside id="mobile-menu-drawer" class="mobile-menu-drawer" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title" aria-hidden="true" tabindex="-1" inert>
       <div class="mobile-menu-drawer-head">
         <a id="mobile-menu-title" class="mobile-menu-brand ugotour-brand" href="${basePath}/index.html" aria-label="UgoTour home">${brandMarkup()}</a>
         <button id="mobile-menu-close" class="mobile-menu-close" type="button" aria-label="Close navigation menu">${closeIcon()}</button>
@@ -113,8 +113,8 @@ export async function renderNavbar(basePath = ".", validatedUser = undefined) {
         ${drawerLink("Home", `${basePath}/index.html`, ["index.html", ""])}
         ${drawerLink("Explore", `${basePath}/pages/destinations.html`, ["destinations.html"])}
         ${drawerLink("Map", `${basePath}/pages/map.html`, ["map.html"])}
-        ${drawerLink("Saved", `${basePath}/pages/saved.html`, ["saved.html"])}
-        ${drawerLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html"])}
+        ${drawerLink("Favorites", `${basePath}/pages/saved.html`, ["saved.html", "favorites.html"])}
+        ${drawerLink("Trips", `${basePath}/pages/bookings.html`, ["bookings.html", "trips.html"])}
         ${drawerLink("Profile", profileHref, ["profile.html", "profile-settings.html"])}
         ${drawerAdminLink}
       </nav>
@@ -204,11 +204,21 @@ function initialiseMobileDrawer() {
   let lastFocused = null;
   const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+  function moveFocusOutsideDrawer(restoreFocus) {
+    if (!drawer.contains(document.activeElement)) return;
+    const target = restoreFocus && lastFocused instanceof HTMLElement && !drawer.contains(lastFocused)
+      ? lastFocused
+      : toggle;
+    target.focus({ preventScroll: true });
+  }
+
   function setOpen(open, { restoreFocus = true, immediate = false } = {}) {
     if (open) {
       lastFocused = document.activeElement;
       backdrop.hidden = false;
       drawer.hidden = false;
+      drawer.inert = false;
+      drawer.removeAttribute("inert");
       drawer.setAttribute("aria-hidden", "false");
       toggle.setAttribute("aria-expanded", "true");
       toggle.setAttribute("aria-label", "Close navigation menu");
@@ -226,6 +236,13 @@ function initialiseMobileDrawer() {
     document.body.classList.remove("mobile-menu-open");
     drawer.classList.remove("is-open");
     backdrop.classList.remove("is-visible");
+
+    // Focus must leave the dialog before aria-hidden/inert are applied. This
+    // prevents Chrome's "aria-hidden blocked because a descendant retained
+    // focus" warning and keeps keyboard users anchored at the menu trigger.
+    moveFocusOutsideDrawer(restoreFocus);
+    drawer.inert = true;
+    drawer.setAttribute("inert", "");
     drawer.setAttribute("aria-hidden", "true");
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Open navigation menu");
@@ -233,13 +250,14 @@ function initialiseMobileDrawer() {
     const finishClose = () => {
       backdrop.hidden = true;
       drawer.hidden = true;
-      if (restoreFocus && lastFocused instanceof HTMLElement) lastFocused.focus();
     };
 
     if (immediate) finishClose();
     else window.setTimeout(finishClose, 320);
   }
 
+  drawer.inert = true;
+  drawer.setAttribute("inert", "");
   drawer.hidden = true;
   backdrop.hidden = true;
 
@@ -271,7 +289,7 @@ function initialiseMobileDrawer() {
   });
 
   document.addEventListener("keydown", (event) => {
-    if (drawer.getAttribute("aria-hidden") === "true") return;
+    if (drawer.inert || drawer.getAttribute("aria-hidden") === "true") return;
 
     if (event.key === "Escape") {
       event.preventDefault();
