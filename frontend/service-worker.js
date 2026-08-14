@@ -1,8 +1,8 @@
-const CACHE_NAME = "ugotour-v1-16-13";
+const CACHE_NAME = "ugotour-v1-16-14";
 
 const APP_SHELL = [
   "./", "./index.html", "./offline.html", "./manifest.webmanifest", "./favicon.svg",
-  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css", "./css/phase1-29.css", "./css/phase1-29b.css",
+  "./css/main.css", "./css/components.css", "./css/animations.css", "./css/responsive.css", "./css/mobile-phase1.css", "./css/map.css", "./css/phase1-19.css", "./css/phase1-20.css", "./css/phase1-21.css", "./css/phase1-22.css", "./css/phase1-23.css", "./css/phase1-24.css", "./css/phase1-25.css", "./css/phase1-28.css", "./css/phase1-29.css", "./css/phase1-29b.css", "./css/phase1-29b-destination-cards.css",
   "./js/app.js", "./js/home-card-routing.js", "./js/auth-home-transition.js", "./js/auth-password-visibility.js", "./js/api.js", "./js/pwa.js", "./js/shared-navigation-copy.js", "./js/favorites-copy.js", "./js/route-alias.js", "./js/footer-boot.js", "./js/ui-motion.js",
   "./js/components/navbar.js", "./js/components/footer.js", "./js/components/destination-card.js",
   "./js/services/auth-service.js", "./js/services/session-guard.js", "./js/services/booking-service.js",
