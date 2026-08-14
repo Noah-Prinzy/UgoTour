@@ -1,13 +1,14 @@
 /* ============================================================
    UgoTour Phase 1.29B — Destination Card Refinement
    ------------------------------------------------------------
-   Dedicated late-loading skin for destination cards. The explicit
-   .destination-card-overlay hook isolates this design from legacy
-   carousel/search-result rules in earlier phase stylesheets.
+   One photographic card surface:
+   - photo fills the full card
+   - category/region sit over the photo at the top
+   - copy sits over the photo at the bottom
+   - arrow + favorite share one bottom action baseline
    ============================================================ */
 
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item {
   position: relative !important;
   isolation: isolate !important;
   width: 100% !important;
@@ -16,36 +17,28 @@ body.destinations-page.destination-results-mode .destination-carousel-item .dest
   min-height: 420px !important;
   max-height: 420px !important;
   overflow: hidden !important;
-  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 14px !important;
   background: #081109 !important;
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24) !important;
-  transform: none;
 }
 
-/* The saveable card uses an inner anchor; non-saveable cards can themselves
-   be anchors. Both variants fill the complete photographic card. */
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor {
-  position: relative !important;
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .destination-card-anchor {
+  position: absolute !important;
   z-index: 1 !important;
-  inset: auto !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  min-height: 100% !important;
+  min-height: 0 !important;
   max-height: none !important;
   display: block !important;
-  grid-template-columns: none !important;
   overflow: hidden !important;
   color: #fff !important;
   background: transparent !important;
   text-decoration: none !important;
 }
 
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-media,
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-media,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-media,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-media {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-media {
   position: absolute !important;
   z-index: 0 !important;
   inset: 0 !important;
@@ -59,53 +52,50 @@ body.destinations-page.destination-results-mode .destination-carousel-item .dest
   background: #081109 !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-media::after {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-media::after {
   content: "" !important;
   position: absolute !important;
   z-index: 2 !important;
   inset: 0 !important;
   display: block !important;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(3, 8, 4, 0.08) 0%,
-      rgba(3, 8, 4, 0.04) 34%,
-      rgba(3, 8, 4, 0.22) 51%,
-      rgba(3, 8, 4, 0.72) 76%,
-      rgba(3, 8, 4, 0.96) 100%
-    ) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 10, 5, 0.04) 0%,
+    rgba(4, 10, 5, 0.02) 38%,
+    rgba(4, 10, 5, 0.14) 54%,
+    rgba(4, 10, 5, 0.62) 76%,
+    rgba(4, 10, 5, 0.92) 100%
+  ) !important;
   pointer-events: none !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-image {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-image {
   position: absolute !important;
+  z-index: 1 !important;
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  min-width: 100% !important;
   min-height: 100% !important;
+  max-width: none !important;
   max-height: none !important;
   display: block !important;
   object-fit: cover !important;
   object-position: center !important;
   border: 0 !important;
-  transform: scale(1.001) !important;
 }
 
-/* The legacy secondary-photo transition is intentionally suppressed for this
-   cleaner single-image card treatment. */
-body.destinations-page .destination-card.destination-card-overlay .destination-card-image-secondary {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-image-secondary {
   display: none !important;
-  opacity: 0 !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-image-primary {
-  z-index: 1 !important;
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-image-primary {
   opacity: 1 !important;
+  transform: scale(1.001) !important;
   transition: transform 520ms cubic-bezier(.2, .8, .2, 1) !important;
 }
 
-/* Category and region stay over the upper edge of the photograph. */
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-card-topline {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-topline {
   position: absolute !important;
   z-index: 5 !important;
   top: 15px !important;
@@ -123,7 +113,7 @@ body.destinations-page .destination-carousel-item .destination-card.destination-
   pointer-events: none !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-topline .tag {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-topline .tag {
   flex: 0 1 auto !important;
   max-width: 56% !important;
   min-height: 30px !important;
@@ -131,14 +121,13 @@ body.destinations-page .destination-card.destination-card-overlay .destination-c
   align-items: center !important;
   padding: 0 11px !important;
   overflow: hidden !important;
-  border: 1px solid rgba(255, 255, 255, 0.50) !important;
+  border: 1px solid rgba(255, 255, 255, 0.48) !important;
   border-radius: 999px !important;
   color: #465e20 !important;
   background: rgba(248, 249, 241, 0.92) !important;
   box-shadow: 0 5px 16px rgba(0, 0, 0, 0.12) !important;
   font-size: 0.60rem !important;
   font-weight: 850 !important;
-  letter-spacing: 0.02em !important;
   line-height: 1 !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
@@ -146,7 +135,7 @@ body.destinations-page .destination-card.destination-card-overlay .destination-c
   -webkit-backdrop-filter: blur(10px);
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-topline .destination-region {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-region {
   flex: 0 1 44% !important;
   max-width: 44% !important;
   min-width: 0 !important;
@@ -162,68 +151,59 @@ body.destinations-page .destination-card.destination-card-overlay .destination-c
   white-space: nowrap !important;
 }
 
-/* The copy is an overlay anchored to the bottom. It no longer participates in
-   normal document flow, so it cannot create a separate dark panel above the
-   photograph. */
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-content,
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-content,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-content,
-body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-content {
+/* Copy is an overlay over the image. It must never become a normal-flow panel. */
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content {
   position: absolute !important;
   z-index: 4 !important;
-  inset: auto 0 0 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
   width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
   display: block !important;
   margin: 0 !important;
-  padding: 118px 17px 17px !important;
+  padding: 112px 17px 17px !important;
   overflow: visible !important;
   color: #fff !important;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(4, 10, 5, 0) 0%,
-      rgba(4, 10, 5, 0.18) 25%,
-      rgba(4, 10, 5, 0.72) 58%,
-      rgba(4, 10, 5, 0.97) 100%
-    ) !important;
+  background: transparent !important;
   pointer-events: none !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-content h3 {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content h3 {
   display: -webkit-box !important;
   min-height: 0 !important;
-  max-width: 100% !important;
+  max-width: calc(100% - 6px) !important;
   margin: 0 !important;
   overflow: hidden !important;
   color: #fff !important;
-  font-size: clamp(1.18rem, 1.45vw, 1.48rem) !important;
+  font-size: clamp(1.16rem, 1.42vw, 1.46rem) !important;
   font-weight: 820 !important;
   line-height: 1.08 !important;
   letter-spacing: -0.035em !important;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.60) !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.68) !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 2 !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-content > p {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content > p {
   display: -webkit-box !important;
   min-height: 0 !important;
   max-width: 100% !important;
   margin: 8px 0 12px !important;
   overflow: hidden !important;
-  color: rgba(255, 255, 255, 0.78) !important;
+  color: rgba(255, 255, 255, 0.80) !important;
   font-size: 0.68rem !important;
   font-weight: 500 !important;
   line-height: 1.45 !important;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.62) !important;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.66) !important;
   -webkit-box-orient: vertical !important;
   -webkit-line-clamp: 3 !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-card-footer {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-footer {
   position: relative !important;
   min-height: 45px !important;
   height: auto !important;
@@ -231,28 +211,29 @@ body.destinations-page .destination-card.destination-card-overlay .destination-c
   align-items: center !important;
   margin: 0 !important;
   padding: 12px 116px 0 0 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.17) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: transparent !important;
   pointer-events: none !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay .destination-highlight {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-highlight {
   display: block !important;
   min-width: 0 !important;
   max-width: 100% !important;
   margin: 0 !important;
   overflow: hidden !important;
-  color: rgba(224, 239, 187, 0.92) !important;
+  color: rgba(224, 239, 187, 0.94) !important;
   font-size: 0.61rem !important;
   font-weight: 800 !important;
   line-height: 1.35 !important;
   text-overflow: ellipsis !important;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.56) !important;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.58) !important;
   white-space: nowrap !important;
 }
 
-/* Arrow + favorite form one deliberate action cluster. */
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button,
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+/* Arrow and heart share the same bottom baseline and dimensions. */
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-details-button,
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button {
   position: absolute !important;
   top: auto !important;
   bottom: 17px !important;
@@ -267,12 +248,12 @@ body.destinations-page .destination-carousel-item .destination-card.destination-
   margin: 0 !important;
   padding: 0 !important;
   border-radius: 10px !important;
-  box-shadow: 0 9px 24px rgba(0, 0, 0, 0.23) !important;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, 0.24) !important;
   font-size: 0.92rem !important;
   line-height: 1 !important;
 }
 
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-details-button {
   z-index: 7 !important;
   right: 73px !important;
   border: 1px solid rgba(221, 235, 181, 0.84) !important;
@@ -281,100 +262,97 @@ body.destinations-page .destination-carousel-item .destination-card.destination-
   pointer-events: none !important;
 }
 
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button {
   z-index: 9 !important;
   right: 17px !important;
-  border: 1px solid rgba(255, 255, 255, 0.70) !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
   color: #172114 !important;
-  background: rgba(249, 250, 244, 0.95) !important;
+  background: rgba(249, 250, 244, 0.96) !important;
   cursor: pointer !important;
   pointer-events: auto !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button[aria-pressed="true"] {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button[aria-pressed="true"] {
   border-color: rgba(220, 235, 181, 0.92) !important;
   color: #172114 !important;
   background: #dcebb5 !important;
 }
 
-body.destinations-page .destination-card.destination-card-overlay:focus-within {
+body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item:focus-within {
   outline: 2px solid rgba(220, 235, 181, 0.72) !important;
   outline-offset: 3px !important;
 }
 
 @media (hover: hover) {
-  body.destinations-page .destination-card.destination-card-overlay:hover {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item:hover {
     border-color: rgba(220, 235, 181, 0.40) !important;
     box-shadow: 0 23px 50px rgba(0, 0, 0, 0.30) !important;
     transform: translateY(-3px) !important;
   }
 
-  body.destinations-page .destination-card.destination-card-overlay:hover .destination-card-image-primary {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item:hover .destination-card-image-primary {
     transform: scale(1.045) !important;
   }
 
-  body.destinations-page .destination-card.destination-card-overlay > .place-save-button:hover {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button:hover {
     background: #fff !important;
     transform: translateY(-2px) !important;
   }
 }
 
 @media (max-width: 720px) {
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
-  body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item {
     height: 400px !important;
     min-height: 400px !important;
     max-height: 400px !important;
   }
 
-  body.destinations-page .destination-card.destination-card-overlay .destination-card-content,
-  body.destinations-page.destination-results-mode .destination-card.destination-card-overlay .destination-card-content {
-    padding: 106px 15px 15px !important;
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content {
+    padding: 104px 15px 15px !important;
   }
 
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-card-topline {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-topline {
     top: 13px !important;
     left: 13px !important;
     right: 13px !important;
   }
 
-  body.destinations-page .destination-card.destination-card-overlay .destination-card-content h3 {
-    font-size: clamp(1.18rem, 6vw, 1.42rem) !important;
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content h3 {
+    font-size: clamp(1.16rem, 6vw, 1.40rem) !important;
   }
 
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button,
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-details-button,
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button {
     bottom: 15px !important;
   }
 
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-details-button {
     right: 71px !important;
   }
 
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button {
     right: 15px !important;
   }
 }
 
 @media (max-width: 430px) {
-  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
-  body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item {
     height: 390px !important;
     min-height: 390px !important;
     max-height: 390px !important;
   }
 
-  body.destinations-page .destination-card.destination-card-overlay .destination-card-content > p {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-content > p {
     -webkit-line-clamp: 2 !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body.destinations-page .destination-card.destination-card-overlay,
-  body.destinations-page .destination-card.destination-card-overlay .destination-card-image-primary,
-  body.destinations-page .destination-card.destination-card-overlay > .place-save-button {
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item,
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item .destination-card-image-primary,
+  body.destinations-page .destination-card.destination-card-overlay.destination-carousel-item > .place-save-button {
     transition: none !important;
     transform: none !important;
   }
