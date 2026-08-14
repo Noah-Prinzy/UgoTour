@@ -69,7 +69,10 @@ if (!/static-terms-page[\s\S]*?overflow-wrap:\s*anywhere/.test(phase129b)) fail(
 
 const destinationCardCss = await readFile(resolve(root, "frontend/css/phase1-29b-destination-cards.css"), "utf8");
 if (!/\.destination-card-overlay/.test(destinationCardCss)) fail("Destination card refinement is not scoped to the overlay skin hook.");
-if (!/position:\s*absolute\s*!important[\s\S]*?destination-card-content|destination-card-content[\s\S]*?position:\s*absolute\s*!important/.test(destinationCardCss)) fail("Destination card copy is not guaranteed to overlay the image.");
+if (!/\.destination-card\.destination-card-overlay\.destination-carousel-item/.test(destinationCardCss)) fail("Destination card overlay selector must target the card/carousel classes on the same element.");
+if (/\.destination-carousel-item\s+\.destination-card\.destination-card-overlay/.test(destinationCardCss)) fail("Destination card overlay incorrectly treats the card as a child of the carousel item.");
+if (!/destination-card-content[\s\S]*?position:\s*absolute\s*!important/.test(destinationCardCss)) fail("Destination card copy is not guaranteed to overlay the image.");
+if (!/destination-card-media[\s\S]*?position:\s*absolute\s*!important/.test(destinationCardCss)) fail("Destination image is not guaranteed to fill the card as an absolute background layer.");
 
 const navbar = await readFile(resolve(root, "frontend/js/components/navbar.js"), "utf8");
 if (/navLink\(["']Saved["']|drawerLink\(["']Saved["']/.test(navbar)) fail("Navbar source still exposes Saved instead of Favorites.");
