@@ -4,7 +4,7 @@ import { extname, relative, resolve } from "node:path";
 const root = process.cwd();
 const required = [
   "frontend/index.html", "frontend/offline.html", "frontend/manifest.webmanifest", "frontend/service-worker.js", "frontend/favicon.svg",
-  "frontend/css/phase1-28.css", "frontend/css/phase1-29.css", "frontend/css/phase1-29b.css",
+  "frontend/css/phase1-28.css", "frontend/css/phase1-29.css", "frontend/css/phase1-29b.css", "frontend/css/phase1-29b-destination-cards.css",
   "frontend/js/shared-navigation-copy.js", "frontend/js/favorites-copy.js", "frontend/js/route-alias.js",
   "frontend/pages/map.html", "frontend/pages/saved.html", "frontend/pages/favorites.html", "frontend/pages/bookings.html", "frontend/pages/trips.html",
   "frontend/pages/terms.html", "frontend/pages/contact.html", "frontend/pages/admin.html",
@@ -53,6 +53,7 @@ if (!/favicon\.svg/.test(sw)) fail("Flag-O favicon is missing from the PWA app s
 if (!/phase1-28\.css/.test(sw)) fail("Phase 1.28 stylesheet is missing from the PWA app shell.");
 if (!/phase1-29\.css/.test(sw)) fail("Phase 1.29 stylesheet is missing from the PWA app shell.");
 if (!/phase1-29b\.css/.test(sw)) fail("Phase 1.29B stylesheet is missing from the PWA app shell.");
+if (!/phase1-29b-destination-cards\.css/.test(sw)) fail("Destination card refinement stylesheet is missing from the PWA app shell.");
 if (!/favorites-copy\.js/.test(sw)) fail("Favorites terminology helper is missing from the PWA app shell.");
 if (!/pages\/favorites\.html/.test(sw) || !/pages\/trips\.html/.test(sw)) fail("User-friendly compatibility routes are missing from the PWA app shell.");
 if (/pages\/privacy\.html/.test(sw)) fail("Retired Privacy page remains in the PWA app shell.");
@@ -66,9 +67,17 @@ const phase129b = await readFile(resolve(root, "frontend/css/phase1-29b.css"), "
 if (!/\.password-visibility-toggle[\s\S]*?width:\s*44px/.test(phase129b)) fail("Password visibility control is not guaranteed a 44px touch target.");
 if (!/static-terms-page[\s\S]*?overflow-wrap:\s*anywhere/.test(phase129b)) fail("Terms overflow protection is missing from Phase 1.29B.");
 
+const destinationCardCss = await readFile(resolve(root, "frontend/css/phase1-29b-destination-cards.css"), "utf8");
+if (!/\.destination-card-overlay/.test(destinationCardCss)) fail("Destination card refinement is not scoped to the overlay skin hook.");
+if (!/position:\s*absolute\s*!important[\s\S]*?destination-card-content|destination-card-content[\s\S]*?position:\s*absolute\s*!important/.test(destinationCardCss)) fail("Destination card copy is not guaranteed to overlay the image.");
+
 const navbar = await readFile(resolve(root, "frontend/js/components/navbar.js"), "utf8");
 if (/navLink\(["']Saved["']|drawerLink\(["']Saved["']/.test(navbar)) fail("Navbar source still exposes Saved instead of Favorites.");
 if (!/\binert\b/.test(navbar)) fail("Mobile drawer does not use inert state management.");
+if (!/phase1-29b-destination-cards\.css/.test(navbar)) fail("Destination card refinement is not loaded after the legacy navbar phase styles.");
+
+const destinationCardComponent = await readFile(resolve(root, "frontend/js/components/destination-card.js"), "utf8");
+if (!/destination-card-overlay/.test(destinationCardComponent)) fail("Destination cards are missing their isolated overlay skin hook.");
 
 const favoritesAlias = await readFile(resolve(root, "frontend/pages/favorites.html"), "utf8");
 if (!/data-route-alias=["']\.\/saved\.html["']/.test(favoritesAlias)) fail("favorites.html does not point to saved.html.");
