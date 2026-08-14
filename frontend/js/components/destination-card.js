@@ -29,7 +29,7 @@ export function createDestinationCard(
     <a class="destination-card-anchor" href="${escapeAttribute(detailsUrl || "#")}" aria-label="Find ${escapeAttribute(destination.name)} on the Uganda map">
       ${cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl))}
     </a>
-    <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${favoriteLabel(destination.name, saved)}">${saved ? "♥" : "♡"}</button>
+    <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${escapeAttribute(favoriteLabel(destination.name, saved))}">${saved ? "♥" : "♡"}</button>
   `;
 
   const button = shell.querySelector(".place-save-button");
@@ -50,8 +50,8 @@ export function createDestinationCard(
 
 function favoriteLabel(name, saved) {
   return saved
-    ? `Remove ${escapeAttribute(name)} from Favorites`
-    : `Add ${escapeAttribute(name)} to Favorites`;
+    ? `Remove ${name} from Favorites`
+    : `Add ${name} to Favorites`;
 }
 
 function cardMarkup(destination, imageUrl, secondaryImageUrl, hasLink) {
