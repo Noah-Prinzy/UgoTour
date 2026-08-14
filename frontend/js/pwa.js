@@ -1,6 +1,8 @@
 import "./shared-navigation-copy.js";
+import "./favorites-copy.js";
 
 ensurePhase129Stylesheet();
+ensurePhase129bStylesheet();
 
 // ============================================================
 // PWA REGISTRATION + UPDATE NOTIFICATION
@@ -20,6 +22,18 @@ function ensurePhase129Stylesheet() {
   link.rel = "stylesheet";
   link.href = new URL("../css/phase1-29.css?v=1.29.0", import.meta.url).href;
   link.dataset.ugotourPhase129 = "1.29";
+  document.head.appendChild(link);
+  return link;
+}
+
+function ensurePhase129bStylesheet() {
+  const existing = document.querySelector('link[data-ugotour-phase129b="1.29b"]');
+  if (existing) return existing;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = new URL("../css/phase1-29b.css?v=1.29.1", import.meta.url).href;
+  link.dataset.ugotourPhase129b = "1.29b";
   document.head.appendChild(link);
   return link;
 }
