@@ -20,7 +20,7 @@ export function createDestinationCard(
     card.className = "destination-card destination-card-overlay";
     card.dataset.destinationId = destination.id;
     if (detailsUrl) card.href = detailsUrl;
-    card.innerHTML = cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl));
+    card.innerHTML = cardMarkup(destination, imageUrl, secondaryImageUrl);
     applyCompactCardActions(card);
     return card;
   }
@@ -30,7 +30,7 @@ export function createDestinationCard(
   shell.dataset.destinationId = destination.id;
   shell.innerHTML = `
     <a class="destination-card-anchor" href="${escapeAttribute(detailsUrl || "#")}" aria-label="Find ${escapeAttribute(destination.name)} on the Uganda map">
-      ${cardMarkup(destination, imageUrl, secondaryImageUrl, Boolean(detailsUrl))}
+      ${cardMarkup(destination, imageUrl, secondaryImageUrl)}
     </a>
     <button class="place-save-button" type="button" aria-pressed="${saved}" aria-label="${escapeAttribute(favoriteLabel(destination.name, saved))}">${saved ? "♥" : "♡"}</button>
   `;
@@ -55,25 +55,11 @@ export function createDestinationCard(
 
 function applyCompactCardActions(card) {
   const footer = card.querySelector(".destination-card-footer");
-  const details = card.querySelector(".destination-details-button");
   const favorite = card.querySelector(":scope > .place-save-button");
 
-  // Give the highlight copy more room while keeping the action cluster on one
-  // deliberate lower-right baseline.
-  footer?.style.setProperty("padding-right", "98px", "important");
-
-  if (details) {
-    details.style.setProperty("width", "38px", "important");
-    details.style.setProperty("min-width", "38px", "important");
-    details.style.setProperty("max-width", "38px", "important");
-    details.style.setProperty("height", "38px", "important");
-    details.style.setProperty("min-height", "38px", "important");
-    details.style.setProperty("max-height", "38px", "important");
-    details.style.setProperty("right", "60px", "important");
-    details.style.setProperty("bottom", "14px", "important");
-    details.style.setProperty("border-radius", "9px", "important");
-    details.style.setProperty("box-shadow", "0 7px 18px rgba(0, 0, 0, 0.20)", "important");
-  }
+  // The card itself remains the navigation target. The heart is now the only
+  // separate visible action, leaving more room for the destination highlight.
+  footer?.style.setProperty("padding-right", favorite ? "58px" : "0", "important");
 
   if (favorite) {
     // The button keeps a 44px hit target; its ::before draws the smaller 38px
@@ -139,14 +125,14 @@ function favoriteLabel(name, saved) {
     : `Add ${name} to Favorites`;
 }
 
-function cardMarkup(destination, imageUrl, secondaryImageUrl, hasLink) {
+function cardMarkup(destination, imageUrl, secondaryImageUrl) {
   return `
     <div class="destination-card-media">
       <img class="destination-card-image destination-card-image-primary" src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(destination.name)}" loading="lazy" decoding="async" />
       <img class="destination-card-image destination-card-image-secondary" src="${escapeAttribute(secondaryImageUrl)}" alt="" loading="lazy" decoding="async" aria-hidden="true" />
       <div class="destination-card-topline"><span class="tag">${escapeHtml(destination.category)}</span><p class="destination-region">${escapeHtml(destination.region || "Uganda")}</p></div>
     </div>
-    <div class="destination-card-content"><h3>${escapeHtml(destination.name)}</h3><p>${escapeHtml(destination.description)}</p><div class="destination-card-footer"><span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span>${hasLink ? `<span class="destination-details-button" aria-hidden="true">→</span>` : ""}</div></div>`;
+    <div class="destination-card-content"><h3>${escapeHtml(destination.name)}</h3><p>${escapeHtml(destination.description)}</p><div class="destination-card-footer"><span class="destination-highlight">${escapeHtml(destination.highlight || "Explore Uganda")}</span></div></div>`;
 }
 
 function escapeHtml(value) { return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;"); }
