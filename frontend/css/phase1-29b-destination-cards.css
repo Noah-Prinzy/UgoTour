@@ -1,0 +1,381 @@
+/* ============================================================
+   UgoTour Phase 1.29B — Destination Card Refinement
+   ------------------------------------------------------------
+   Dedicated late-loading skin for destination cards. The explicit
+   .destination-card-overlay hook isolates this design from legacy
+   carousel/search-result rules in earlier phase stylesheets.
+   ============================================================ */
+
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+  position: relative !important;
+  isolation: isolate !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 420px !important;
+  min-height: 420px !important;
+  max-height: 420px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-radius: 14px !important;
+  background: #081109 !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24) !important;
+  transform: none;
+}
+
+/* The saveable card uses an inner anchor; non-saveable cards can themselves
+   be anchors. Both variants fill the complete photographic card. */
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor {
+  position: relative !important;
+  z-index: 1 !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  display: block !important;
+  grid-template-columns: none !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  background: transparent !important;
+  text-decoration: none !important;
+}
+
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-media,
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-media,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-media,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-media {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  display: block !important;
+  overflow: hidden !important;
+  background: #081109 !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-media::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 2 !important;
+  inset: 0 !important;
+  display: block !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3, 8, 4, 0.08) 0%,
+      rgba(3, 8, 4, 0.04) 34%,
+      rgba(3, 8, 4, 0.22) 51%,
+      rgba(3, 8, 4, 0.72) 76%,
+      rgba(3, 8, 4, 0.96) 100%
+    ) !important;
+  pointer-events: none !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-image {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: none !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border: 0 !important;
+  transform: scale(1.001) !important;
+}
+
+/* The legacy secondary-photo transition is intentionally suppressed for this
+   cleaner single-image card treatment. */
+body.destinations-page .destination-card.destination-card-overlay .destination-card-image-secondary {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-image-primary {
+  z-index: 1 !important;
+  opacity: 1 !important;
+  transition: transform 520ms cubic-bezier(.2, .8, .2, 1) !important;
+}
+
+/* Category and region stay over the upper edge of the photograph. */
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-card-topline {
+  position: absolute !important;
+  z-index: 5 !important;
+  top: 15px !important;
+  left: 15px !important;
+  right: 15px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-topline .tag {
+  flex: 0 1 auto !important;
+  max-width: 56% !important;
+  min-height: 30px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 11px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.50) !important;
+  border-radius: 999px !important;
+  color: #465e20 !important;
+  background: rgba(248, 249, 241, 0.92) !important;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.12) !important;
+  font-size: 0.60rem !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.02em !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-topline .destination-region {
+  flex: 0 1 44% !important;
+  max-width: 44% !important;
+  min-width: 0 !important;
+  margin: 0 0 0 auto !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+  font-size: 0.61rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  text-align: right !important;
+  text-overflow: ellipsis !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.64) !important;
+  white-space: nowrap !important;
+}
+
+/* The copy is an overlay anchored to the bottom. It no longer participates in
+   normal document flow, so it cannot create a separate dark panel above the
+   photograph. */
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-content,
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-content,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-content,
+body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay > .destination-card-anchor > .destination-card-content {
+  position: absolute !important;
+  z-index: 4 !important;
+  inset: auto 0 0 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 118px 17px 17px !important;
+  overflow: visible !important;
+  color: #fff !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(4, 10, 5, 0) 0%,
+      rgba(4, 10, 5, 0.18) 25%,
+      rgba(4, 10, 5, 0.72) 58%,
+      rgba(4, 10, 5, 0.97) 100%
+    ) !important;
+  pointer-events: none !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-content h3 {
+  display: -webkit-box !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  font-size: clamp(1.18rem, 1.45vw, 1.48rem) !important;
+  font-weight: 820 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.035em !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.60) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-content > p {
+  display: -webkit-box !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  margin: 8px 0 12px !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.62) !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 3 !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-card-footer {
+  position: relative !important;
+  min-height: 45px !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 12px 116px 0 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.17) !important;
+  pointer-events: none !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay .destination-highlight {
+  display: block !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: rgba(224, 239, 187, 0.92) !important;
+  font-size: 0.61rem !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  text-overflow: ellipsis !important;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.56) !important;
+  white-space: nowrap !important;
+}
+
+/* Arrow + favorite form one deliberate action cluster. */
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button,
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+  position: absolute !important;
+  top: auto !important;
+  bottom: 17px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-width: 44px !important;
+  max-height: 44px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 9px 24px rgba(0, 0, 0, 0.23) !important;
+  font-size: 0.92rem !important;
+  line-height: 1 !important;
+}
+
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button {
+  z-index: 7 !important;
+  right: 73px !important;
+  border: 1px solid rgba(221, 235, 181, 0.84) !important;
+  color: #172114 !important;
+  background: #dcebb5 !important;
+  pointer-events: none !important;
+}
+
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+  z-index: 9 !important;
+  right: 17px !important;
+  border: 1px solid rgba(255, 255, 255, 0.70) !important;
+  color: #172114 !important;
+  background: rgba(249, 250, 244, 0.95) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button[aria-pressed="true"] {
+  border-color: rgba(220, 235, 181, 0.92) !important;
+  color: #172114 !important;
+  background: #dcebb5 !important;
+}
+
+body.destinations-page .destination-card.destination-card-overlay:focus-within {
+  outline: 2px solid rgba(220, 235, 181, 0.72) !important;
+  outline-offset: 3px !important;
+}
+
+@media (hover: hover) {
+  body.destinations-page .destination-card.destination-card-overlay:hover {
+    border-color: rgba(220, 235, 181, 0.40) !important;
+    box-shadow: 0 23px 50px rgba(0, 0, 0, 0.30) !important;
+    transform: translateY(-3px) !important;
+  }
+
+  body.destinations-page .destination-card.destination-card-overlay:hover .destination-card-image-primary {
+    transform: scale(1.045) !important;
+  }
+
+  body.destinations-page .destination-card.destination-card-overlay > .place-save-button:hover {
+    background: #fff !important;
+    transform: translateY(-2px) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
+  body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+  }
+
+  body.destinations-page .destination-card.destination-card-overlay .destination-card-content,
+  body.destinations-page.destination-results-mode .destination-card.destination-card-overlay .destination-card-content {
+    padding: 106px 15px 15px !important;
+  }
+
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-card-topline {
+    top: 13px !important;
+    left: 13px !important;
+    right: 13px !important;
+  }
+
+  body.destinations-page .destination-card.destination-card-overlay .destination-card-content h3 {
+    font-size: clamp(1.18rem, 6vw, 1.42rem) !important;
+  }
+
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button,
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+    bottom: 15px !important;
+  }
+
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay .destination-details-button {
+    right: 71px !important;
+  }
+
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay > .place-save-button {
+    right: 15px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  body.destinations-page .destination-carousel-item .destination-card.destination-card-overlay,
+  body.destinations-page.destination-results-mode .destination-carousel-item .destination-card.destination-card-overlay {
+    height: 390px !important;
+    min-height: 390px !important;
+    max-height: 390px !important;
+  }
+
+  body.destinations-page .destination-card.destination-card-overlay .destination-card-content > p {
+    -webkit-line-clamp: 2 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.destinations-page .destination-card.destination-card-overlay,
+  body.destinations-page .destination-card.destination-card-overlay .destination-card-image-primary,
+  body.destinations-page .destination-card.destination-card-overlay > .place-save-button {
+    transition: none !important;
+    transform: none !important;
+  }
+}
