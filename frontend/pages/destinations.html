@@ -17,6 +17,29 @@
   <link rel="stylesheet" href="../css/mobile-phase1.css?v=11.5.1" />
   <link rel="stylesheet" href="../css/phase1-19.css?v=1.19.0" data-ugotour-phase119="1.19" />
   <link rel="stylesheet" href="../css/phase1-20.css?v=1.20.0" data-ugotour-phase120="1.20" />
+  <style>
+    /* Destination cards already open from the full card surface, so the extra
+       arrow indicator is redundant. Keep Favorites as the only floating action
+       and place it directly beneath the top-right region label. These rules are
+       deliberately destination-only; attraction cards keep their existing UI. */
+    .destinations-page .destination-card.destination-card-saveable .destination-details-button {
+      display: none !important;
+    }
+
+    .destinations-page .destination-card.destination-card-saveable .destination-card-footer {
+      padding-right: 0 !important;
+    }
+
+    .destinations-page .destination-card.destination-card-saveable .destination-card-topline {
+      right: 14px !important;
+    }
+
+    .destinations-page .destination-card.destination-card-saveable .place-save-button {
+      top: 40px !important;
+      right: 14px !important;
+      bottom: auto !important;
+    }
+  </style>
   <title>Destinations | UgoTour</title>
 </head>
 <body class="destinations-page editorial-page home-reference-page" data-destinations-redesign="search-switch-v1">
