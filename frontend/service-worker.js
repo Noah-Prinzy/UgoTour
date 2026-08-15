@@ -7,7 +7,7 @@
 
 // Changing this version gives a deployment a fresh cache and lets activate remove
 // older UgoTour caches that may contain outdated HTML/CSS/JavaScript.
-const CACHE_NAME = "ugotour-v1-16-12";
+const CACHE_NAME = "ugotour-v1-16-13";
 
 // Core files required for the installable PWA experience. Live API responses and
 // OpenStreetMap tiles are intentionally NOT pre-cached here.
